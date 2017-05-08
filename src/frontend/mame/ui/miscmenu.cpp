@@ -516,6 +516,249 @@ menu_crosshair::~menu_crosshair()
 {
 }
 
+#define AUTOFIRE_ITEM_P1_DELAY 1
+/*-------------------------------------------------
+    menu_custom_autofire - handle the custom
+    autofire settings menu
+-------------------------------------------------*/
+
+menu_custom_autofire::menu_custom_autofire(mame_ui_manager &mui, render_container &container) : menu(mui, container)
+{
+}
+
+menu_custom_autofire::~menu_custom_autofire()
+{
+}
+
+void menu_custom_autofire::handle()
+{
+	bool changed = false;
+
+	/* process the menu*/
+	const event *menu_event = process(0);
+
+	/* handle events */
+	if (menu_event != nullptr && menu_event->itemref != nullptr)
+	{
+		if (menu_event->iptkey == IPT_UI_LEFT || menu_event->iptkey == IPT_UI_RIGHT)
+		{
+			int player = (uintptr_t)menu_event->itemref - AUTOFIRE_ITEM_P1_DELAY;
+			//autofire delay
+			if (player >= 0 && player < MAX_PLAYERS)
+			{
+				int autofire_delay = machine().ioport().get_custom_autofire_delay(player);
+
+				if (menu_event->iptkey == IPT_UI_LEFT)
+				{
+					autofire_delay--;
+					if (autofire_delay < 1)
+						autofire_delay = 1;
+				}
+				else
+				{
+					autofire_delay++;
+					if (autofire_delay > 99)
+						autofire_delay = 99;
+				}
+
+				machine().ioport().set_custom_autofire_delay(player, autofire_delay);
+
+				changed = true;
+			}
+			//anything else is a toggle item
+			else
+			{
+				ioport_field *field = (ioport_field *)menu_event->itemref;
+				ioport_field::user_settings settings;
+				int selected_value;
+				field->get_user_settings(settings);
+				selected_value = settings.custom_autofire;
+
+				if (menu_event->iptkey == IPT_UI_LEFT)
+				{
+					if (--selected_value < 0)
+						selected_value = 2;
+				}
+				else
+				{
+					if (++selected_value > 2)
+						selected_value = 0;
+				}
+
+				settings.custom_autofire = selected_value;
+				field->set_user_settings(settings);
+
+				changed = true;
+			}
+		}
+	}
+
+	/* if something changed, rebuild the menu */
+	if (changed)
+		reset(reset_options::REMEMBER_REF);
+}
+
+void menu_custom_autofire::populate(float &customtop, float &custombottom)
+{
+	std::string subtext;
+	std::string text;
+	int players = 0;
+	uintptr_t i;
+
+	/* iterate over the input ports and add autofire toggle items */
+	for (auto &port : machine().ioport().ports())
+	{
+		for (auto &field : port.second->fields())
+		{
+			const char *name = field.name();
+
+			if (name != NULL && (
+			    (field.type() >= IPT_BUTTON1 && field.type() < IPT_BUTTON1 + MAX_NORMAL_BUTTONS)
+			    || (field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
+			   ))
+			{
+				ioport_field::user_settings settings;
+				field.get_user_settings(settings);
+//				entry[menu_items] = field;
+
+				if (players < field.player() + 1)
+					players = field.player() + 1;
+
+				/* add an autofire item */
+				switch (settings.custom_autofire)
+				{
+					case 0: subtext.assign("Off");    break;
+					case 1: subtext.assign("On");     break;
+					case 2: subtext.assign("Toggle"); break;
+				}
+				item_append(field.name(), subtext, FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW, (void *)(&field));
+			}
+		}
+	}
+	/* add autofire delay items */
+	for (i = 0; i < players; i++)
+	{
+		text.assign("P");
+		text.append(std::to_string(i + 1));
+		text.append(" Autofire Delay");
+		subtext.assign(std::to_string(machine().ioport().get_custom_autofire_delay(i)));
+
+		/* append a menu item */
+		item_append(text, subtext, FLAG_LEFT_ARROW | FLAG_RIGHT_ARROW, (void *)(i + AUTOFIRE_ITEM_P1_DELAY));
+	}
+}
+#undef AUTOFIRE_ITEM_P1_DELAY
+
+/*-------------------------------------------------
+    menu_custom_button - handle the custom button
+    settings menu
+-------------------------------------------------*/
+menu_custom_button::menu_custom_button(mame_ui_manager &mui, render_container &container) : menu(mui, container)
+{
+}
+
+menu_custom_button::~menu_custom_button()
+{
+}
+
+void menu_custom_button::handle()
+{
+	const event *menu_event = process(0);
+	bool changed = false;
+	int custom_buttons_count = 0;
+
+	/* handle events */
+	if (menu_event != nullptr && menu_event->itemref != nullptr)
+	{
+		u16 *selected_custom_button = (u16 *)menu_event->itemref;
+		int i;
+
+		//count the number of custom buttons
+		for (auto &port : machine().ioport().ports())
+		{
+			for (auto &field : port.second->fields())
+			{
+				int type = field.type();
+
+				if (type >= IPT_BUTTON1 && type < IPT_BUTTON1 + MAX_NORMAL_BUTTONS)
+				{
+					type -= IPT_BUTTON1;
+					if (type >= custom_buttons_count)
+						custom_buttons_count = type + 1;
+				}
+			}
+		}
+
+		input_item_id id = ITEM_ID_1;
+		for (i = 0; i < custom_buttons_count; i++, id++)
+		{
+			if (i == 9)
+				id = ITEM_ID_0;
+
+			//FIXME code_pressed_once() doesn't work well
+			if (machine().input().code_pressed_once(input_code(DEVICE_CLASS_KEYBOARD, 0, ITEM_CLASS_SWITCH, ITEM_MODIFIER_NONE, id)))
+			{
+				*selected_custom_button ^= 1 << i;
+				changed = true;
+				break;
+			}
+		}
+	}
+
+	/* if something changed, rebuild the menu */
+	if (changed)
+		reset(reset_options::REMEMBER_REF);
+}
+
+void menu_custom_button::populate(float &customtop, float &custombottom)
+{
+	std::string subtext;
+	std::string text;
+	int menu_items = 0;
+//	int is_neogeo = !core_stricmp(machine().system().source_file+17, "neogeo.c")
+//					|| !core_stricmp(machine().system().source_file+17, "neogeo_noslot.c");
+	int i;
+
+//	item_append("Press 1-9 to Config", nullptr, 0, nullptr);
+//	item_append(menu_item_type::SEPARATOR, nullptr, 0, nullptr);
+
+	for (auto &port : machine().ioport().ports())
+	{
+		for (auto &field : port.second->fields())
+		{
+			int player = field.player();
+			int type = field.type();
+			const char *name = field.name();
+
+			if (name != nullptr && type >= IPT_CUSTOM1 && type < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
+			{
+				const char colorbutton1 = 'A';
+				int n = 1;
+				static char commandbuf[256];
+
+				type -= IPT_CUSTOM1;
+
+				//unpack the custom button value
+				for (i = 0; i < MAX_NORMAL_BUTTONS; i++, n <<= 1)
+				{
+					if (machine().ioport().m_custom_button[player][type] & n)
+					{
+						if (subtext.length() > 0)
+							subtext.append("_+");
+						subtext += colorbutton1 + i;
+					}
+				}
+
+				subtext.copy(commandbuf, 256);
+				//convert_command_glyph(commandbuf, ARRAY_LENGTH(commandbuf));
+				item_append(name, commandbuf, 0, (void *)&machine().ioport().m_custom_button[player][type]);
+
+				menu_items++;
+			}
+		}
+	}
+}
+
 /*-------------------------------------------------
     menu_quit_game - handle the "menu" for
     quitting the game

@@ -185,6 +185,30 @@ protected:
 	virtual void custom_render(void *selectedref, float top, float bottom, float x, float y, float x2, float y2) override;
 };
 
+//-------------------------------------------------
+//  custom autofire menu
+//-------------------------------------------------
+class menu_custom_autofire : public menu
+{
+public:
+	menu_custom_autofire(mame_ui_manager &mui, render_container &container);
+	virtual ~menu_custom_autofire();
+	virtual void populate(float &customtop, float &custombottom) override;
+	virtual void handle() override;
+};
+
+//-------------------------------------------------
+//  custom buttons menu
+//-------------------------------------------------
+class menu_custom_button : public menu
+{
+public:
+	menu_custom_button(mame_ui_manager &mui, render_container &container);
+	virtual ~menu_custom_button();
+	virtual void populate(float &customtop, float &custombottom) override;
+	virtual void handle() override;
+};
+
 } // namespace ui
 
 #endif  /* MAME_FRONTEND_UI_MISCMENU_H */

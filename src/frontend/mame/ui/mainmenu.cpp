@@ -56,6 +56,9 @@ void menu_main::populate(float &customtop, float &custombottom)
 
 	item_append(_("Input (this Machine)"), "", 0, (void *)INPUT_SPECIFIC);
 
+	item_append("Autofire Setting", "", 0, (void *)CUSTOM_AUTOFIRE);
+	item_append("Custom Buttons", "", 0, (void *)CUSTOM_BUTTON);
+
 	/* add optional input-related menus */
 	if (ui().machine_info().has_analog())
 		item_append(_("Analog Controls"), "", 0, (void *)ANALOG);
@@ -169,6 +172,14 @@ void menu_main::handle()
 
 		case INPUT_SPECIFIC:
 			menu::stack_push<menu_input_specific>(ui(), container());
+			break;
+
+		case CUSTOM_AUTOFIRE:
+			menu::stack_push<menu_custom_autofire>(ui(), container());
+			break;
+
+		case CUSTOM_BUTTON:
+			menu::stack_push<menu_custom_button>(ui(), container());
 			break;
 
 		case SETTINGS_DIP_SWITCHES:

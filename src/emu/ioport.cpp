@@ -892,6 +892,7 @@ void ioport_field::get_user_settings(user_settings &settings)
 	{
 		settings.toggle = m_live->toggle;
 		settings.autofire = m_live->autofire;
+		settings.custom_autofire = m_live->custom_autofire;
 	}
 }
 
@@ -931,6 +932,7 @@ void ioport_field::set_user_settings(const user_settings &settings)
 	{
 		m_live->toggle = settings.toggle;
 		m_live->autofire = settings.autofire;
+		m_live->custom_autofire = settings.custom_autofire;
 	}
 }
 
