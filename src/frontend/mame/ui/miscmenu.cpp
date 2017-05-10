@@ -732,11 +732,11 @@ void menu_custom_button::populate(float &customtop, float &custombottom)
 
 			if (name != nullptr && type >= IPT_CUSTOM1 && type < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
 			{
-				const char colorbutton1 = 'A';
+				const char colorbutton1 = '1';
 				int n = 1;
-				static char commandbuf[256];
 
 				type -= IPT_CUSTOM1;
+				subtext.assign("");
 
 				//unpack the custom button value
 				for (i = 0; i < MAX_NORMAL_BUTTONS; i++, n <<= 1)
@@ -744,14 +744,14 @@ void menu_custom_button::populate(float &customtop, float &custombottom)
 					if (machine().ioport().m_custom_button[player][type] & n)
 					{
 						if (subtext.length() > 0)
-							subtext.append("_+");
+							subtext.append("+");
 						subtext += colorbutton1 + i;
 					}
 				}
+				if (subtext.empty())
+					subtext.assign(" ");
 
-				subtext.copy(commandbuf, 256);
-				//convert_command_glyph(commandbuf, ARRAY_LENGTH(commandbuf));
-				item_append(name, commandbuf, 0, (void *)&machine().ioport().m_custom_button[player][type]);
+				item_append(name, subtext, 0, (void *)&machine().ioport().m_custom_button[player][type]);
 
 				menu_items++;
 			}
