@@ -118,6 +118,8 @@ namespace {
 
 const int SPACE_COUNT = 3;
 
+#define AUTOFIRE_ON 1 /* Custom autofire enable bit */
+#define AUTOFIRE_TOGGLE 2 /* Custom autofire toggle enable bit */
 
 
 //**************************************************************************
@@ -339,6 +341,128 @@ void ioport_list::append(device_t &device, std::string &errorbuf)
 		port.second->collapse_fields(errorbuf);
 }
 
+	static INPUT_PORTS_START( custom1p )
+		PORT_START("CUSTOM1P")
+		PORT_BIT( 1 << 0, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(1) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(1)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(1)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(1)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(1)
+	INPUT_PORTS_END
+
+	static INPUT_PORTS_START( custom2p )
+		PORT_START("CUSTOM2P")
+		PORT_BIT( 1 << 1, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(2) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(2)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(2)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(2)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(2)
+	INPUT_PORTS_END
+
+	static INPUT_PORTS_START( custom3p )
+		PORT_START("CUSTOM3P")
+		PORT_BIT( 1 << 2, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(3) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(3)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(3)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(3)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(3)
+	INPUT_PORTS_END
+
+	static INPUT_PORTS_START( custom4p )
+		PORT_START("CUSTOM4P")
+		PORT_BIT( 1 << 3, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(4) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(4)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(4)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(4)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(4)
+	INPUT_PORTS_END
+
+	static INPUT_PORTS_START( custom5p )
+		PORT_START("CUSTOM5P")
+		PORT_BIT( 1 << 4, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(5) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(5)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(5)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(5)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(5)
+	INPUT_PORTS_END
+
+	static INPUT_PORTS_START( custom6p )
+		PORT_START("CUSTOM6P")
+		PORT_BIT( 1 << 5, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(6) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(6)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(6)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(6)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(6)
+	INPUT_PORTS_END
+
+	static INPUT_PORTS_START( custom7p )
+		PORT_START("CUSTOM7P")
+		PORT_BIT( 1 << 6, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(7) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(7)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(7)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(7)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(7)
+	INPUT_PORTS_END
+
+	static INPUT_PORTS_START( custom8p )
+		PORT_START("CUSTOM8P")
+		PORT_BIT( 1 << 7, IP_ACTIVE_HIGH, IPT_TOGGLE_AUTOFIRE ) PORT_PLAYER(8) PORT_TOGGLE
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM1 ) PORT_PLAYER(8)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM2 ) PORT_PLAYER(8)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM3 ) PORT_PLAYER(8)
+		PORT_BIT( 0, IP_ACTIVE_LOW, IPT_CUSTOM4 ) PORT_PLAYER(8)
+	INPUT_PORTS_END
+
+/*-------------------------------------------------
+    input_port_list_custom - initialize an input
+    port list structure and allocate ports
+    according to the given tokens
+-------------------------------------------------*/
+
+void ioport_list::append_custom(device_t &device, std::string &errorbuf)
+{
+	int nplayer = 0;
+
+	// no constructor, no list
+	ioport_constructor constructor = device.input_ports();
+	if (constructor == nullptr)
+		return;
+
+	// reset error buffer
+	errorbuf.assign("");
+
+	// detokenize into the list
+	(*constructor)(device, *this, errorbuf);
+
+	// collapse fields and sort the list
+	for (auto &port : *this)
+	{
+		for (auto &field : port.second->fields())
+		{
+			if (nplayer < field.player()+1)
+				nplayer = field.player()+1;
+		}
+		port.second->collapse_fields(errorbuf);
+	}
+
+	// mamep: append custom ports if needed
+	if (nplayer > 0)
+		INPUT_PORTS_NAME(custom1p)(device, *this, errorbuf);
+	if (nplayer > 1)
+		INPUT_PORTS_NAME(custom2p)(device, *this, errorbuf);
+	if (nplayer > 2)
+		INPUT_PORTS_NAME(custom3p)(device, *this, errorbuf);
+	if (nplayer > 3)
+		INPUT_PORTS_NAME(custom4p)(device, *this, errorbuf);
+	if (nplayer > 4)
+		INPUT_PORTS_NAME(custom5p)(device, *this, errorbuf);
+	if (nplayer > 5)
+		INPUT_PORTS_NAME(custom6p)(device, *this, errorbuf);
+	if (nplayer > 6)
+		INPUT_PORTS_NAME(custom7p)(device, *this, errorbuf);
+	if (nplayer > 7)
+		INPUT_PORTS_NAME(custom8p)(device, *this, errorbuf);
+}
 
 
 //**************************************************************************
@@ -1108,7 +1232,8 @@ void ioport_field::frame_update(ioport_value &result)
 	}
 
 	// if the state changed, look for switch down/switch up
-	bool curstate = m_digital_value || machine().input().seq_pressed(seq());
+	bool curstate = machine().ioport().custom_auto_pressed(this);
+	//bool curstate = m_digital_value || machine().input().seq_pressed(seq());
 	if (m_live->autofire && !machine().ioport().get_autofire_toggle())
 	{
 		if (curstate)
@@ -1151,7 +1276,10 @@ void ioport_field::frame_update(ioport_value &result)
 		if (m_live->toggle)
 		{
 			if (m_settinglist.count() == 0)
+			{
 				m_live->value ^= m_mask;
+				m_live->custom_autofire_toggle = !m_live->custom_autofire_toggle;
+			}
 			else
 				select_next_setting();
 		}
@@ -1371,6 +1499,9 @@ ioport_field_live::ioport_field_live(ioport_field &field, analog_field *analog)
 		last(0),
 		toggle(field.toggle()),
 		joydir(digital_joystick::JOYDIR_COUNT),
+		custom_autofire_toggle(0),
+		custom_autofire(0),
+		custom_autopressed(0),
 		autofire(false),
 		autopressed(0),
 		lockout(false)
@@ -1692,6 +1823,13 @@ ioport_manager::ioport_manager(running_machine &machine)
 		m_autofire_delay(3)                 // 1 seems too fast for a bunch of games
 {
 	memset(m_type_to_entry, 0, sizeof(m_type_to_entry));
+	memset(m_custom_button, 0, sizeof(m_custom_button));
+	memset(m_custom_button_info, 0, sizeof(m_custom_button_info));
+	for (int player = 0; player < MAX_PLAYERS; player++)
+	{
+		m_custom_autofire_delay[player] = 3;	//mamep: 1 is too short for some games
+		m_custom_autofire_toggle[player] = 1;
+	}
 }
 
 
@@ -1714,7 +1852,8 @@ time_t ioport_manager::initialize()
 	for (device_t &device : iter)
 	{
 		std::string errors;
-		m_portlist.append(device, errors);
+		m_portlist.append_custom(device, errors);
+		//m_portlist.append(device, errors);
 		if (!errors.empty())
 			osd_printf_error("Input port errors:\n%s", errors.c_str());
 	}
@@ -1728,12 +1867,17 @@ time_t ioport_manager::initialize()
 		{
 			if (&port.second->device() == &device)
 			{
+				port.second->init_live_state();
 				for (ioport_field &field : port.second->fields())
+				{
 					if (field.type_class()==INPUT_CLASS_CONTROLLER)
 					{
 						if (players < field.player() + 1) players = field.player() + 1;
 						field.set_player(field.player() + player_offset);
 					}
+					if (field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
+						m_custom_button_info[field.player()][field.type() - IPT_CUSTOM1] = &field;
+				}
 			}
 		}
 		player_offset += players;
@@ -2063,6 +2207,28 @@ g_profiler.start(PROFILER_INPUT);
 	// loop over all input ports
 	for (auto &port : m_portlist)
 	{
+		/* now loop back and modify based on the inputs */
+		for (auto &field : port.second->fields())
+		{
+			if (field.condition().eval())
+			{
+				/* update autofire status */
+				if (field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
+				{
+					if (machine().input().seq_pressed(field.seq(SEQ_TYPE_STANDARD)))
+					{
+						if (field.live().custom_autopressed > m_custom_autofire_delay[field.player()])
+							field.live().custom_autopressed = 0;
+
+						field.live().custom_autopressed++;
+					}
+					else
+						field.live().custom_autopressed = 0;
+				}
+
+				continue;
+			}
+		}
 		port.second->frame_update();
 
 		// handle playback/record
@@ -3727,4 +3893,78 @@ input_seq_type ioport_manager::token_to_seq_type(const char *string)
 		if (!core_stricmp(string, seqtypestrings[seqindex]))
 			return input_seq_type(seqindex);
 	return SEQ_TYPE_INVALID;
+}
+
+bool ioport_manager::custom_auto_pressed(ioport_field *field)
+{
+/*
+	autofire setting:
+	 delay,  on, off
+	     1,   1,   1
+	     2,   2,   1
+	     3,   2,   2
+	     4,   3,   2
+	     5,   3,   3
+	     6,   4,   3
+*/
+
+#define IS_AUTOKEY(field) ((field->live().custom_autofire & AUTOFIRE_ON) \
+                          || ((field->live().custom_autofire & AUTOFIRE_TOGGLE) \
+						  && m_custom_autofire_toggle[field->player()]))
+
+	bool pressed = machine().input().seq_pressed(field->seq(SEQ_TYPE_STANDARD));
+	int is_auto = IS_AUTOKEY(field);
+
+	if (pressed && (field->toggle()))
+		m_custom_autofire_toggle[field->player()] = field->live().custom_autofire_toggle;
+
+	if (field->type() >= IPT_BUTTON1 && field->type() < IPT_BUTTON1 + MAX_NORMAL_BUTTONS)
+	{
+		u16 button_mask = 1 << (field->type() - IPT_BUTTON1);
+
+		int custom;
+		for (custom = 0; custom < MAX_CUSTOM_BUTTONS; custom++)
+		{
+			if (m_custom_button[field->player()][custom] & button_mask)
+			{
+				ioport_field *custom_info = m_custom_button_info[field->player()][custom];
+
+				if (machine().input().seq_pressed(custom_info->seq(SEQ_TYPE_STANDARD)))
+				{
+					if (IS_AUTOKEY(custom_info))
+					{
+						if (pressed)
+							is_auto &= 1;
+						else
+							is_auto = 1;
+
+						field = custom_info;
+					}
+					else
+						is_auto = 0;
+
+					pressed = 1;
+				}
+			}
+		}
+	}
+
+	if (is_auto)
+	{
+		if (pressed)
+		{
+			if (field->live().custom_autopressed > m_custom_autofire_delay[field->player()])
+				field->live().custom_autopressed = 0;
+			else if (field->live().custom_autopressed > m_custom_autofire_delay[field->player()] / 2)
+				pressed = false;
+
+			field->live().custom_autopressed ++;
+		}
+		else
+			field->live().custom_autopressed = 0;
+	}
+
+	return pressed;
+
+#undef IS_AUTOKEY
 }
