@@ -2339,6 +2339,17 @@ void ioport_manager::load_config(config_type cfg_type, util::xml::data_node cons
 			load_game_config(portnode, type, player, newseq);
 	}
 
+	if (cfg_type == config_type::GAME)
+	{
+		for (util::xml::data_node const *portnode = parentnode->get_child("autofire"); portnode; portnode = portnode->get_next_sibling("autofire"))
+		{
+			int player = portnode->get_attribute_int("player", 0);
+
+			if (player > 0 && player <= MAX_PLAYERS)
+				m_custom_autofire_delay[player - 1] = portnode->get_attribute_int("delay", 3);
+		}
+	}
+
 	// after applying the controller config, push that back into the backup, since that is
 	// what we will diff against
 	if (cfg_type == config_type::CONTROLLER)
@@ -2448,6 +2459,14 @@ bool ioport_manager::load_game_config(util::xml::data_node const *portnode, int 
 						const char *togstring = portnode->get_attribute_string("toggle", nullptr);
 						if (togstring != nullptr)
 							field.live().toggle = (strcmp(togstring, "yes") == 0);
+						if (strcmp(portnode->get_attribute_string("autofire", "off"), "on") == 0)
+							field.live().custom_autofire = AUTOFIRE_ON;
+						else if (strcmp(portnode->get_attribute_string("autofire", "off"), "toggle") == 0)
+							field.live().custom_autofire = AUTOFIRE_TOGGLE;
+						else
+							field.live().custom_autofire = 0;
+						if (field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS)
+							m_custom_button[field.player()][field.type() - IPT_CUSTOM1] = portnode->get_attribute_int("custom", 0);
 					}
 
 					// for analog fields
@@ -2599,6 +2618,9 @@ void ioport_manager::save_game_inputs(util::xml::data_node &parentnode)
 				{
 					changed |= ((field.live().value & field.mask()) != (field.defvalue() & field.mask()));
 					changed |= (field.live().toggle != field.toggle());
+					changed |= (field.live().custom_autofire != 0);
+					changed |= field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS &&
+						m_custom_button[field.player()][field.type() - IPT_CUSTOM1];
 				}
 
 				// analog changes
@@ -2635,6 +2657,13 @@ void ioport_manager::save_game_inputs(util::xml::data_node &parentnode)
 								portnode->set_attribute_int("value", field.live().value & field.mask());
 							if (field.live().toggle != field.toggle())
 								portnode->set_attribute("toggle", field.live().toggle ? "yes" : "no");
+							if (field.live().custom_autofire & AUTOFIRE_ON)
+								portnode->set_attribute("autofire", "on");
+							else if (field.live().custom_autofire & AUTOFIRE_TOGGLE)
+								portnode->set_attribute("autofire", "toggle");
+							if (field.type() >= IPT_CUSTOM1 && field.type() < IPT_CUSTOM1 + MAX_CUSTOM_BUTTONS &&
+							    m_custom_button[field.player()][field.type() - IPT_CUSTOM1])
+								portnode->set_attribute_int("custom", m_custom_button[field.player()][field.type() - IPT_CUSTOM1]);
 						}
 
 						// write out analog changes
@@ -2652,6 +2681,19 @@ void ioport_manager::save_game_inputs(util::xml::data_node &parentnode)
 					}
 				}
 			}
+
+	for (int portnum = 0; portnum < MAX_PLAYERS; portnum++)
+	{
+		if (m_custom_autofire_delay[portnum] != 3)
+		{
+			util::xml::data_node *const childnode = parentnode.add_child("autofire", nullptr);
+			if (childnode)
+			{
+				childnode->set_attribute_int("player", portnum + 1);
+				childnode->set_attribute_int("delay", m_custom_autofire_delay[portnum]);
+			}
+		}
+	}
 }
 
 
