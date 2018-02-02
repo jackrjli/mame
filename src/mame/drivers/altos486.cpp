@@ -39,6 +39,7 @@ public:
 	bool m_sys_mode;
 	uint8_t m_prot[256];
 	uint16_t m_viol[16];
+	void altos486(machine_config &config);
 };
 
 READ8_MEMBER(altos486_state::read_rmx_ack)
@@ -119,13 +120,13 @@ static ADDRESS_MAP_START(altos486_z80_io, AS_IO, 8, altos486_state)
 	//AM_RANGE(0x08, 0x0b) AM_DEVREADWRITE("sio2", z80sio0_device, read, write)
 ADDRESS_MAP_END
 
-static MACHINE_CONFIG_START( altos486 )
-	MCFG_CPU_ADD("maincpu", I80186, XTAL_8MHz)
+MACHINE_CONFIG_START(altos486_state::altos486)
+	MCFG_CPU_ADD("maincpu", I80186, XTAL(8'000'000))
 	MCFG_CPU_PROGRAM_MAP(altos486_mem)
 	MCFG_CPU_IO_MAP(altos486_io)
 	MCFG_CPU_IRQ_ACKNOWLEDGE_DEVICE("pic8259", pic8259_device, inta_cb) // yes, really
 
-	MCFG_CPU_ADD("iocpu", Z80, XTAL_8MHz / 2)
+	MCFG_CPU_ADD("iocpu", Z80, XTAL(8'000'000) / 2)
 	MCFG_CPU_PROGRAM_MAP(altos486_z80_mem)
 	MCFG_CPU_IO_MAP(altos486_z80_io)
 
@@ -140,7 +141,7 @@ static MACHINE_CONFIG_START( altos486 )
 	MCFG_FLOPPY_DRIVE_ADD("fdc:0", altos486_floppies, "525qd", altos486_state::floppy_formats)
 	MCFG_SLOT_FIXED(true)
 
-	MCFG_Z80SIO0_ADD("sio0", 4000000, 0, 0, 0, 0)
+	MCFG_DEVICE_ADD("sio0", Z80SIO0, 4000000)
 	MCFG_Z80DART_OUT_TXDA_CB(DEVWRITELINE("rs232a", rs232_port_device, write_txd))
 	MCFG_Z80DART_OUT_DTRA_CB(DEVWRITELINE("rs232a", rs232_port_device, write_dtr))
 	MCFG_Z80DART_OUT_RTSA_CB(DEVWRITELINE("rs232a", rs232_port_device, write_rts))
@@ -148,7 +149,8 @@ static MACHINE_CONFIG_START( altos486 )
 	MCFG_Z80DART_OUT_DTRB_CB(DEVWRITELINE("rs232b", rs232_port_device, write_dtr))
 	MCFG_Z80DART_OUT_RTSB_CB(DEVWRITELINE("rs232b", rs232_port_device, write_rts))
 	//MCFG_Z80DART_OUT_INT_CB(WRITELINE(altos486_state, sio_interrupt))
-	MCFG_Z80SIO0_ADD("sio1", 4000000, 0, 0, 0, 0)
+
+	MCFG_DEVICE_ADD("sio1", Z80SIO0, 4000000)
 	MCFG_Z80DART_OUT_TXDA_CB(DEVWRITELINE("rs232c", rs232_port_device, write_txd))
 	MCFG_Z80DART_OUT_DTRA_CB(DEVWRITELINE("rs232c", rs232_port_device, write_dtr))
 	MCFG_Z80DART_OUT_RTSA_CB(DEVWRITELINE("rs232c", rs232_port_device, write_rts))
@@ -156,13 +158,14 @@ static MACHINE_CONFIG_START( altos486 )
 	MCFG_Z80DART_OUT_DTRB_CB(DEVWRITELINE("rs232d", rs232_port_device, write_dtr))
 	MCFG_Z80DART_OUT_RTSB_CB(DEVWRITELINE("rs232d", rs232_port_device, write_rts))
 	//MCFG_Z80DART_OUT_INT_CB(WRITELINE(altos486_state, sio_interrupt))
-	MCFG_Z80SIO0_ADD("sio2", 4000000, 0, 0, 0, 0)
+
+	MCFG_DEVICE_ADD("sio2", Z80SIO0, 4000000)
 	MCFG_Z80DART_OUT_TXDA_CB(DEVWRITELINE("rs232_lp", rs232_port_device, write_txd))
 	MCFG_Z80DART_OUT_DTRA_CB(DEVWRITELINE("rs232_lp", rs232_port_device, write_dtr))
 	MCFG_Z80DART_OUT_RTSA_CB(DEVWRITELINE("rs232_lp", rs232_port_device, write_rts))
 	//MCFG_Z80DART_OUT_INT_CB(WRITELINE(altos486_state, sio_interrupt))
 
-	MCFG_I8274_ADD("i8274", XTAL_16MHz/4, 0, 0, 0, 0)
+	MCFG_DEVICE_ADD("i8274", I8274, XTAL(16'000'000)/4)
 	MCFG_Z80DART_OUT_TXDA_CB(DEVWRITELINE("rs422_wn", rs232_port_device, write_txd))
 	MCFG_Z80DART_OUT_DTRA_CB(DEVWRITELINE("rs422_wn", rs232_port_device, write_dtr))
 	MCFG_Z80DART_OUT_RTSA_CB(DEVWRITELINE("rs422_wn", rs232_port_device, write_rts))
@@ -200,13 +203,13 @@ static MACHINE_CONFIG_START( altos486 )
 	MCFG_RS232_CTS_HANDLER(DEVWRITELINE("i8274", z80dart_device, ctsa_w))
 
 	MCFG_DEVICE_ADD("pit0", PIT8253, 0)
-	MCFG_PIT8253_CLK0(XTAL_22_1184MHz/18)
-	MCFG_PIT8253_CLK1(XTAL_22_1184MHz/144)
-	MCFG_PIT8253_CLK2(XTAL_22_1184MHz/18)
+	MCFG_PIT8253_CLK0(XTAL(22'118'400)/18)
+	MCFG_PIT8253_CLK1(XTAL(22'118'400)/144)
+	MCFG_PIT8253_CLK2(XTAL(22'118'400)/18)
 	MCFG_DEVICE_ADD("pit1", PIT8253, 0)
-	MCFG_PIT8253_CLK0(XTAL_22_1184MHz/18)
-	MCFG_PIT8253_CLK1(XTAL_22_1184MHz/144)
-	MCFG_PIT8253_CLK2(XTAL_22_1184MHz/18)
+	MCFG_PIT8253_CLK0(XTAL(22'118'400)/18)
+	MCFG_PIT8253_CLK1(XTAL(22'118'400)/144)
+	MCFG_PIT8253_CLK2(XTAL(22'118'400)/18)
 MACHINE_CONFIG_END
 
 

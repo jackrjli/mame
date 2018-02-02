@@ -50,6 +50,7 @@ Note that left-most digit is not wired up, and therefore will always be blank.
 #include "cpu/m6502/m6502.h"
 #include "machine/ins8154.h"
 #include "machine/74145.h"
+#include "machine/timer.h"
 #include "imagedev/cassette.h"
 #include "sound/wave.h"
 #include "speaker.h"
@@ -73,6 +74,7 @@ public:
 	DECLARE_WRITE8_MEMBER(acrnsys1_led_segment_w);
 	TIMER_DEVICE_CALLBACK_MEMBER(acrnsys1_c);
 	TIMER_DEVICE_CALLBACK_MEMBER(acrnsys1_p);
+	void acrnsys1(machine_config &config);
 private:
 	required_device<cpu_device> m_maincpu;
 	required_device<ttl74145_device> m_ttl74145;
@@ -242,7 +244,7 @@ INPUT_PORTS_END
     MACHINE DRIVERS
 ***************************************************************************/
 
-static MACHINE_CONFIG_START( acrnsys1 )
+MACHINE_CONFIG_START(acrnsys1_state::acrnsys1)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", M6502, 1008000)  /* 1.008 MHz */
 	MCFG_CPU_PROGRAM_MAP(acrnsys1_map)

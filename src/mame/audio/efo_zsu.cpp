@@ -12,8 +12,8 @@
    sound generators are 2 AY-3-8910As and 1 OKI MSM5205, and 2 MF10s and
    1 HC4066 are used to mix their outputs. The timing circuits are rather
    intricate, using Z80-CTCs, HC74s and HC393s and various other gates to
-   drive both the 5205 and the SGS HCF40105BE through which its samples
-   are funneled.
+   drive both the 5205 and the SGS HCF40105BE (equivalent to CD40105B)
+   through which its samples are funneled.
 
    There are no available schematics for the Cedar Magnet video game
    system (also designed by E.F.O.), but its sound board is believed to be
@@ -187,7 +187,7 @@ TIMER_CALLBACK_MEMBER(cedar_magnet_sound_device::reset_assert_callback)
 }
 
 
-MACHINE_CONFIG_MEMBER( efo_zsu_device::device_add_mconfig )
+MACHINE_CONFIG_START(efo_zsu_device::device_add_mconfig)
 	MCFG_CPU_ADD("soundcpu", Z80, 4000000)
 	MCFG_CPU_PROGRAM_MAP(zsu_map)
 	MCFG_CPU_IO_MAP(zsu_io)
@@ -228,7 +228,7 @@ MACHINE_CONFIG_MEMBER( efo_zsu_device::device_add_mconfig )
 	MCFG_AY8910_PORT_A_WRITE_CB(WRITE8(efo_zsu_device, ay1_porta_w))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.5)
 
-	MCFG_DEVICE_ADD("fifo", HC40105, 0)
+	MCFG_DEVICE_ADD("fifo", CD40105, 0)
 	MCFG_40105_DATA_OUT_READY_CB(WRITELINE(efo_zsu_device, fifo_dor_w))
 	MCFG_40105_DATA_OUT_CB(DEVWRITELINE("adpcm", msm5205_device, data_w))
 
@@ -236,7 +236,7 @@ MACHINE_CONFIG_MEMBER( efo_zsu_device::device_add_mconfig )
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
 MACHINE_CONFIG_END
 
-MACHINE_CONFIG_MEMBER( cedar_magnet_sound_device::device_add_mconfig )
+MACHINE_CONFIG_START(cedar_magnet_sound_device::device_add_mconfig)
 	efo_zsu_device::device_add_mconfig(config);
 
 	MCFG_CPU_MODIFY("soundcpu")

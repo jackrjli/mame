@@ -14,6 +14,7 @@
 #include "machine/keyboard.h"
 #include "machine/pic8259.h"
 #include "machine/ram.h"
+#include "machine/timer.h"
 #include "machine/trs80m2kb.h"
 #include "machine/wd_fdc.h"
 #include "machine/z80ctc.h"
@@ -92,6 +93,7 @@ public:
 	DECLARE_WRITE_LINE_MEMBER(write_centronics_fault);
 	DECLARE_WRITE_LINE_MEMBER(write_centronics_perror);
 
+	void trs80m2(machine_config &config);
 protected:
 	virtual void machine_start() override;
 	virtual void machine_reset() override;
@@ -155,6 +157,7 @@ public:
 	DECLARE_WRITE8_MEMBER( ual_w );
 	DECLARE_WRITE8_MEMBER( tcl_w );
 
+	void trs80m16(machine_config &config);
 protected:
 	virtual void machine_start() override;
 

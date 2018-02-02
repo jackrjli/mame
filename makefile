@@ -40,7 +40,7 @@
 
 # DEBUG = 1
 # PROFILER = 1
-# SANITIZE = 1
+# SANITIZE = 
 
 # PTR64 = 1
 # BIGENDIAN = 1
@@ -781,6 +781,10 @@ endif
 ifdef WEBASSEMBLY
 PARAMS += --WEBASSEMBLY='$(WEBASSEMBLY)'
 endif
+
+ifdef SANITIZE
+PARAMS += --SANITIZE='$(SANITIZE)'
+endif
 #-------------------------------------------------
 # All scripts
 #-------------------------------------------------
@@ -971,9 +975,10 @@ PROJECTDIR := $(BUILDDIR)/projects/$(OSD)/$(FULLTARGET)
 PROJECTDIR_SDL := $(BUILDDIR)/projects/sdl/$(FULLTARGET)
 PROJECTDIR_WIN := $(BUILDDIR)/projects/windows/$(FULLTARGET)
 
-.PHONY: all clean regenie generate
+.PHONY: all clean regenie generate FORCE
 all: $(GENIE) $(TARGETOS)$(ARCHITECTURE)
 regenie:
+FORCE:
 
 #-------------------------------------------------
 # gmake-mingw64-gcc
@@ -1546,14 +1551,14 @@ endif
 
 ifeq (posix,$(SHELLTYPE))
 $(GENDIR)/version.cpp: $(GENDIR)/git_desc | $(GEN_FOLDERS)
-	@echo '#define BARE_BUILD_VERSION "0.190"' > $@
+	@echo '#define BARE_BUILD_VERSION "0.194"' > $@
 	@echo 'extern const char bare_build_version[];' >> $@
 	@echo 'extern const char build_version[];' >> $@
 	@echo 'const char bare_build_version[] = BARE_BUILD_VERSION;' >> $@
 	@echo 'const char build_version[] = BARE_BUILD_VERSION " ($(NEW_GIT_VERSION))";' >> $@
 else
 $(GENDIR)/version.cpp: $(GENDIR)/git_desc
-	@echo #define BARE_BUILD_VERSION "0.190" > $@
+	@echo #define BARE_BUILD_VERSION "0.194" > $@
 	@echo extern const char bare_build_version[]; >> $@
 	@echo extern const char build_version[]; >> $@
 	@echo const char bare_build_version[] = BARE_BUILD_VERSION; >> $@
@@ -1710,9 +1715,11 @@ shaders: bgfx-tools
 
 .PHONY: translation
 
-translation:
+$(GENDIR)/mame.pot: FORCE
 	$(SILENT) echo Generating mame.pot
-	$(SILENT) find src -iname "*.cpp" | xargs xgettext --from-code=UTF-8 -k_ -k__ -o mame.pot
-	$(SILENT) find language -iname "*.po" | xargs -n 1 -I %% msgmerge -U -N %% mame.pot
-	$(SILENT) find language -iname "*.po" | xargs -n 1 -I %% msgattrib --clear-fuzzy --empty %% -o %%
+	$(SILENT) find src -iname "*.cpp" -print0 | xargs -0 xgettext --from-code=UTF-8 -k_ -k__ -o $@
+	$(SILENT) find plugins -iname "*.lua" -print0 | xargs -0 xgettext --from-code=UTF-8 -k_ -k__ -j -o $@
 
+translation: $(GENDIR)/mame.pot
+	$(SILENT) find language -name "*.po" -print0 | xargs -0 -n 1 -I %% msgmerge -U -N %% $<
+	$(SILENT) find language -name "*.po" -print0 | xargs -0 -n 1 -I %% msgattrib --clear-fuzzy --empty %% -o %%

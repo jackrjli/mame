@@ -146,13 +146,13 @@ void kc_d004_device::device_reset()
 //  device_add_mconfig - add device configuration
 //-------------------------------------------------
 
-MACHINE_CONFIG_MEMBER(kc_d004_device::device_add_mconfig)
-	MCFG_CPU_ADD(Z80_TAG, Z80, XTAL_8MHz/2)
+MACHINE_CONFIG_START(kc_d004_device::device_add_mconfig)
+	MCFG_CPU_ADD(Z80_TAG, Z80, XTAL(8'000'000)/2)
 	MCFG_CPU_PROGRAM_MAP(kc_d004_mem)
 	MCFG_CPU_IO_MAP(kc_d004_io)
 	MCFG_Z80_DAISY_CHAIN(kc_d004_daisy_chain)
 
-	MCFG_DEVICE_ADD(Z80CTC_TAG, Z80CTC, XTAL_8MHz/2)
+	MCFG_DEVICE_ADD(Z80CTC_TAG, Z80CTC, XTAL(8'000'000)/2)
 	MCFG_Z80CTC_INTR_CB(INPUTLINE(Z80_TAG, 0))
 	MCFG_Z80CTC_ZC0_CB(DEVWRITELINE(Z80CTC_TAG, z80ctc_device, trg1))
 	MCFG_Z80CTC_ZC1_CB(DEVWRITELINE(Z80CTC_TAG, z80ctc_device, trg2))
@@ -370,7 +370,7 @@ kc_d004_gide_device::kc_d004_gide_device(const machine_config &mconfig, const ch
 //  device_add_mconfig - add device configuration
 //-------------------------------------------------
 
-MACHINE_CONFIG_MEMBER(kc_d004_gide_device::device_add_mconfig)
+MACHINE_CONFIG_START(kc_d004_gide_device::device_add_mconfig)
 	kc_d004_device::device_add_mconfig(config);
 
 	MCFG_CPU_MODIFY(Z80_TAG)
@@ -433,11 +433,11 @@ READ8_MEMBER(kc_d004_gide_device::gide_r)
 			{
 				if (ide_cs == 0 )
 				{
-					m_ata_data = m_ata->read_cs0(space, io_addr & 0x07, 0xffff);
+					m_ata_data = m_ata->read_cs0(io_addr & 0x07);
 				}
 				else
 				{
-					m_ata_data = m_ata->read_cs1(space, io_addr & 0x07, 0xffff);
+					m_ata_data = m_ata->read_cs1(io_addr & 0x07);
 				}
 			}
 
@@ -482,11 +482,11 @@ WRITE8_MEMBER(kc_d004_gide_device::gide_w)
 			{
 				if (ide_cs == 0)
 				{
-					m_ata->write_cs0(space, io_addr & 0x07, m_ata_data, 0xffff);
+					m_ata->write_cs0(io_addr & 0x07, m_ata_data);
 				}
 				else
 				{
-					m_ata->write_cs1(space, io_addr & 0x07, m_ata_data, 0xffff);
+					m_ata->write_cs1(io_addr & 0x07, m_ata_data);
 				}
 			}
 		}

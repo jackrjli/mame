@@ -5,9 +5,11 @@
     Gottlieb Exterminator hardware
 
 *************************************************************************/
+
 #include "cpu/tms32010/tms32010.h"
 #include "cpu/tms34010/tms34010.h"
 #include "machine/gen_latch.h"
+#include "machine/timer.h"
 
 class exterm_state : public driver_device
 {
@@ -55,4 +57,5 @@ public:
 	TMS340X0_TO_SHIFTREG_CB_MEMBER(to_shiftreg_slave);
 	TMS340X0_FROM_SHIFTREG_CB_MEMBER(from_shiftreg_slave);
 	uint16_t exterm_trackball_port_r(int which, uint16_t mem_mask);
+	void exterm(machine_config &config);
 };

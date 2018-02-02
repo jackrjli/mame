@@ -163,6 +163,7 @@ Notes: (All IC's listed for completeness)
 #include "emu.h"
 #include "cpu/mcs96/i8x9x.h"
 #include "machine/ram.h"
+#include "machine/timer.h"
 #include "video/sed1200.h"
 #include "screen.h"
 
@@ -215,6 +216,7 @@ public:
 	TIMER_DEVICE_CALLBACK_MEMBER(midi_timer_cb);
 	TIMER_DEVICE_CALLBACK_MEMBER(samples_timer_cb);
 
+	void mt32(machine_config &config);
 private:
 	uint8_t lcd_data_buffer[256];
 	int lcd_data_buffer_pos;
@@ -348,8 +350,8 @@ static ADDRESS_MAP_START( mt32_io, AS_IO, 16, mt32_state )
 	AM_RANGE(i8x9x_device::P0,     i8x9x_device::P0)     AM_READ(port0_r)
 ADDRESS_MAP_END
 
-static MACHINE_CONFIG_START( mt32 )
-	MCFG_CPU_ADD( "maincpu", P8098, XTAL_12MHz )
+MACHINE_CONFIG_START(mt32_state::mt32)
+	MCFG_CPU_ADD( "maincpu", P8098, XTAL(12'000'000) )
 	MCFG_CPU_PROGRAM_MAP( mt32_map )
 	MCFG_CPU_IO_MAP( mt32_io )
 

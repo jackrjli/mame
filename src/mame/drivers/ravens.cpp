@@ -81,18 +81,15 @@ ToDo:
 #include "ravens.lh"
 
 
-#define TERMINAL_TAG "terminal"
-
 class ravens_state : public driver_device
 {
 public:
 	ravens_state(const machine_config &mconfig, device_type type, const char *tag)
-		: driver_device(mconfig, type, tag),
-		m_maincpu(*this, "maincpu"),
-		m_terminal(*this, TERMINAL_TAG),
-		m_cass(*this, "cassette")
-	{
-	}
+		: driver_device(mconfig, type, tag)
+		, m_maincpu(*this, "maincpu")
+		, m_terminal(*this, "terminal")
+		, m_cass(*this, "cassette")
+	{ }
 
 	DECLARE_READ8_MEMBER(port07_r);
 	DECLARE_READ8_MEMBER(port17_r);
@@ -105,6 +102,10 @@ public:
 	DECLARE_READ_LINE_MEMBER(cass_r);
 	DECLARE_WRITE_LINE_MEMBER(cass_w);
 	DECLARE_QUICKLOAD_LOAD_MEMBER( ravens );
+
+	void ravens(machine_config &config);
+	void ravens2(machine_config &config);
+private:
 	uint8_t m_term_char;
 	uint8_t m_term_data;
 	required_device<cpu_device> m_maincpu;
@@ -326,9 +327,9 @@ QUICKLOAD_LOAD_MEMBER( ravens_state, ravens )
 	return result;
 }
 
-static MACHINE_CONFIG_START( ravens )
+MACHINE_CONFIG_START(ravens_state::ravens)
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu",S2650, XTAL_1MHz) // frequency is unknown
+	MCFG_CPU_ADD("maincpu",S2650, XTAL(1'000'000)) // frequency is unknown
 	MCFG_CPU_PROGRAM_MAP(ravens_mem)
 	MCFG_CPU_IO_MAP(ravens_io)
 	MCFG_S2650_SENSE_INPUT(READLINE(ravens_state, cass_r))
@@ -347,9 +348,9 @@ static MACHINE_CONFIG_START( ravens )
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.05)
 MACHINE_CONFIG_END
 
-static MACHINE_CONFIG_START( ravens2 )
+MACHINE_CONFIG_START(ravens_state::ravens2)
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu",S2650, XTAL_1MHz) // frequency is unknown
+	MCFG_CPU_ADD("maincpu",S2650, XTAL(1'000'000)) // frequency is unknown
 	MCFG_CPU_PROGRAM_MAP(ravens_mem)
 	MCFG_CPU_IO_MAP(ravens2_io)
 	MCFG_S2650_SENSE_INPUT(READLINE(ravens_state, cass_r))
@@ -358,7 +359,7 @@ static MACHINE_CONFIG_START( ravens2 )
 	MCFG_MACHINE_RESET_OVERRIDE(ravens_state, ravens2)
 
 	/* video hardware */
-	MCFG_DEVICE_ADD(TERMINAL_TAG, GENERIC_TERMINAL, 0)
+	MCFG_DEVICE_ADD("terminal", GENERIC_TERMINAL, 0)
 	MCFG_GENERIC_TERMINAL_KEYBOARD_CB(PUT(ravens_state, kbd_put))
 
 	/* quickload */

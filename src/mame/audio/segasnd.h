@@ -11,6 +11,7 @@
 #pragma once
 
 #include "cpu/mcs48/mcs48.h"
+#include "machine/timer.h"
 
 
 class speech_sound_device : public device_t, public device_sound_interface
@@ -29,6 +30,8 @@ public:
 	DECLARE_WRITE8_MEMBER( p2_w );
 
 	DECLARE_WRITE_LINE_MEMBER(drq_w);
+
+	void sega_speech_board(machine_config &config);
 
 protected:
 	// device-level overrides
@@ -49,8 +52,6 @@ private:
 };
 
 DECLARE_DEVICE_TYPE(SEGASPEECH, speech_sound_device)
-
-MACHINE_CONFIG_EXTERN( sega_speech_board );
 
 
 class usb_sound_device : public device_t, public device_sound_interface

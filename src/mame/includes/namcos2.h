@@ -10,6 +10,7 @@
 
 #include "machine/namco_c139.h"
 #include "machine/namco_c148.h"
+#include "machine/timer.h"
 #include "video/c45.h"
 
 #include "cpu/m6502/m3745x.h"
@@ -387,6 +388,17 @@ public:
 	void GollyGhostUpdateDiorama_c0( int data );
 	void TilemapCB(uint16_t code, int *tile, int *mask);
 
+	void configure_c148_standard(machine_config &config);
+	void metlhawk(machine_config &config);
+	void gollygho(machine_config &config);
+	void assaultp(machine_config &config);
+	void sgunner2(machine_config &config);
+	void base2(machine_config &config);
+	void finallap(machine_config &config);
+	void luckywld(machine_config &config);
+	void base3(machine_config &config);
+	void sgunner(machine_config &config);
+	void base(machine_config &config);
 };
 
 /*----------- defined in video/namcos2.c -----------*/

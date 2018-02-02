@@ -26,6 +26,7 @@ ToDO:
 #include "machine/genpin.h"
 
 #include "cpu/z80/z80.h"
+#include "machine/timer.h"
 #include "sound/dac.h"
 #include "sound/volt_reg.h"
 #include "speaker.h"
@@ -48,6 +49,7 @@ public:
 	DECLARE_READ8_MEMBER(io_r);
 	DECLARE_WRITE8_MEMBER(io_w);
 	TIMER_DEVICE_CALLBACK_MEMBER(timer_a);
+	void rowamet(machine_config &config);
 private:
 	uint8_t m_out_offs;
 	uint8_t m_sndcmd;
@@ -209,7 +211,7 @@ TIMER_DEVICE_CALLBACK_MEMBER( rowamet_state::timer_a )
 	output().set_digit_value(++digit, patterns[m_p_ram[m_out_offs++]&15]);
 }
 
-static MACHINE_CONFIG_START( rowamet )
+MACHINE_CONFIG_START(rowamet_state::rowamet)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", Z80, 1888888)
 	MCFG_CPU_PROGRAM_MAP(rowamet_map)

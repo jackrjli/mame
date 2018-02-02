@@ -13,6 +13,7 @@
 #include "machine/eepromser.h"
 #include "machine/gaelco3d.h"
 #include "machine/gen_latch.h"
+#include "machine/timer.h"
 #include "cpu/adsp2100/adsp2100.h"
 #include "screen.h"
 
@@ -149,4 +150,7 @@ public:
 	DECLARE_WRITE32_MEMBER(adsp_tx_callback);
 	DECLARE_WRITE_LINE_MEMBER(fp_analog_clock_w);
 	DECLARE_CUSTOM_INPUT_MEMBER(fp_analog_bit_r);
+	void footbpow(machine_config &config);
+	void gaelco3d2(machine_config &config);
+	void gaelco3d(machine_config &config);
 };

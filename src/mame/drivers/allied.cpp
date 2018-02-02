@@ -47,6 +47,7 @@ ToDo:
 #include "cpu/m6502/m6504.h"
 #include "machine/mos6530.h"
 #include "machine/6821pia.h"
+#include "machine/timer.h"
 #include "allied.lh"
 
 class allied_state : public genpin_class
@@ -84,6 +85,7 @@ public:
 	DECLARE_READ8_MEMBER(ic7_a_r);
 	DECLARE_WRITE_LINE_MEMBER(ic8_cb2_w);
 	TIMER_DEVICE_CALLBACK_MEMBER(timer_a);
+	void allied(machine_config &config);
 private:
 	uint32_t m_player_score[6];
 	uint8_t m_display;
@@ -608,7 +610,7 @@ void allied_state::machine_reset()
 	output().set_value("led0", 1);  //1=off
 }
 
-static MACHINE_CONFIG_START( allied )
+MACHINE_CONFIG_START(allied_state::allied)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", M6504, 3572549/4)
 	MCFG_CPU_PROGRAM_MAP(allied_map)

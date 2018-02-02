@@ -9,6 +9,7 @@
 #include "video/k055555.h"
 #include "video/k054000.h"
 #include "machine/k054321.h"
+#include "machine/timer.h"
 
 class mystwarr_state : public konamigx_state
 {
@@ -60,6 +61,7 @@ public:
 	DECLARE_WRITE16_MEMBER(k053247_scattered_word_w);
 	DECLARE_READ16_MEMBER(k053247_martchmp_word_r);
 	DECLARE_WRITE16_MEMBER(k053247_martchmp_word_w);
+	DECLARE_WRITE16_MEMBER(mceeprom_w);
 	DECLARE_READ16_MEMBER(mccontrol_r);
 	DECLARE_WRITE16_MEMBER(mccontrol_w);
 	DECLARE_WRITE8_MEMBER(sound_ctrl_w);
@@ -103,4 +105,10 @@ public:
 	K055673_CB_MEMBER(gaiapols_sprite_callback);
 	K055673_CB_MEMBER(martchmp_sprite_callback);
 	void decode_tiles();
+	void martchmp(machine_config &config);
+	void mystwarr(machine_config &config);
+	void dadandrn(machine_config &config);
+	void viostorm(machine_config &config);
+	void gaiapols(machine_config &config);
+	void metamrph(machine_config &config);
 };

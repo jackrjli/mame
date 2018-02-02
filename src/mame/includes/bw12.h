@@ -12,6 +12,7 @@
 #include "machine/pit8253.h"
 #include "machine/ram.h"
 #include "machine/rescap.h"
+#include "machine/timer.h"
 #include "machine/upd765.h"
 #include "machine/z80dart.h"
 #include "video/mc6845.h"
@@ -119,6 +120,10 @@ public:
 	int m_centronics_busy;
 	int m_centronics_fault;
 	int m_centronics_perror;
+
+	void common(machine_config &config);
+	void bw14(machine_config &config);
+	void bw12(machine_config &config);
 };
 
 #endif

@@ -11,6 +11,7 @@
 
 #include "machine/upd765.h"
 #include "machine/ram.h"
+#include "machine/timer.h"
 #include "sound/beep.h"
 #include "screen.h"
 
@@ -138,6 +139,10 @@ public:
 	void pcw_update_mem(int block, int data);
 	int pcw_get_sys_status();
 	void pcw_printer_fire_pins(uint16_t pins);
+	void pcw(machine_config &config);
+	void pcw8256(machine_config &config);
+	void pcw8512(machine_config &config);
+	void pcw9512(machine_config &config);
 };
 
 #endif /* PCW_H_ */

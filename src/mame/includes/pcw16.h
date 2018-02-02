@@ -19,6 +19,7 @@
 #include "machine/intelfsh.h"
 #include "formats/pc_dsk.h"
 #include "machine/ram.h"
+#include "machine/timer.h"
 
 #define PCW16_BORDER_HEIGHT 8
 #define PCW16_BORDER_WIDTH 8
@@ -140,6 +141,7 @@ public:
 	void pcw16_vh_decode_mode0(bitmap_ind16 &bitmap, int x, int y, unsigned char byte);
 	void pcw16_vh_decode_mode1(bitmap_ind16 &bitmap, int x, int y, unsigned char byte);
 	void pcw16_vh_decode_mode2(bitmap_ind16 &bitmap, int x, int y, unsigned char byte);
+	void pcw16(machine_config &config);
 };
 
 #endif /* PCW16_H_ */

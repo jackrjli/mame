@@ -150,7 +150,7 @@ PCB 'Z545-1 A240570-1'
 ******************************************************************************/
 
 #include "emu.h"
-#include "cpu/sh2/sh2.h"
+#include "cpu/sh/sh2.h"
 #include "bus/generic/slot.h"
 #include "bus/generic/carts.h"
 #include "screen.h"
@@ -198,6 +198,7 @@ public:
 	DECLARE_READ8_MEMBER(bitmap_r);
 	DECLARE_WRITE8_MEMBER(bitmap_w);
 	DECLARE_DEVICE_IMAGE_LOAD_MEMBER(loopy_cart);
+	void casloopy(machine_config &config);
 };
 
 
@@ -502,7 +503,7 @@ DEVICE_IMAGE_LOAD_MEMBER( casloopy_state, loopy_cart )
 	return image_init_result::PASS;
 }
 
-static MACHINE_CONFIG_START( casloopy )
+MACHINE_CONFIG_START(casloopy_state::casloopy)
 
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu",SH2A,8000000)

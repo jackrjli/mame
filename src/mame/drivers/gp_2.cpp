@@ -38,6 +38,7 @@ ToDo:
 #include "cpu/z80/z80.h"
 #include "cpu/z80/z80daisy.h"
 #include "machine/i8255.h"
+#include "machine/timer.h"
 #include "machine/z80ctc.h"
 #include "gp_2.lh"
 
@@ -64,6 +65,7 @@ public:
 	DECLARE_WRITE8_MEMBER(portc_w);
 	DECLARE_READ8_MEMBER(portb_r);
 	TIMER_DEVICE_CALLBACK_MEMBER(zero_timer);
+	void gp_2(machine_config &config);
 private:
 	uint8_t m_u14;
 	uint8_t m_digit;
@@ -570,7 +572,7 @@ static const z80_daisy_config daisy_chain[] =
 	{ nullptr }
 };
 
-static MACHINE_CONFIG_START( gp_2 )
+MACHINE_CONFIG_START(gp_2_state::gp_2)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", Z80, 2457600)
 	MCFG_CPU_PROGRAM_MAP(gp_2_map)

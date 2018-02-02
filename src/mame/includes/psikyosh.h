@@ -2,7 +2,7 @@
 // copyright-holders:David Haywood, Paul Priest
 #include "video/bufsprite.h"
 #include "machine/eepromser.h"
-#include "cpu/sh2/sh2.h"
+#include "cpu/sh/sh2.h"
 #include "screen.h"
 
 
@@ -85,4 +85,7 @@ public:
 	void psikyosh_drawgfxzoom( bitmap_rgb32 &dest_bmp,const rectangle &clip,gfx_element *gfx,
 			uint32_t code,uint32_t color,int flipx,int flipy,int offsx,int offsy,
 			int alpha, int zoomx, int zoomy, int wide, int high, uint32_t z);
+			void psikyo3v1(machine_config &config);
+			void psikyo5(machine_config &config);
+			void psikyo5_240(machine_config &config);
 };

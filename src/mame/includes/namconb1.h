@@ -8,6 +8,7 @@
 
 #include "namcos2.h"
 #include "machine/eeprompar.h"
+#include "machine/timer.h"
 #include "video/namco_c116.h"
 
 #define NAMCONB1_HTOTAL     (288)   /* wrong */
@@ -121,4 +122,6 @@ public:
 	int NB2objcode2tile(int code);
 	void NB1TilemapCB(uint16_t code, int *tile, int *mask);
 	void NB2TilemapCB(uint16_t code, int *tile, int *mask);
+	void namconb1(machine_config &config);
+	void namconb2(machine_config &config);
 };

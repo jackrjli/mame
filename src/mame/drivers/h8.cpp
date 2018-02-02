@@ -51,6 +51,7 @@ TODO:
 #include "cpu/i8085/i8085.h"
 #include "machine/i8251.h"
 #include "machine/clock.h"
+#include "machine/timer.h"
 #include "imagedev/cassette.h"
 #include "sound/beep.h"
 #include "sound/wave.h"
@@ -63,11 +64,11 @@ class h8_state : public driver_device
 {
 public:
 	h8_state(const machine_config &mconfig, device_type type, const char *tag)
-		: driver_device(mconfig, type, tag),
-		m_maincpu(*this, "maincpu"),
-		m_uart(*this, "uart"),
-		m_cass(*this, "cassette"),
-		m_beep(*this, "beeper")
+		: driver_device(mconfig, type, tag)
+		, m_maincpu(*this, "maincpu")
+		, m_uart(*this, "uart")
+		, m_cass(*this, "cassette")
+		, m_beep(*this, "beeper")
 	{ }
 
 	DECLARE_READ8_MEMBER(portf0_r);
@@ -76,10 +77,11 @@ public:
 	DECLARE_WRITE8_MEMBER(h8_status_callback);
 	DECLARE_WRITE_LINE_MEMBER(h8_inte_callback);
 	DECLARE_WRITE_LINE_MEMBER(txdata_callback);
-	DECLARE_WRITE_LINE_MEMBER(write_cassette_clock);
 	TIMER_DEVICE_CALLBACK_MEMBER(h8_irq_pulse);
 	TIMER_DEVICE_CALLBACK_MEMBER(h8_c);
 	TIMER_DEVICE_CALLBACK_MEMBER(h8_p);
+
+	void h8(machine_config &config);
 private:
 	uint8_t m_digit;
 	uint8_t m_segment;
@@ -96,7 +98,7 @@ private:
 };
 
 
-#define H8_CLOCK (XTAL_12_288MHz / 6)
+#define H8_CLOCK (XTAL(12'288'000) / 6)
 #define H8_BEEP_FRQ (H8_CLOCK / 1024)
 #define H8_IRQ_PULSE (H8_BEEP_FRQ / 2)
 
@@ -169,7 +171,7 @@ WRITE8_MEMBER( h8_state::portf1_w )
 	//d1 segment a
 	//d0 segment g
 
-	m_segment = 0xff ^ BITSWAP8(data, 7, 0, 6, 5, 4, 3, 2, 1);
+	m_segment = 0xff ^ bitswap<8>(data, 7, 0, 6, 5, 4, 3, 2, 1);
 	if (m_digit) output().set_digit_value(m_digit, m_segment);
 }
 
@@ -271,12 +273,6 @@ WRITE_LINE_MEMBER( h8_state::txdata_callback )
 	m_cass_state = state;
 }
 
-WRITE_LINE_MEMBER( h8_state::write_cassette_clock )
-{
-	m_uart->write_txc(state);
-	m_uart->write_rxc(state);
-}
-
 TIMER_DEVICE_CALLBACK_MEMBER(h8_state::h8_c)
 {
 	m_cass_data[3]++;
@@ -307,7 +303,7 @@ TIMER_DEVICE_CALLBACK_MEMBER(h8_state::h8_p)
 	}
 }
 
-static MACHINE_CONFIG_START( h8 )
+MACHINE_CONFIG_START(h8_state::h8)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", I8080, H8_CLOCK)
 	MCFG_CPU_PROGRAM_MAP(h8_mem)
@@ -330,7 +326,8 @@ static MACHINE_CONFIG_START( h8 )
 	MCFG_I8251_TXD_HANDLER(WRITELINE(h8_state, txdata_callback))
 
 	MCFG_DEVICE_ADD("cassette_clock", CLOCK, 4800)
-	MCFG_CLOCK_SIGNAL_HANDLER(WRITELINE(h8_state, write_cassette_clock))
+	MCFG_CLOCK_SIGNAL_HANDLER(DEVWRITELINE("uart", i8251_device, write_txc))
+	MCFG_DEVCB_CHAIN_OUTPUT(DEVWRITELINE("uart", i8251_device, write_rxc))
 
 	MCFG_CASSETTE_ADD("cassette")
 	MCFG_CASSETTE_DEFAULT_STATE(CASSETTE_PLAY | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED)

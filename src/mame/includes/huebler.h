@@ -14,6 +14,7 @@
 #include "cpu/z80/z80daisy.h"
 #include "imagedev/cassette.h"
 #include "machine/ram.h"
+#include "machine/timer.h"
 #include "machine/z80pio.h"
 #include "machine/z80dart.h"
 #include "machine/z80ctc.h"
@@ -66,6 +67,7 @@ public:
 	DECLARE_WRITE_LINE_MEMBER(ctc_z0_w);
 	DECLARE_WRITE_LINE_MEMBER(ctc_z2_w);
 	DECLARE_WRITE_LINE_MEMBER(cassette_w);
+	void amu880(machine_config &config);
 };
 
 #endif

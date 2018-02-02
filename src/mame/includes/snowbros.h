@@ -2,6 +2,7 @@
 // copyright-holders:David Haywood, Mike Coates
 
 #include "machine/gen_latch.h"
+#include "machine/timer.h"
 #include "sound/okim6295.h"
 #include "video/kan_pand.h" // for the original pandora
 
@@ -75,4 +76,15 @@ public:
 
 	void sb3_play_music(int data);
 	void sb3_play_sound(int data);
+	void _4in1(machine_config &config);
+	void semiprot(machine_config &config);
+	void semicom_mcu(machine_config &config);
+	void yutnori(machine_config &config);
+	void snowbros(machine_config &config);
+	void semicom(machine_config &config);
+	void twinadv(machine_config &config);
+	void wintbob(machine_config &config);
+	void honeydol(machine_config &config);
+	void snowbro3(machine_config &config);
+	void finalttr(machine_config &config);
 };

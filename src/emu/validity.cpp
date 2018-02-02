@@ -514,8 +514,12 @@ void validity_checker::validate_inlines()
 	testi32a = (testi32a & 0x0000ffff) | 0x400000;
 	if (count_leading_zeros(testi32a) != 9)
 		osd_printf_error("Error testing count_leading_zeros\n");
+	if (count_leading_zeros(0) != 32)
+		osd_printf_error("Error testing count_leading_zeros\n");
 	testi32a = (testi32a | 0xffff0000) & ~0x400000;
 	if (count_leading_ones(testi32a) != 9)
+		osd_printf_error("Error testing count_leading_ones\n");
+	if (count_leading_ones(0xffffffff) != 32)
 		osd_printf_error("Error testing count_leading_ones\n");
 }
 
@@ -596,6 +600,14 @@ void validity_checker::validate_rgb()
 	expected_b = random_i32();
 	rgb.set(rgbaint_t(expected_a, expected_r, expected_g, expected_b));
 	check_expected("rgbaint_t::set(rgbaint_t)");
+
+	packed = random_i32();
+	expected_a = packed.a();
+	expected_r = packed.r();
+	expected_g = packed.g();
+	expected_b = packed.b();
+	rgb.set(packed);
+	check_expected("rgbaint_t::set(const rgb_t& rgb)");
 
 	// check construct/assign
 	expected_a = random_i32();
@@ -761,6 +773,38 @@ void validity_checker::validate_rgb()
 	expected_b *= actual_b = random_i32();
 	rgb.mul_imm_rgba(actual_a, actual_r, actual_g, actual_b);
 	check_expected("rgbaint_t::mul_imm_rgba");
+
+	// test select alpha element multiplication
+	expected_a *= actual_a = random_i32();
+	expected_r *= actual_a;
+	expected_g *= actual_a;
+	expected_b *= actual_a;
+	rgb.mul(rgbaint_t(actual_a, actual_r, actual_g, actual_b).select_alpha32());
+	check_expected("rgbaint_t::mul(select_alpha32)");
+
+	// test select red element multiplication
+	expected_a *= actual_r = random_i32();
+	expected_r *= actual_r;
+	expected_g *= actual_r;
+	expected_b *= actual_r;
+	rgb.mul(rgbaint_t(actual_a, actual_r, actual_g, actual_b).select_red32());
+	check_expected("rgbaint_t::mul(select_red32)");
+
+	// test select green element multiplication
+	expected_a *= actual_g = random_i32();
+	expected_r *= actual_g;
+	expected_g *= actual_g;
+	expected_b *= actual_g;
+	rgb.mul(rgbaint_t(actual_a, actual_r, actual_g, actual_b).select_green32());
+	check_expected("rgbaint_t::mul(select_green32)");
+
+	// test select blue element multiplication
+	expected_a *= actual_b = random_i32();
+	expected_r *= actual_b;
+	expected_g *= actual_b;
+	expected_b *= actual_b;
+	rgb.mul(rgbaint_t(actual_a, actual_r, actual_g, actual_b).select_blue32());
+	check_expected("rgbaint_t::mul(select_blue32)");
 
 	// test RGB and not
 	expected_a &= ~(actual_a = random_i32());
@@ -1836,13 +1880,16 @@ void validity_checker::validate_inputs()
 				// verify natural keyboard codes
 				for (int which = 0; which < 1 << (UCHAR_SHIFT_END - UCHAR_SHIFT_BEGIN + 1); which++)
 				{
-					char32_t code = field.keyboard_code(which);
-					if (code && !uchar_isvalid(code))
+					std::vector<char32_t> codes = field.keyboard_codes(which);
+					for (char32_t code : codes)
 					{
-						osd_printf_error("Field '%s' has non-character U+%04X in PORT_CHAR(%d)\n",
-							name,
-							(unsigned)code,
-							(int)code);
+						if (!uchar_isvalid(code))
+						{
+							osd_printf_error("Field '%s' has non-character U+%04X in PORT_CHAR(%d)\n",
+								name,
+								(unsigned)code,
+								(int)code);
+						}
 					}
 				}
 			}
@@ -1878,7 +1925,8 @@ void validity_checker::validate_devices()
 		validate_tag(device.basetag());
 
 		// look for duplicates
-		if (!device_map.insert(device.tag()).second)
+		bool duplicate = !device_map.insert(device.tag()).second;
+		if (duplicate)
 			osd_printf_error("Multiple devices with the same tag defined\n");
 
 		// check for device-specific validity check
@@ -1889,7 +1937,7 @@ void validity_checker::validate_devices()
 
 		// if it's a slot, iterate over possible cards (don't recurse, or you'll stack infinite tee connectors)
 		device_slot_interface *const slot = dynamic_cast<device_slot_interface *>(&device);
-		if (slot != nullptr && !slot->fixed())
+		if (slot != nullptr && !slot->fixed() && !duplicate)
 		{
 			for (auto &option : slot->option_list())
 			{
@@ -1902,9 +1950,9 @@ void validity_checker::validate_devices()
 				const char *const def_bios = option.second->default_bios();
 				if (def_bios)
 					device_t::static_set_default_bios_tag(*card, def_bios);
-				machine_config_constructor const additions = option.second->machine_config();
+				auto additions = option.second->machine_config();
 				if (additions)
-					(*additions)(*m_current_config, card, card);
+					additions(card);
 
 				for (device_slot_interface &subslot : slot_interface_iterator(*card))
 				{
@@ -1917,9 +1965,9 @@ void validity_checker::validate_devices()
 							const char *const sub_bios = suboption->default_bios();
 							if (sub_bios)
 								device_t::static_set_default_bios_tag(*sub_card, sub_bios);
-							machine_config_constructor const sub_additions = suboption->machine_config();
+							auto sub_additions = suboption->machine_config();
 							if (sub_additions)
-								(*sub_additions)(*m_current_config, sub_card, sub_card);
+								sub_additions(sub_card);
 						}
 					}
 				}

@@ -11,6 +11,7 @@
 #pragma once
 
 #include "machine/74259.h"
+#include "machine/timer.h"
 #include "sound/discrete.h"
 #include "screen.h"
 
@@ -54,6 +55,7 @@ public:
 	DECLARE_WRITE8_MEMBER(orbit_noise_amp_w);
 	DECLARE_WRITE8_MEMBER(orbit_noise_rst_w);
 
+	void orbit(machine_config &config);
 protected:
 	virtual void machine_start() override;
 	virtual void machine_reset() override;

@@ -23,6 +23,7 @@
 
 #include "emu.h"
 #include "cpu/z80/z80.h"
+#include "machine/timer.h"
 #include "sound/spkrdev.h"
 #include "screen.h"
 #include "speaker.h"
@@ -60,6 +61,7 @@ public:
 	DECLARE_WRITE_LINE_MEMBER(screen_vblank_spectrum);
 
 	TIMER_DEVICE_CALLBACK_MEMBER(spec_interrupt_hack);
+	void photon2(machine_config &config);
 };
 
 
@@ -346,7 +348,7 @@ void photon2_state::machine_start()
 	save_item(NAME(m_nmi_enable));
 }
 
-static MACHINE_CONFIG_START( photon2 )
+MACHINE_CONFIG_START(photon2_state::photon2)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", Z80, 3500000)        /* 3.5 MHz */
 	MCFG_CPU_PROGRAM_MAP(spectrum_mem)

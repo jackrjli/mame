@@ -536,7 +536,7 @@ void itech8_state::update_interrupts(int periodic, int tms34061, int blitter)
 	if (blitter != -1) m_blitter_int = blitter;
 
 	/* handle the 6809 case */
-	if (main_cpu_type == M6809 || main_cpu_type == HD6309)
+	if (main_cpu_type == MC6809 || main_cpu_type == HD6309)
 	{
 		/* just modify lines that have changed */
 		if (periodic != -1) m_maincpu->set_input_line(INPUT_LINE_NMI, periodic ? ASSERT_LINE : CLEAR_LINE);
@@ -625,7 +625,7 @@ void itech8_state::machine_reset()
 	device_type main_cpu_type = m_maincpu->type();
 
 	/* make sure bank 0 is selected */
-	if (main_cpu_type == M6809 || main_cpu_type == HD6309)
+	if (main_cpu_type == MC6809 || main_cpu_type == HD6309)
 	{
 		membank("bank1")->set_entry(0);
 		m_maincpu->reset();
@@ -748,8 +748,8 @@ WRITE8_MEMBER(itech8_state::pia_portb_out)
 	/* bit 5 controls the coin counter */
 	/* bit 6 controls the diagnostic sound LED */
 	m_pia_portb_data = data;
-	m_ticket->write(space, 0, (data & 0x10) << 3);
-	machine().bookkeeping().coin_counter_w(0, (data & 0x20) >> 5);
+	m_ticket->motor_w(BIT(data, 4));
+	machine().bookkeeping().coin_counter_w(0, BIT(data, 5));
 }
 
 
@@ -762,8 +762,8 @@ WRITE8_MEMBER(itech8_state::ym2203_portb_out)
 	/* bit 6 controls the diagnostic sound LED */
 	/* bit 7 controls the ticket dispenser */
 	m_pia_portb_data = data;
-	m_ticket->write(machine().dummy_space(), 0, data & 0x80);
-	machine().bookkeeping().coin_counter_w(0, (data & 0x20) >> 5);
+	m_ticket->motor_w(BIT(data, 7));
+	machine().bookkeeping().coin_counter_w(0, BIT(data, 5));
 }
 
 
@@ -1665,10 +1665,10 @@ WRITE_LINE_MEMBER(itech8_state::generate_tms34061_interrupt)
 
 /************* core pieces ******************/
 
-static MACHINE_CONFIG_START( itech8_core_lo )
+MACHINE_CONFIG_START(itech8_state::itech8_core_lo)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", M6809, CLOCK_8MHz/4)
+	MCFG_CPU_ADD("maincpu", MC6809, CLOCK_8MHz)
 	MCFG_CPU_PROGRAM_MAP(tmslo_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", itech8_state,  generate_nmi)
 
@@ -1699,7 +1699,7 @@ static MACHINE_CONFIG_START( itech8_core_lo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( itech8_core_hi, itech8_core_lo )
+MACHINE_CONFIG_DERIVED(itech8_state::itech8_core_hi, itech8_core_lo)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -1707,10 +1707,10 @@ static MACHINE_CONFIG_DERIVED( itech8_core_hi, itech8_core_lo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( itech8_sound_ym2203 )
+MACHINE_CONFIG_START(itech8_state::itech8_sound_ym2203)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("soundcpu", M6809, CLOCK_8MHz/4)
+	MCFG_CPU_ADD("soundcpu", MC6809, CLOCK_8MHz)
 	MCFG_CPU_PROGRAM_MAP(sound2203_map)
 
 	/* sound hardware */
@@ -1727,10 +1727,10 @@ static MACHINE_CONFIG_START( itech8_sound_ym2203 )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( itech8_sound_ym2608b )
+MACHINE_CONFIG_START(itech8_state::itech8_sound_ym2608b)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("soundcpu", M6809, CLOCK_8MHz/4)
+	MCFG_CPU_ADD("soundcpu", MC6809, CLOCK_8MHz)
 	MCFG_CPU_PROGRAM_MAP(sound2608b_map)
 
 	/* sound hardware */
@@ -1741,10 +1741,10 @@ static MACHINE_CONFIG_START( itech8_sound_ym2608b )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( itech8_sound_ym3812 )
+MACHINE_CONFIG_START(itech8_state::itech8_sound_ym3812)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("soundcpu", M6809, CLOCK_8MHz/4)
+	MCFG_CPU_ADD("soundcpu", MC6809, CLOCK_8MHz)
 	MCFG_CPU_PROGRAM_MAP(sound3812_map)
 
 	MCFG_DEVICE_ADD("pia", PIA6821, 0)
@@ -1762,10 +1762,10 @@ static MACHINE_CONFIG_START( itech8_sound_ym3812 )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( itech8_sound_ym3812_external )
+MACHINE_CONFIG_START(itech8_state::itech8_sound_ym3812_external)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("soundcpu", M6809, CLOCK_8MHz/4)
+	MCFG_CPU_ADD("soundcpu", MC6809, CLOCK_8MHz)
 	MCFG_CPU_PROGRAM_MAP(sound3812_external_map)
 
 	/* sound hardware */
@@ -1780,7 +1780,7 @@ MACHINE_CONFIG_END
 
 /************* full drivers ******************/
 
-static MACHINE_CONFIG_DERIVED( wfortune, itech8_core_hi )
+MACHINE_CONFIG_DERIVED(itech8_state::wfortune, itech8_core_hi)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym2203)
@@ -1794,7 +1794,7 @@ static MACHINE_CONFIG_DERIVED( wfortune, itech8_core_hi )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( grmatch, itech8_core_hi )
+MACHINE_CONFIG_DERIVED(itech8_state::grmatch, itech8_core_hi)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym2608b)
@@ -1810,7 +1810,7 @@ static MACHINE_CONFIG_DERIVED( grmatch, itech8_core_hi )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( stratab_hi, itech8_core_hi )
+MACHINE_CONFIG_DERIVED(itech8_state::stratab_hi, itech8_core_hi)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym2203)
@@ -1823,7 +1823,7 @@ static MACHINE_CONFIG_DERIVED( stratab_hi, itech8_core_hi )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( stratab_lo, itech8_core_lo )
+MACHINE_CONFIG_DERIVED(itech8_state::stratab_lo, itech8_core_lo)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym2203)
@@ -1835,7 +1835,7 @@ static MACHINE_CONFIG_DERIVED( stratab_lo, itech8_core_lo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( slikshot_hi, itech8_core_hi )
+MACHINE_CONFIG_DERIVED(itech8_state::slikshot_hi, itech8_core_hi)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym2203)
@@ -1852,7 +1852,7 @@ static MACHINE_CONFIG_DERIVED( slikshot_hi, itech8_core_hi )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( slikshot_lo, itech8_core_lo )
+MACHINE_CONFIG_DERIVED(itech8_state::slikshot_lo, itech8_core_lo)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym2203)
@@ -1869,7 +1869,7 @@ static MACHINE_CONFIG_DERIVED( slikshot_lo, itech8_core_lo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( slikshot_lo_noz80, itech8_core_lo )
+MACHINE_CONFIG_DERIVED(itech8_state::slikshot_lo_noz80, itech8_core_lo)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym2203)
@@ -1881,7 +1881,7 @@ static MACHINE_CONFIG_DERIVED( slikshot_lo_noz80, itech8_core_lo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( sstrike, slikshot_lo )
+MACHINE_CONFIG_DERIVED(itech8_state::sstrike, slikshot_lo)
 
 	/* basic machine hardware */
 	MCFG_MACHINE_START_OVERRIDE(itech8_state,sstrike)
@@ -1889,7 +1889,7 @@ static MACHINE_CONFIG_DERIVED( sstrike, slikshot_lo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( hstennis_hi, itech8_core_hi )
+MACHINE_CONFIG_DERIVED(itech8_state::hstennis_hi, itech8_core_hi)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym3812)
@@ -1901,7 +1901,7 @@ static MACHINE_CONFIG_DERIVED( hstennis_hi, itech8_core_hi )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( hstennis_lo, itech8_core_lo )
+MACHINE_CONFIG_DERIVED(itech8_state::hstennis_lo, itech8_core_lo)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym3812)
@@ -1913,7 +1913,7 @@ static MACHINE_CONFIG_DERIVED( hstennis_lo, itech8_core_lo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( rimrockn, itech8_core_hi )
+MACHINE_CONFIG_DERIVED(itech8_state::rimrockn, itech8_core_hi)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym3812_external)
@@ -1929,7 +1929,7 @@ static MACHINE_CONFIG_DERIVED( rimrockn, itech8_core_hi )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( ninclown, itech8_core_hi )
+MACHINE_CONFIG_DERIVED(itech8_state::ninclown, itech8_core_hi)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym3812_external)
@@ -1946,7 +1946,7 @@ static MACHINE_CONFIG_DERIVED( ninclown, itech8_core_hi )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( gtg2, itech8_core_lo )
+MACHINE_CONFIG_DERIVED(itech8_state::gtg2, itech8_core_lo)
 
 	/* basic machine hardware */
 	MCFG_FRAGMENT_ADD(itech8_sound_ym3812_external)
@@ -2283,31 +2283,31 @@ ROM_END
 
 ROM_START( sstrike )
 	ROM_REGION( 0x1c000, "maincpu", 0 )
-	ROM_LOAD( "sstrku5.bin", 0x08000, 0x8000, CRC(af00cddf) SHA1(b866e8dfce1449f7462a79efa385ea6b55cdc6e7) )
-	ROM_COPY( "maincpu", 0x8000, 0x14000, 0x8000 )
+	ROM_LOAD( "sstrik_prg-v1_u5.u5", 0x08000, 0x8000, CRC(af00cddf) SHA1(b866e8dfce1449f7462a79efa385ea6b55cdc6e7) ) /* labeled SSTRIKE PRG-V1(U5) */
+	ROM_COPY( "maincpu",     0x8000, 0x14000, 0x8000 )
 
 	ROM_REGION( 0x10000, "soundcpu", 0 )
-	ROM_LOAD( "sstrku27.bin", 0x08000, 0x8000, CRC(efab7252) SHA1(eb3b2002531e551e3d67958ea3cc56a69fa660e2) )
+	ROM_LOAD( "sstrik_snd1.4_u27.u27", 0x08000, 0x8000, CRC(efab7252) SHA1(eb3b2002531e551e3d67958ea3cc56a69fa660e2) ) /* labeled SSTRIKE SND1.4(U27) */
 
 	ROM_REGION( 0x10000, "sub", 0 )
-	ROM_LOAD( "spstku53.bin", 0x00000, 0x0800, CRC(04b85918) SHA1(409aef2e71937c7654334999df9313909d757966) )
+	ROM_LOAD( "spstku53.u53", 0x00000, 0x0800, CRC(04b85918) SHA1(409aef2e71937c7654334999df9313909d757966) )
 	ROM_CONTINUE(        0x00000, 0x0800 )
 	ROM_CONTINUE(        0x00000, 0x0800 )
 	ROM_CONTINUE(        0x00000, 0x0800 )
 
 	ROM_REGION( 0xc0000, "grom", 0 )
-	ROM_LOAD( "sstgrom0.bin", 0x00000, 0x20000, CRC(9cfb9849) SHA1(5aa860c0c6e3916ebdb8898ee44f633bf3347ca8) )
-	ROM_LOAD( "sstgrom1.bin", 0x20000, 0x20000, CRC(d9ea14e1) SHA1(4cddf3237c203b0a3f7ae770f85f1be35e9e1b78) )
-	ROM_LOAD( "sstgrom2.bin", 0x40000, 0x20000, CRC(dcd97bf7) SHA1(95361222ac58bf74539f2a7e80574bcd848c615e) )
+	ROM_LOAD( "super_strike_grom0.grom0", 0x00000, 0x20000, CRC(9cfb9849) SHA1(5aa860c0c6e3916ebdb8898ee44f633bf3347ca8) )
+	ROM_LOAD( "super_strike_grom1.grom1", 0x20000, 0x20000, CRC(d9ea14e1) SHA1(4cddf3237c203b0a3f7ae770f85f1be35e9e1b78) )
+	ROM_LOAD( "super_strike_grom2.grom2", 0x40000, 0x20000, CRC(dcd97bf7) SHA1(95361222ac58bf74539f2a7e80574bcd848c615e) )
 
 	ROM_REGION( 0x40000, "oki", 0 )
-	ROM_LOAD( "sstsrom0.bin", 0x00000, 0x20000, CRC(6ff390b9) SHA1(f31dae9e31f3fc83b9253e49fd4204820db3587e) )
+	ROM_LOAD( "super_strike_srom0.srom0", 0x00000, 0x20000, CRC(6ff390b9) SHA1(f31dae9e31f3fc83b9253e49fd4204820db3587e) )
 ROM_END
 
 
 ROM_START( stratabs )
 	ROM_REGION( 0x1c000, "maincpu", 0 )
-	ROM_LOAD( "sb_prog-v4t.u5", 0x08000, 0x8000, CRC(38ddae75) SHA1(71a9cbd36cf7b180a88bab3ab92a4dff93ce365f) )
+	ROM_LOAD( "sb_prog-v4t.u5",  0x08000, 0x8000, CRC(38ddae75) SHA1(71a9cbd36cf7b180a88bab3ab92a4dff93ce365f) )
 	ROM_COPY( "maincpu", 0x8000, 0x14000, 0x8000 )
 
 	ROM_REGION( 0x10000, "soundcpu", 0 )
@@ -2322,7 +2322,7 @@ ROM_START( stratabs )
 	ROM_REGION( 0xc0000, "grom", 0 )
 	ROM_LOAD( "sb_grom00", 0x00000, 0x20000, CRC(22f6ce56) SHA1(8e423122384257d9c5d8f48192ff6fa1f544fd97) )
 	ROM_LOAD( "sb_grom01", 0x20000, 0x20000, CRC(6cc7ad6f) SHA1(d601b9bb81f26ad86e5cc053cab055831331ccde) )
-	ROM_LOAD( "sb_grom02",  0x40000, 0x20000, CRC(475134ef) SHA1(5920e7a211f1b2234e8a3f51e570303c3787d8fd) )
+	ROM_LOAD( "sb_grom02", 0x40000, 0x20000, CRC(475134ef) SHA1(5920e7a211f1b2234e8a3f51e570303c3787d8fd) )
 
 	ROM_REGION( 0x40000, "oki", 0 )
 	ROM_LOAD( "sb_srom0", 0x00000, 0x20000, CRC(6ff390b9) SHA1(f31dae9e31f3fc83b9253e49fd4204820db3587e) )
@@ -2395,23 +2395,23 @@ ROM_START( hstennis10 )
 ROM_END
 
 
-ROM_START( arlingtn )
-	/* banks are loaded in the opposite order from the others, */
-	ROM_REGION( 0x1c000, "maincpu", 0 )
-	ROM_LOAD( "ahrd121.bin", 0x10000, 0x4000, CRC(00aae02e) SHA1(3bcfbd256c34ae222dde24ba9544f19da70b698e) )
-	ROM_CONTINUE(            0x04000, 0xc000 )
+ROM_START( arlingtn ) /* PCB  p/n 1030 rev. 1A */
+	ROM_REGION( 0x1c000, "maincpu", 0 ) /* banks are loaded in the opposite order from the others, */
+	ROM_LOAD( "ahr-d_v_1.21.u5", 0x10000, 0x4000, CRC(00aae02e) SHA1(3bcfbd256c34ae222dde24ba9544f19da70b698e) ) /* Service menu reports version as 1.21-D */
+	ROM_CONTINUE(                0x04000, 0xc000 )
 	ROM_COPY( "maincpu", 0x8000, 0x14000, 0x8000 )
 
 	ROM_REGION( 0x10000, "soundcpu", 0 )
-	ROM_LOAD( "ahrsnd11.bin", 0x08000, 0x8000, CRC(dec57dca) SHA1(21a8ead10b0434629f41f6b067c49b6622569a6c) )
+	ROM_LOAD( "ahr_snd_v1.1.u27", 0x08000, 0x8000, CRC(dec57dca) SHA1(21a8ead10b0434629f41f6b067c49b6622569a6c) )
 
 	ROM_REGION( 0xc0000, "grom", 0 )
-	ROM_LOAD( "grom0.bin", 0x00000, 0x20000, CRC(5ef57fe5) SHA1(e877979e034a61968b432037501e25a302a17a9a) )
-	ROM_LOAD( "grom1.bin", 0x20000, 0x20000, CRC(6aca95c0) SHA1(da7a899bf0812a7af178e48b5a626ce56a836579) )
-	ROM_LOAD( "grom2.bin", 0x40000, 0x10000, CRC(6d6fde1b) SHA1(aaabc45d4b566be42e8d28d767e4771a96d9caae) )
+	ROM_LOAD( "grom0.grom0", 0x00000, 0x20000, CRC(5ef57fe5) SHA1(e877979e034a61968b432037501e25a302a17a9a) )
+	ROM_LOAD( "grom1.grom1", 0x20000, 0x20000, CRC(6aca95c0) SHA1(da7a899bf0812a7af178e48b5a626ce56a836579) )
+	ROM_LOAD( "grom2.grom2", 0x40000, 0x10000, CRC(6d6fde1b) SHA1(aaabc45d4b566be42e8d28d767e4771a96d9caae) )
+	/* GROM3, GROM4 & GROM5 are unpopulated */
 
 	ROM_REGION( 0x40000, "oki", 0 )
-	ROM_LOAD( "srom0.bin", 0x00000, 0x40000, CRC(56087f81) SHA1(1d4a1f396ee9d8ed51d0417ea94b0b379312d72f) )
+	ROM_LOAD( "srom0.srom0", 0x00000, 0x40000, CRC(56087f81) SHA1(1d4a1f396ee9d8ed51d0417ea94b0b379312d72f) )
 ROM_END
 
 
@@ -2767,9 +2767,9 @@ GAME( 1990, slikshot,  0,        slikshot_hi,       slikshot, itech8_state, slik
 GAME( 1990, slikshot17,slikshot, slikshot_hi,       slikshot, itech8_state, slikshot, ROT90,  "Grand Products/Incredible Technologies", "Slick Shot (V1.7)", MACHINE_MECHANICAL )
 GAME( 1990, slikshot16,slikshot, slikshot_hi,       slikshot, itech8_state, slikshot, ROT90,  "Grand Products/Incredible Technologies", "Slick Shot (V1.6)", MACHINE_MECHANICAL )
 GAME( 1990, dynobop,   0,        slikshot_hi,       dynobop,  itech8_state, slikshot, ROT90,  "Grand Products/Incredible Technologies", "Dyno Bop (V1.1)", MACHINE_MECHANICAL )
-GAME( 1990, sstrike,   0,        sstrike,           sstrike,  itech8_state, sstrike,  ROT270, "Strata/Incredible Technologies", "Super Strike Bowling", MACHINE_MECHANICAL )
-GAME( 1991, pokrdice,  0,        slikshot_lo_noz80, pokrdice, itech8_state, 0,        ROT90,  "Strata/Incredible Technologies", "Poker Dice", 0 )
+GAME( 1990, sstrike,   0,        sstrike,           sstrike,  itech8_state, sstrike,  ROT270, "Strata/Incredible Technologies", "Super Strike Bowling (V1)", MACHINE_MECHANICAL )
 GAME( 1990, stratabs,  stratab,  sstrike,           stratabs, itech8_state, sstrike,  ROT270, "Strata/Incredible Technologies", "Strata Bowling (V1 4T, Super Strike Bowling type PCB)", MACHINE_NOT_WORKING ) // need to figure out the control hookup for this set, service mode indicates it's still a trackball like stratab
+GAME( 1991, pokrdice,  0,        slikshot_lo_noz80, pokrdice, itech8_state, 0,        ROT90,  "Strata/Incredible Technologies", "Poker Dice", 0 )
 
 /* Hot Shots Tennis-style PCB */
 GAME( 1990, hstennis,  0,        hstennis_hi,       hstennis, itech8_state, hstennis, ROT90,  "Strata/Incredible Technologies", "Hot Shots Tennis (V1.1)", 0 )

@@ -6,6 +6,7 @@
 
 *************************************************************************/
 
+#include "machine/timer.h"
 #include "sound/discrete.h"
 
 /* Discrete Sound Input Nodes */
@@ -70,6 +71,7 @@ public:
 	required_device<cpu_device> m_maincpu;
 	required_device<gfxdecode_device> m_gfxdecode;
 	required_device<palette_device> m_palette;
+	void bsktball(machine_config &config);
 };
 
 /*----------- defined in audio/bsktball.c -----------*/

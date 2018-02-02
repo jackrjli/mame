@@ -101,6 +101,7 @@
 #include "bus/vme/vme_fcisio.h"
 #include "bus/vme/vme_fcscsi.h"
 #include "bus/vme/vme_mzr8300.h"
+#include "bus/vme/vme_hcpu30.h"
 #include "machine/clock.h"
 
 #define LOG_GENERAL 0x01
@@ -134,6 +135,7 @@ miniforce_state(const machine_config &mconfig, device_type type, const char *tag
 	}
 	virtual void machine_start () override;
 	virtual void machine_reset () override;
+	void miniforce(machine_config &config);
 };
 
 #if 0
@@ -168,12 +170,13 @@ static SLOT_INTERFACE_START(miniforce_vme_cards)
 	SLOT_INTERFACE("fccpu21", VME_FCCPU21)
 	SLOT_INTERFACE("fcisio", VME_FCISIO1)
 	SLOT_INTERFACE("fcscsi", VME_FCSCSI1)
+	SLOT_INTERFACE("hcpu30", VME_HCPU30)
 SLOT_INTERFACE_END
 
 /*
  * Machine configuration
  */
-MACHINE_CONFIG_START (miniforce)
+MACHINE_CONFIG_START(miniforce_state::miniforce)
 //  MCFG_CPU_PROGRAM_MAP (miniforce_mem)
 	MCFG_VME_DEVICE_ADD("vme")
 	MCFG_VME_SLOT_ADD ("vme", 1, miniforce_vme_cards, "fccpu21")

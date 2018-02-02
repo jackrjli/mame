@@ -53,6 +53,7 @@ Usage:
 
 #include "cpu/m6502/m6504.h"
 #include "machine/mos6530.h"
+#include "machine/timer.h"
 #include "sound/spkrdev.h"
 #include "speaker.h"
 
@@ -79,6 +80,7 @@ public:
 	uint8_t m_led[5];
 	virtual void machine_start() override;
 	TIMER_DEVICE_CALLBACK_MEMBER(update_leds);
+	void mk2(machine_config &config);
 };
 
 
@@ -186,7 +188,7 @@ WRITE8_MEMBER( mk2_state::mk2_write_b )
 }
 
 
-static MACHINE_CONFIG_START( mk2 )
+MACHINE_CONFIG_START(mk2_state::mk2)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", M6504, 1000000)
 	MCFG_CPU_PROGRAM_MAP(mk2_mem)
@@ -223,6 +225,6 @@ ROM_END
 ***************************************************************************/
 
 
-//    YEAR  NAME    PARENT  COMPAT  MACHINE  INPUT  CLASS      INIT  COMPANY  FULLNAME                FLAGS
-CONS( 1979, ccmk2,  0,      0,      mk2,     mk2,   mk2_state, 0,    "Novag", "Chess Champion MK II", 0 )
+//    YEAR  NAME    PARENT  COMPAT  MACHINE  INPUT  CLASS      INIT  COMPANY  FULLNAME                 FLAGS
+CONS( 1979, ccmk2,  0,      0,      mk2,     mk2,   mk2_state, 0,    "Novag", "Chess Champion: MK II", 0 )
 // second design sold (same computer/program?)

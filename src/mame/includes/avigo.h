@@ -20,6 +20,7 @@
 #include "machine/nvram.h"
 #include "machine/ram.h"
 #include "machine/rp5c01.h"
+#include "machine/timer.h"
 #include "sound/spkrdev.h"
 
 #define AVIGO_NUM_COLOURS 2
@@ -110,6 +111,7 @@ public:
 	TIMER_DEVICE_CALLBACK_MEMBER(avigo_1hz_timer);
 
 	DECLARE_QUICKLOAD_LOAD_MEMBER( avigo);
+	void avigo(machine_config &config);
 };
 
 #endif // MAME_INCLUDES_AVIGO_H

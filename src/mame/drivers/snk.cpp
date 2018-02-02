@@ -71,7 +71,7 @@ Notes:
   1988 fsoccer: use the service mode dip switch
   1988 fitegolf: use the service mode dip switch
 
-- in all games except jcross, credits are edded on the 0->1 transition of the
+- in all games except jcross, credits are added on the 0->1 transition of the
   coin inputs. However declaring the inputs as ACTIVE_HIGH makes ikarijp
   enter test mode on boot, therefore I have to assume that ACTIVE_LOW is the
   correct setting and the games just wait for the pulse to finish before
@@ -3608,7 +3608,7 @@ GFXDECODE_END
 
 /**********************************************************************/
 
-static MACHINE_CONFIG_START( marvins )
+MACHINE_CONFIG_START(snk_state::marvins)
 
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", Z80, 3360000)   /* 3.36 MHz */
@@ -3658,7 +3658,7 @@ static MACHINE_CONFIG_START( marvins )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( vangrd2, marvins )
+MACHINE_CONFIG_DERIVED(snk_state::vangrd2, marvins)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -3669,7 +3669,7 @@ static MACHINE_CONFIG_DERIVED( vangrd2, marvins )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( madcrush, marvins )
+MACHINE_CONFIG_DERIVED(snk_state::madcrush, marvins)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -3680,7 +3680,7 @@ static MACHINE_CONFIG_DERIVED( madcrush, marvins )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( jcross )
+MACHINE_CONFIG_START(snk_state::jcross)
 
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", Z80, 3350000) /* NOT verified */
@@ -3727,7 +3727,7 @@ static MACHINE_CONFIG_START( jcross )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( sgladiat, jcross )
+MACHINE_CONFIG_DERIVED(snk_state::sgladiat, jcross)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -3744,7 +3744,7 @@ static MACHINE_CONFIG_DERIVED( sgladiat, jcross )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( hal21, jcross )
+MACHINE_CONFIG_DERIVED(snk_state::hal21, jcross)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -3763,18 +3763,18 @@ static MACHINE_CONFIG_DERIVED( hal21, jcross )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( tnk3 )
+MACHINE_CONFIG_START(snk_state::tnk3)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", Z80, XTAL_13_4MHz/4) /* verified on pcb */
+	MCFG_CPU_ADD("maincpu", Z80, XTAL(13'400'000)/4) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(tnk3_cpuA_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", snk_state,  irq0_line_hold)
 
-	MCFG_CPU_ADD("sub", Z80, XTAL_13_4MHz/4) /* verified on pcb */
+	MCFG_CPU_ADD("sub", Z80, XTAL(13'400'000)/4) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(tnk3_cpuB_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", snk_state,  irq0_line_hold)
 
-	MCFG_CPU_ADD("audiocpu", Z80, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_CPU_ADD("audiocpu", Z80, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(tnk3_YM3526_sound_map)
 
 	MCFG_QUANTUM_TIME(attotime::from_hz(6000))
@@ -3800,13 +3800,13 @@ static MACHINE_CONFIG_START( tnk3 )
 
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch")
 
-	MCFG_SOUND_ADD("ym1", YM3526, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_SOUND_ADD("ym1", YM3526, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_YM3526_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_1))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( aso, tnk3 )
+MACHINE_CONFIG_DERIVED(snk_state::aso, tnk3)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -3823,20 +3823,20 @@ static MACHINE_CONFIG_DERIVED( aso, tnk3 )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( athena, tnk3 )
+MACHINE_CONFIG_DERIVED(snk_state::athena, tnk3)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("audiocpu")
 	MCFG_CPU_PROGRAM_MAP(YM3526_YM3526_sound_map)
 
 	/* sound hardware */
-	MCFG_SOUND_ADD("ym2", YM3526, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_SOUND_ADD("ym2", YM3526, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_YM3526_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_2))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( fitegolf, tnk3 )
+MACHINE_CONFIG_DERIVED(snk_state::fitegolf, tnk3)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("audiocpu")
@@ -3844,29 +3844,29 @@ static MACHINE_CONFIG_DERIVED( fitegolf, tnk3 )
 	MCFG_CPU_PROGRAM_MAP(YM3812_sound_map)
 
 	/* sound hardware */
-	MCFG_SOUND_REPLACE("ym1", YM3812, XTAL_4MHz) /* verified on pcb */
+	MCFG_SOUND_REPLACE("ym1", YM3812, XTAL(4'000'000)) /* verified on pcb */
 	MCFG_YM3812_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_1))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 MACHINE_CONFIG_END
 
-static MACHINE_CONFIG_DERIVED( fitegolf2, fitegolf )
+MACHINE_CONFIG_DERIVED(snk_state::fitegolf2, fitegolf)
 	MCFG_SCREEN_MODIFY("screen")
 	MCFG_SCREEN_UPDATE_DRIVER(snk_state, screen_update_fitegolf2)
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( ikari )
+MACHINE_CONFIG_START(snk_state::ikari)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", Z80, XTAL_13_4MHz/4) /* verified on pcb */
+	MCFG_CPU_ADD("maincpu", Z80, XTAL(13'400'000)/4) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(ikari_cpuA_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", snk_state,  irq0_line_hold)
 
-	MCFG_CPU_ADD("sub", Z80, XTAL_13_4MHz/4) /* verified on pcb */
+	MCFG_CPU_ADD("sub", Z80, XTAL(13'400'000)/4) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(ikari_cpuB_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", snk_state,  irq0_line_hold)
 
-	MCFG_CPU_ADD("audiocpu", Z80, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_CPU_ADD("audiocpu", Z80, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(YM3526_YM3526_sound_map)
 
 	MCFG_QUANTUM_TIME(attotime::from_hz(6000))
@@ -3891,41 +3891,41 @@ static MACHINE_CONFIG_START( ikari )
 
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch")
 
-	MCFG_SOUND_ADD("ym1", YM3526, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_SOUND_ADD("ym1", YM3526, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_YM3526_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_1))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 
-	MCFG_SOUND_ADD("ym2", YM3526, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_SOUND_ADD("ym2", YM3526, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_YM3526_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_2))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( victroad, ikari )
+MACHINE_CONFIG_DERIVED(snk_state::victroad, ikari)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("audiocpu")
 	MCFG_CPU_PROGRAM_MAP(YM3526_Y8950_sound_map)
 
 	/* sound hardware */
-	MCFG_SOUND_REPLACE("ym2", Y8950, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_SOUND_REPLACE("ym2", Y8950, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_Y8950_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_2))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( bermudat )
+MACHINE_CONFIG_START(snk_state::bermudat)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", Z80, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_CPU_ADD("maincpu", Z80, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(bermudat_cpuA_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", snk_state,  irq0_line_hold)
 
-	MCFG_CPU_ADD("sub", Z80, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_CPU_ADD("sub", Z80, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(bermudat_cpuB_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", snk_state,  irq0_line_hold)
 
-	MCFG_CPU_ADD("audiocpu", Z80, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_CPU_ADD("audiocpu", Z80, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_CPU_PROGRAM_MAP(YM3526_Y8950_sound_map)
 
 	MCFG_QUANTUM_TIME(attotime::from_hz(24000))
@@ -3948,24 +3948,24 @@ static MACHINE_CONFIG_START( bermudat )
 
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch")
 
-	MCFG_SOUND_ADD("ym1", YM3526, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_SOUND_ADD("ym1", YM3526, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_YM3526_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_1))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 
-	MCFG_SOUND_ADD("ym2", Y8950, XTAL_8MHz/2) /* verified on pcb */
+	MCFG_SOUND_ADD("ym2", Y8950, XTAL(8'000'000)/2) /* verified on pcb */
 	MCFG_Y8950_IRQ_HANDLER(WRITELINE(snk_state, ymirq_callback_2))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 2.0)
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( psychos, bermudat )
+MACHINE_CONFIG_DERIVED(snk_state::psychos, bermudat)
 
 	/* video hardware */
 	MCFG_VIDEO_START_OVERRIDE(snk_state,psychos)
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( gwar, bermudat )
+MACHINE_CONFIG_DERIVED(snk_state::gwar, bermudat)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -3977,7 +3977,7 @@ static MACHINE_CONFIG_DERIVED( gwar, bermudat )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( gwara, bermudat )
+MACHINE_CONFIG_DERIVED(snk_state::gwara, bermudat)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -3988,7 +3988,7 @@ static MACHINE_CONFIG_DERIVED( gwara, bermudat )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( chopper1, bermudat )
+MACHINE_CONFIG_DERIVED(snk_state::chopper1, bermudat)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("sub")
@@ -4004,7 +4004,7 @@ static MACHINE_CONFIG_DERIVED( chopper1, bermudat )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( choppera, chopper1 )
+MACHINE_CONFIG_DERIVED(snk_state::choppera, chopper1)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -4012,7 +4012,7 @@ static MACHINE_CONFIG_DERIVED( choppera, chopper1 )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_START( tdfever )
+MACHINE_CONFIG_START(snk_state::tdfever)
 
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", Z80, 4000000)
@@ -4058,7 +4058,7 @@ static MACHINE_CONFIG_START( tdfever )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( tdfever2, tdfever )
+MACHINE_CONFIG_DERIVED(snk_state::tdfever2, tdfever)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("audiocpu")
@@ -4624,6 +4624,39 @@ ROM_START( athena )
 	ROM_LOAD( "up01_p2.rom",  0x00000, 0x8000, CRC(c63a871f) SHA1(0ab8ebebd750fdcad283eed427179f2124b300ae) )
 	ROM_LOAD( "up01_s2.rom",  0x08000, 0x8000, CRC(760568d8) SHA1(9dc447c446791c79322e21e3caef6ceae347e2fb) )
 	ROM_LOAD( "up01_t2.rom",  0x10000, 0x8000, CRC(57b35c73) SHA1(6d15b94b50c3734f7d60bd9bd1c5e6c76591d829) )
+ROM_END
+
+// the following set is supposed to be a bootleg. The PCB set only has a "ferrocal" guarantee sticker
+// but main PCB is marked A6001 UP02-02 and the video A6001 UP01-02, which seem original (see fitegolf)
+
+ROM_START( athenab )
+	ROM_REGION( 0x10000, "maincpu", 0 ) // the two program ROMs differ quite a lot from the parent
+	ROM_LOAD( "p4.bin",  0x0000, 0x4000,  CRC(a341677e) SHA1(b78bf999054cfd82e8b7b7ee23d0999b3499e940) )
+	ROM_LOAD( "m4.bin",  0x4000, 0x8000,  CRC(26e2b14f) SHA1(d62694267635bfa21fb04a3d810dafba36f03da3) )
+
+	ROM_REGION( 0x10000 , "sub", 0 )
+	ROM_LOAD( "p8.bin",  0x0000, 0x4000, CRC(df50af7e) SHA1(2a69089aecf598cb11f4f1c9b42d81670f9bd68e) )
+	ROM_LOAD( "m8.bin",  0x4000, 0x8000, CRC(f3c933df) SHA1(70a0bf63230be53da9196fae4c3e604205275ddd) )
+
+	ROM_REGION( 0x10000, "audiocpu", 0 )
+	ROM_LOAD( "g6.bin",  0x0000, 0x4000, CRC(42dbe029) SHA1(9aa311860693bd3e73f2b72ca4b171cb95f069ee) )
+	ROM_LOAD( "k6.bin",  0x4000, 0x8000, CRC(596f1c8a) SHA1(8f1400c77473c845e57a14fa479cf4f7ac66a909) )
+
+	ROM_REGION( 0x0c00, "proms", 0 )
+	ROM_LOAD( "c2.bin",  0x000, 0x400, CRC(294279ae) SHA1(b3db5617b83845a6c1abca8f71fa4598758a2a56) )
+	ROM_LOAD( "b1.bin",  0x400, 0x400, CRC(d25c9099) SHA1(f3933075cce1255affc61dfefd9559b6e15ed29c) )
+	ROM_LOAD( "c1.bin",  0x800, 0x400, CRC(a4a4e7dc) SHA1(aa694c2d44dcabc6cfd46307c55c3759eff57236) )
+
+	ROM_REGION( 0x4000, "tx_tiles", 0 )
+	ROM_LOAD( "d2.bin",  0x0000, 0x4000,  CRC(18b4bcca) SHA1(2476aa6c8d55e117d840202a97fe2a65e252ad7f) )
+
+	ROM_REGION( 0x8000, "bg_tiles", 0 )
+	ROM_LOAD( "b2.bin",  0x0000, 0x8000,  CRC(f269c0eb) SHA1(a947c6e4d82e0aafa616d25395ef63c33d9beb06) )
+
+	ROM_REGION( 0x18000, "sp16_tiles", 0 )
+	ROM_LOAD( "p2.bin",  0x00000, 0x8000, CRC(c63a871f) SHA1(0ab8ebebd750fdcad283eed427179f2124b300ae) )
+	ROM_LOAD( "s2.bin",  0x08000, 0x8000, CRC(760568d8) SHA1(9dc447c446791c79322e21e3caef6ceae347e2fb) )
+	ROM_LOAD( "t2.bin",  0x10000, 0x8000, CRC(57b35c73) SHA1(6d15b94b50c3734f7d60bd9bd1c5e6c76591d829) )
 ROM_END
 
 ROM_START( sathena )
@@ -6512,6 +6545,7 @@ GAME( 1985, arian,     aso,      aso,       alphamis,  snk_state, 0,        ROT2
 GAME( 1985, tnk3,      0,        tnk3,      tnk3,      snk_state, 0,        ROT270, "SNK",     "T.N.K III (US)", 0 )
 GAME( 1985, tnk3j,     tnk3,     tnk3,      tnk3,      snk_state, 0,        ROT270, "SNK",     "T.A.N.K (Japan)", 0 )
 GAME( 1986, athena,    0,        athena,    athena,    snk_state, 0,        ROT0,   "SNK",     "Athena", 0 )
+GAME( 1986, athenab,   athena,   athena,    athena,    snk_state, 0,        ROT0,   "SNK",     "Athena (bootleg)", 0 ) // is this really a bootleg?
 GAME( 1987, sathena,   athena,   athena,    athena,    snk_state, 0,        ROT0,   "bootleg", "Super Athena (bootleg)", 0 )
 GAME( 1988, fitegolf,  0,        fitegolf,  fitegolf,  snk_state, 0,        ROT0,   "SNK",     "Lee Trevino's Fighting Golf (World?)", 0 )
 GAME( 1988, fitegolfu, fitegolf, fitegolf,  fitegolfu, snk_state, 0,        ROT0,   "SNK",     "Lee Trevino's Fighting Golf (US)", 0 )

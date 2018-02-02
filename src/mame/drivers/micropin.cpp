@@ -27,6 +27,7 @@ ToDo:
 #include "cpu/i8085/i8085.h"
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
+#include "machine/timer.h"
 #include "sound/beep.h"
 #include "speaker.h"
 
@@ -56,6 +57,8 @@ public:
 	DECLARE_WRITE8_MEMBER(p51a_w);
 	DECLARE_DRIVER_INIT(micropin);
 	TIMER_DEVICE_CALLBACK_MEMBER(timer_a);
+	void pentacup2(machine_config &config);
+	void micropin(machine_config &config);
 private:
 	uint8_t m_row;
 	uint8_t m_counter;
@@ -283,9 +286,9 @@ DRIVER_INIT_MEMBER( micropin_state, micropin )
 {
 }
 
-static MACHINE_CONFIG_START( micropin )
+MACHINE_CONFIG_START(micropin_state::micropin)
 	/* basic machine hardware */
-	MCFG_CPU_ADD("v1cpu", M6800, XTAL_2MHz / 2)
+	MCFG_CPU_ADD("v1cpu", M6800, XTAL(2'000'000) / 2)
 	MCFG_CPU_PROGRAM_MAP(micropin_map)
 	MCFG_CPU_PERIODIC_INT_DRIVER(micropin_state, irq0_line_hold, 500)
 
@@ -320,7 +323,7 @@ static MACHINE_CONFIG_START( micropin )
 	MCFG_TIMER_DRIVER_ADD_PERIODIC("timer_a", micropin_state, timer_a, attotime::from_hz(100))
 MACHINE_CONFIG_END
 
-static MACHINE_CONFIG_START( pentacup2 )
+MACHINE_CONFIG_START(micropin_state::pentacup2)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("v2cpu", I8085A, 2000000)
 	MCFG_CPU_PROGRAM_MAP(pentacup2_map)

@@ -18,6 +18,7 @@
 
 #include "cpu/mcs51/mcs51.h"
 #include "machine/eepromser.h"
+#include "machine/timer.h"
 #include "sound/ay8910.h"
 #include "speaker.h"
 
@@ -39,8 +40,8 @@
 /****************************
 *    Clock defines          *
 ****************************/
-#define CPU_CLK  XTAL_11_0592MHz
-#define AY_CLK  XTAL_11_0592MHz/8
+#define CPU_CLK  XTAL(11'059'200)
+#define AY_CLK  XTAL(11'059'200)/8
 
 
 class fireball_state : public driver_device
@@ -75,6 +76,7 @@ public:
 	DECLARE_WRITE8_MEMBER(p3_w);
 	TIMER_DEVICE_CALLBACK_MEMBER(int_0);
 
+	void fireball(machine_config &config);
 protected:
 
 	// devices
@@ -492,7 +494,7 @@ TIMER_DEVICE_CALLBACK_MEMBER( fireball_state::int_0 )
 *************************/
 
 
-static MACHINE_CONFIG_START( fireball )
+MACHINE_CONFIG_START(fireball_state::fireball)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", I8031, CPU_CLK) //
 	MCFG_CPU_PROGRAM_MAP(fireball_map)

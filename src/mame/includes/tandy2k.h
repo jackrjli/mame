@@ -15,6 +15,7 @@
 #include "machine/pic8259.h"
 #include "machine/ram.h"
 #include "machine/tandy2kb.h"
+#include "machine/timer.h"
 #include "machine/upd765.h"
 #include "sound/spkrdev.h"
 #include "video/crt9007.h"
@@ -223,6 +224,8 @@ public:
 	int m_centronics_select;
 	int m_centronics_perror;
 	int m_centronics_busy;
+	void tandy2k_hd(machine_config &config);
+	void tandy2k(machine_config &config);
 };
 
 #endif // MAME_INCLUDES_TANDY2K_H

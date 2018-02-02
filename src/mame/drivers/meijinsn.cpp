@@ -64,6 +64,7 @@ SOFT  PSG & VOICE  BY M.C & S.H
 #include "cpu/z80/z80.h"
 #include "cpu/m68000/m68000.h"
 #include "machine/gen_latch.h"
+#include "machine/timer.h"
 #include "video/resnet.h"
 #include "sound/ay8910.h"
 #include "screen.h"
@@ -105,6 +106,7 @@ public:
 	DECLARE_PALETTE_INIT(meijinsn);
 	uint32_t screen_update_meijinsn(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	TIMER_DEVICE_CALLBACK_MEMBER(meijinsn_interrupt);
+	void meijinsn(machine_config &config);
 };
 
 
@@ -350,7 +352,7 @@ void meijinsn_state::machine_reset()
 }
 
 
-static MACHINE_CONFIG_START( meijinsn )
+MACHINE_CONFIG_START(meijinsn_state::meijinsn)
 
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", M68000, 9000000 )

@@ -382,7 +382,7 @@ Notes:
 */
 
 #include "emu.h"
-#include "cpu/sh4/sh4.h"
+#include "cpu/sh/sh4.h"
 #include "screen.h"
 
 
@@ -397,6 +397,7 @@ public:
 	virtual void video_start() override;
 	uint32_t screen_update_hikaru(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect);
 	required_device<cpu_device> m_maincpu;
+	void hikaru(machine_config &config);
 };
 
 void hikaru_state::video_start()
@@ -481,7 +482,7 @@ static ADDRESS_MAP_START( hikaru_map_slave, AS_PROGRAM, 64, hikaru_state )
 ADDRESS_MAP_END
 
 
-static MACHINE_CONFIG_START( hikaru )
+MACHINE_CONFIG_START(hikaru_state::hikaru)
 	/* basic machine hardware */
 	MCFG_CPU_ADD("maincpu", SH4LE, CPU_CLOCK)
 //  MCFG_SH4_MD0(1)
@@ -496,9 +497,13 @@ static MACHINE_CONFIG_START( hikaru )
 //  MCFG_SH4_CLOCK(CPU_CLOCK)
 	MCFG_CPU_PROGRAM_MAP(hikaru_map)
 //  MCFG_CPU_IO_MAP(hikaru_port)
+	MCFG_CPU_FORCE_NO_DRC()
 //  MCFG_CPU_VBLANK_INT("screen", hikaru,vblank)
+
 	MCFG_CPU_ADD("slave", SH4LE, CPU_CLOCK)
 	MCFG_CPU_PROGRAM_MAP(hikaru_map_slave)
+	MCFG_CPU_FORCE_NO_DRC()
+
 
 //  MCFG_MACHINE_START_OVERRIDE(hikaru_state, hikaru )
 //  MCFG_MACHINE_RESET_OVERRIDE(hikaru_state, hikaru )

@@ -308,7 +308,7 @@ GFXDECODE_END
 
 
 /* the machine driver */
-static MACHINE_CONFIG_START( polyplay_zre )
+MACHINE_CONFIG_START(polyplay_state::polyplay_zre)
 	/* basic machine hardware */
 	MCFG_CPU_ADD(Z80CPU_TAG, Z80, POLYPLAY_MAIN_CLOCK / 4) /* UB880D */
 	MCFG_Z80_DAISY_CHAIN(daisy_chain_zre)
@@ -350,7 +350,7 @@ static MACHINE_CONFIG_START( polyplay_zre )
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.5)
 MACHINE_CONFIG_END
 
-static MACHINE_CONFIG_START( polyplay_zrepp )
+MACHINE_CONFIG_START(polyplay_state::polyplay_zrepp)
 	MCFG_FRAGMENT_ADD( polyplay_zre )
 
 	/* basic machine hardware */
@@ -360,7 +360,7 @@ static MACHINE_CONFIG_START( polyplay_zrepp )
 	MCFG_CPU_IO_MAP(polyplay_io_zrepp)
 
 	/* devices */
-	MCFG_Z80SIO_ADD(Z80SIO_TAG, POLYPLAY_MAIN_CLOCK / 4, 0, 0, 0, 0) /* UB8560D */
+	MCFG_DEVICE_ADD(Z80SIO_TAG, Z80SIO, POLYPLAY_MAIN_CLOCK / 4) /* UB8560D */
 	MCFG_Z80SIO_OUT_INT_CB(INPUTLINE(Z80CPU_TAG, INPUT_LINE_IRQ0))
 MACHINE_CONFIG_END
 

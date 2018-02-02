@@ -1,6 +1,7 @@
 // license:BSD-3-Clause
 // copyright-holders:Olivier Galibert
 #include "machine/74157.h"
+#include "machine/timer.h"
 #include "machine/upd4701.h"
 #include "sound/msm5205.h"
 #include "sound/2203intf.h"
@@ -94,6 +95,7 @@ public:
 	void draw_sprites(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	void palette_notifier(int addr);
 	void bank_w(address_space &space, offs_t offset, u8 data, int banknum);
+	void l_system_video(machine_config &config);
 
 protected:
 	virtual void state_register();
@@ -121,6 +123,9 @@ public:
 
 	DECLARE_WRITE8_MEMBER(sound_bankswitch_w);
 
+	void kurikint(machine_config &config);
+	void evilston(machine_config &config);
+	void raimais(machine_config &config);
 protected:
 	virtual void state_register() override;
 	virtual void taito_machine_reset() override;
@@ -148,6 +153,7 @@ public:
 	DECLARE_READ8_MEMBER(rombank2switch_r);
 	DECLARE_WRITE8_MEMBER(portA_w);
 
+	void fhawk(machine_config &config);
 protected:
 	virtual void state_register() override;
 	virtual void taito_machine_reset() override;
@@ -181,6 +187,7 @@ public:
 	DECLARE_WRITE8_MEMBER(msm5205_stop_w);
 	DECLARE_WRITE8_MEMBER(msm5205_volume_w);
 
+	void champwr(machine_config &config);
 protected:
 	virtual void state_register() override;
 	virtual void taito_machine_reset() override;
@@ -199,7 +206,7 @@ public:
 	taitol_1cpu_state(const machine_config &mconfig, device_type type, const char *tag)
 		: taitol_state(mconfig, type, tag)
 		, m_ymsnd(*this, "ymsnd")
-		, m_mux(*this, {"dswmuxl", "dswmuxh", "inmuxl", "inmuxh"})
+		, m_mux(*this, {"dswmux", "inmux"})
 	{
 	}
 
@@ -212,12 +219,17 @@ public:
 	DECLARE_MACHINE_RESET(palamed);
 	DECLARE_MACHINE_RESET(cachat);
 
+	void palamed(machine_config &config);
+	void plotting(machine_config &config);
+	void puzznici(machine_config &config);
+	void cachat(machine_config &config);
+	void puzznic(machine_config &config);
 protected:
 	virtual void state_register() override;
 	virtual void taito_machine_reset() override;
 
 	required_device<ym2203_device>  m_ymsnd;
-	optional_device_array<ls157_device, 4> m_mux;
+	optional_device_array<ls157_x2_device, 2> m_mux;
 };
 
 
@@ -232,4 +244,5 @@ public:
 	DECLARE_WRITE8_MEMBER(bankg_w);
 
 	DECLARE_MACHINE_RESET(horshoes);
+	void horshoes(machine_config &config);
 };

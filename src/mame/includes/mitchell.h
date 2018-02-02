@@ -10,6 +10,7 @@
 #include "machine/nvram.h"
 #include "machine/eepromser.h"
 #include "machine/gen_latch.h"
+#include "machine/timer.h"
 #include "sound/msm5205.h"
 #include "sound/okim6295.h"
 
@@ -132,4 +133,12 @@ public:
 	void configure_banks(void (*decode)(uint8_t *src, uint8_t *dst, int size));
 	DECLARE_WRITE8_MEMBER(sound_bankswitch_w);
 	DECLARE_WRITE_LINE_MEMBER(spangbl_adpcm_int);
+	void pkladiesbl(machine_config &config);
+	void mstworld(machine_config &config);
+	void mgakuen(machine_config &config);
+	void marukin(machine_config &config);
+	void pang(machine_config &config);
+	void pangba(machine_config &config);
+	void pangnv(machine_config &config);
+	void spangbl(machine_config &config);
 };

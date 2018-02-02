@@ -11,6 +11,7 @@
 #include "machine/z80pio.h"
 #include "machine/ram.h"
 #include "machine/bankdev.h"
+#include "machine/timer.h"
 
 #define SCREEN_TAG      "screen"
 #define Z80_TAG         "z80"
@@ -79,6 +80,7 @@ public:
 	int m_keyclk;
 	DECLARE_DRIVER_INIT(vcs80);
 	TIMER_DEVICE_CALLBACK_MEMBER(vcs80_keyboard_tick);
+	void vcs80(machine_config &config);
 };
 
 #endif

@@ -10,6 +10,7 @@
 #include "imagedev/snapquik.h"
 #include "machine/ram.h"
 #include "machine/rescap.h"
+#include "machine/timer.h"
 #include "sound/cdp1864.h"
 #include "sound/spkrdev.h"
 #include "video/dm9368.h"
@@ -134,6 +135,7 @@ public:
 	DECLARE_DRIVER_INIT(cosmicos);
 	TIMER_DEVICE_CALLBACK_MEMBER(digit_tick);
 	TIMER_DEVICE_CALLBACK_MEMBER(int_tick);
+	void cosmicos(machine_config &config);
 };
 
 #endif // MAME_INCLUDES_COSMICOS_H

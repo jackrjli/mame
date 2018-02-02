@@ -45,6 +45,7 @@
 #include "cpu/z80/z80.h"
 #include "machine/pit8253.h"
 #include "machine/315_5296.h"
+#include "machine/timer.h"
 #include "sound/2612intf.h"
 #include "sound/upd7759.h"
 #include "speaker.h"
@@ -126,6 +127,10 @@ public:
 	virtual void machine_start() override;
 	TIMER_DEVICE_CALLBACK_MEMBER(simulate_xyz);
 	TIMER_DEVICE_CALLBACK_MEMBER(update_info);
+	void ufomini(machine_config &config);
+	void ufo21(machine_config &config);
+	void newufo(machine_config &config);
+	void ufo800(machine_config &config);
 };
 
 
@@ -374,7 +379,7 @@ WRITE8_MEMBER(ufo_state::ex_stepper_w)
 {
 	// stepper motor sequence is: 6 c 9 3 6 c 9 3..
 	// which means d0 and d3 are swapped when compared with UFO board hardware
-	stepper_w(space, offset, BITSWAP8(data,4,6,5,7,0,2,1,3));
+	stepper_w(space, offset, bitswap<8>(data,4,6,5,7,0,2,1,3));
 }
 
 WRITE8_MEMBER(ufo_state::ex_cp_lamps_w)
@@ -747,17 +752,17 @@ void ufo_state::machine_start()
 	save_item(NAME(m_stepper));
 }
 
-static MACHINE_CONFIG_START( newufo )
+MACHINE_CONFIG_START(ufo_state::newufo)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", Z80, XTAL_16MHz/2)
+	MCFG_CPU_ADD("maincpu", Z80, XTAL(16'000'000)/2)
 	MCFG_CPU_PROGRAM_MAP(ufo_map)
 	MCFG_CPU_IO_MAP(ufo_portmap)
 
 	MCFG_TIMER_DRIVER_ADD_PERIODIC("motor_timer", ufo_state, simulate_xyz, attotime::from_hz(MOTOR_SPEED))
 	MCFG_TIMER_DRIVER_ADD_PERIODIC("update_timer", ufo_state, update_info, attotime::from_hz(60))
 
-	MCFG_DEVICE_ADD("io1", SEGA_315_5296, XTAL_16MHz)
+	MCFG_DEVICE_ADD("io1", SEGA_315_5296, XTAL(16'000'000))
 	// all ports set to input
 	MCFG_315_5296_IN_PORTA_CB(READ8(ufo_state, crane_limits_r))
 	MCFG_315_5296_IN_PORTB_CB(READ8(ufo_state, crane_limits_r))
@@ -766,7 +771,7 @@ static MACHINE_CONFIG_START( newufo )
 	MCFG_315_5296_IN_PORTG_CB(IOPORT("DSW2"))
 	MCFG_315_5296_IN_PORTH_CB(IOPORT("IN2"))
 
-	MCFG_DEVICE_ADD("io2", SEGA_315_5296, XTAL_16MHz)
+	MCFG_DEVICE_ADD("io2", SEGA_315_5296, XTAL(16'000'000))
 	// all ports set to output
 	MCFG_315_5296_OUT_PORTA_CB(WRITE8(ufo_state, stepper_w))
 	MCFG_315_5296_OUT_PORTB_CB(WRITE8(ufo_state, cp_lamps_w))
@@ -776,12 +781,12 @@ static MACHINE_CONFIG_START( newufo )
 	MCFG_315_5296_OUT_PORTF_CB(WRITE8(ufo_state, crane_xyz_w))
 	MCFG_315_5296_OUT_PORTG_CB(WRITE8(ufo_state, ufo_lamps_w))
 
-	MCFG_DEVICE_ADD("pit", PIT8254, XTAL_16MHz/2) // uPD71054C, configuration is unknown
-	MCFG_PIT8253_CLK0(XTAL_16MHz/2/256)
+	MCFG_DEVICE_ADD("pit", PIT8254, XTAL(16'000'000)/2) // uPD71054C, configuration is unknown
+	MCFG_PIT8253_CLK0(XTAL(16'000'000)/2/256)
 	MCFG_PIT8253_OUT0_HANDLER(WRITELINE(ufo_state, pit_out0))
-	MCFG_PIT8253_CLK1(XTAL_16MHz/2/256)
+	MCFG_PIT8253_CLK1(XTAL(16'000'000)/2/256)
 	MCFG_PIT8253_OUT1_HANDLER(WRITELINE(ufo_state, pit_out1))
-	MCFG_PIT8253_CLK2(XTAL_16MHz/2/256)
+	MCFG_PIT8253_CLK2(XTAL(16'000'000)/2/256)
 	MCFG_PIT8253_OUT2_HANDLER(WRITELINE(ufo_state, pit_out2))
 
 	/* no video! */
@@ -789,13 +794,13 @@ static MACHINE_CONFIG_START( newufo )
 	/* sound hardware */
 	MCFG_SPEAKER_STANDARD_MONO("mono")
 
-	MCFG_SOUND_ADD("ym", YM3438, XTAL_16MHz/2)
+	MCFG_SOUND_ADD("ym", YM3438, XTAL(16'000'000)/2)
 	MCFG_YM2612_IRQ_HANDLER(INPUTLINE("maincpu", 0))
 	MCFG_SOUND_ROUTE(0, "mono", 0.40)
 	MCFG_SOUND_ROUTE(1, "mono", 0.40)
 MACHINE_CONFIG_END
 
-static MACHINE_CONFIG_DERIVED( ufomini, newufo )
+MACHINE_CONFIG_DERIVED(ufo_state::ufomini, newufo)
 
 	/* basic machine hardware */
 	MCFG_DEVICE_MODIFY("io1")
@@ -805,7 +810,7 @@ static MACHINE_CONFIG_DERIVED( ufomini, newufo )
 MACHINE_CONFIG_END
 
 
-static MACHINE_CONFIG_DERIVED( ufo21, newufo )
+MACHINE_CONFIG_DERIVED(ufo_state::ufo21, newufo)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
@@ -828,7 +833,7 @@ static MACHINE_CONFIG_DERIVED( ufo21, newufo )
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.75)
 MACHINE_CONFIG_END
 
-static MACHINE_CONFIG_DERIVED( ufo800, newufo )
+MACHINE_CONFIG_DERIVED(ufo_state::ufo800, newufo)
 
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")

@@ -69,6 +69,7 @@ Notes:
 #include "cpu/m68000/m68000.h"
 #include "cpu/mcs51/mcs51.h"
 #include "machine/gen_latch.h"
+#include "machine/timer.h"
 #include "sound/okim6295.h"
 #include "video/ramdac.h"
 
@@ -138,6 +139,7 @@ public:
 	void render_jpeg();
 
 	void postload();
+	void sliver(machine_config &config);
 };
 
 void sliver_state::machine_start()
@@ -503,7 +505,7 @@ TIMER_DEVICE_CALLBACK_MEMBER ( sliver_state::obj_irq_cb )
 	m_maincpu->set_input_line(3, HOLD_LINE);
 }
 
-static MACHINE_CONFIG_START( sliver )
+MACHINE_CONFIG_START(sliver_state::sliver)
 	MCFG_CPU_ADD("maincpu", M68000, 12000000)
 	MCFG_CPU_PROGRAM_MAP(sliver_map)
 	MCFG_CPU_VBLANK_INT_DRIVER("screen", sliver_state, irq4_line_hold)

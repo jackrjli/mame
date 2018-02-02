@@ -1,6 +1,8 @@
 // license:BSD-3-Clause
 // copyright-holders:Nicola Salmoria
+
 #include "machine/k053252.h"
+#include "machine/timer.h"
 
 class hexion_state : public driver_device
 {
@@ -45,4 +47,6 @@ public:
 
 	uint32_t screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	inline void get_tile_info(tile_data &tileinfo,int tile_index,uint8_t *ram);
+	void hexion(machine_config &config);
+	void hexionb(machine_config &config);
 };

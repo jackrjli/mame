@@ -52,7 +52,7 @@
 
 class cococart_slot_device;
 
-class gime_device : public mc6847_friend_device, public sam6883_friend_device
+class gime_device : public mc6847_friend_device, public sam6883_friend_device_interface
 {
 public:
 	template <class Object> static devcb_base &set_irq_wr_callback(device_t &device, Object &&cb) { return downcast<gime_device &>(device).m_write_irq.set_callback(std::forward<Object>(cb)); }
@@ -196,12 +196,13 @@ private:
 	cococart_slot_device *      m_cart_device;
 	memory_bank *               m_read_banks[9];
 	memory_bank *               m_write_banks[9];
-	uint8_t *                     m_rom;
-	uint8_t *                     m_cart_rom;
+	uint8_t *                   m_rom;
+	uint8_t *                   m_cart_rom;
+	uint32_t                    m_cart_size;
 	pixel_t                     m_composite_palette[64];
 	pixel_t                     m_composite_bw_palette[64];
 	pixel_t                     m_rgb_palette[64];
-	uint8_t                       m_dummy_bank[0x2000];
+	uint8_t                     m_dummy_bank[0x2000];
 
 	const char *m_maincpu_tag;  /* tag of main CPU */
 	const char *m_ram_tag;      /* tag of RAM device */
