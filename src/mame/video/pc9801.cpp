@@ -60,7 +60,7 @@ UPD7220_DISPLAY_PIXELS_MEMBER( pc9801_state::hgdc_display_pixels )
 			res_x = x + xi;
 			res_y = y;
 
-			pen = ext_gvram[(address >> 1)*16+xi+(m_vram_disp*0x20000)];
+			pen = ext_gvram[(address >> 1)*16+xi+(m_vram_disp*0x40000)];
 
 			bitmap.pix32(res_y, res_x) = palette[pen + 0x20];
 		}
@@ -491,7 +491,7 @@ READ16_MEMBER(pc9801_state::upd7220_grcg_r)
 {
 	uint16_t res = 0;
 
-	if(!(m_grcg.mode & 0x80) || machine().side_effect_disabled())
+	if(!(m_grcg.mode & 0x80) || machine().side_effects_disabled())
 		res = m_video_ram_2[offset];
 	else if(m_ex_video_ff[2])
 		res = egc_blit_r(offset, mem_mask);

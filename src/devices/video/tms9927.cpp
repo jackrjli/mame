@@ -128,7 +128,7 @@ void tms9927_device::device_clock_changed()
 void tms9927_device::device_stop()
 {
 	osd_printf_debug("TMS9927: Final params: (%d, %d, %d, %d, %d, %d, %d)\n",
-						clock(),
+						clock() * m_hpixels_per_column,
 						m_total_hpix,
 						0, m_visible_hpix,
 						m_total_vpix,
@@ -279,7 +279,7 @@ READ8_MEMBER( tms9927_device::read )
 			return m_reg[offset - 0x08 + 7];
 
 		default:
-			if (!machine().side_effect_disabled())
+			if (!machine().side_effects_disabled())
 				generic_access(space, offset);
 			break;
 	}
@@ -293,22 +293,10 @@ READ_LINE_MEMBER(tms9927_device::bl_r)
 }
 
 
-bool tms9927_device::screen_reset()
-{
-	return m_reset;
-}
-
-
-int tms9927_device::upscroll_offset()
-{
-	return m_start_datarow;
-}
-
-
-bool tms9927_device::cursor_bounds(rectangle &bounds)
+bool tms9927_device::cursor_bounds(rectangle &bounds) const
 {
 	int cursorx = CURSOR_CHAR_ADDRESS;
-	int cursory = CURSOR_ROW_ADDRESS;
+	int cursory = (CURSOR_ROW_ADDRESS + DATA_ROWS_PER_FRAME - m_start_datarow) % DATA_ROWS_PER_FRAME;
 
 	bounds.min_x = cursorx * m_hpixels_per_column;
 	bounds.max_x = bounds.min_x + m_hpixels_per_column - 1;
@@ -363,7 +351,7 @@ void tms9927_device::recompute_parameters(bool postload)
 	rectangle visarea(0, m_overscan_left + m_visible_hpix + m_overscan_right - 1,
 				0, m_overscan_top + m_visible_vpix + m_overscan_bottom - 1);
 
-	attoseconds_t refresh = clocks_to_attotime(m_total_hpix * m_total_vpix).as_attoseconds();
+	attoseconds_t refresh = clocks_to_attotime(HCOUNT * m_total_vpix).as_attoseconds();
 
 	osd_printf_debug("TMS9927: Total = %dx%d, Visible = %dx%d, HSync = %d-%d, VSync = %d-%d, Skew=%d, Upscroll=%d, Period=%f Hz\n", m_total_hpix, m_total_vpix, m_visible_hpix, m_visible_vpix, m_hsyn_start, m_hsyn_end, m_vsyn_start, m_vsyn_end, SKEW_BITS, m_start_datarow, ATTOSECONDS_TO_HZ(refresh));
 
@@ -371,8 +359,12 @@ void tms9927_device::recompute_parameters(bool postload)
 
 	m_hsyn = false;
 	if (!m_write_hsyn.isnull())
+	{
+		m_write_hsyn(0);
 		m_hsync_timer->adjust(screen().time_until_pos(m_vsyn_start, m_hsyn_start));
+	}
 
 	m_vsyn = false;
+	m_write_vsyn(0);
 	m_vsync_timer->adjust(screen().time_until_pos(m_vsyn_start, m_hsyn_start));
 }
