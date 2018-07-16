@@ -6,6 +6,7 @@
 #include "machine/gen_latch.h"
 #include "machine/seibucop/seibucop.h"
 #include "video/seibu_crtc.h"
+#include "emupal.h"
 
 class legionna_state : public driver_device, protected seibu_sound_common
 {
@@ -37,6 +38,7 @@ public:
 	std::unique_ptr<uint16_t[]> m_mid_data;
 	std::unique_ptr<uint16_t[]> m_textram;
 	std::unique_ptr<uint16_t[]> m_scrollram16;
+	std::unique_ptr<uint16_t[]> m_paletteram;
 	uint16_t m_layer_disable;
 	std::unique_ptr<uint16_t[]> m_layer_config;
 	int m_sprite_xoffs;
@@ -69,11 +71,12 @@ public:
 	DECLARE_WRITE16_MEMBER(grainbow_layer_config_w);
 	DECLARE_WRITE16_MEMBER(palette_swap_w);
 
-	DECLARE_DRIVER_INIT(legiongfx);
-	DECLARE_DRIVER_INIT(cupsoc_debug);
-	DECLARE_DRIVER_INIT(cupsoc);
-	DECLARE_DRIVER_INIT(cupsocs);
-	DECLARE_DRIVER_INIT(olysoc92);
+	void init_legiongfx();
+	void init_godzilla();
+	void init_cupsoc_debug();
+	void init_cupsoc();
+	void init_cupsocs();
+	void init_olysoc92();
 	TILE_GET_INFO_MEMBER(get_back_tile_info);
 	TILE_GET_INFO_MEMBER(get_mid_tile_info);
 	TILE_GET_INFO_MEMBER(get_mid_tile_info_denji);

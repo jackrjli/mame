@@ -28,6 +28,7 @@
 ***************************************************************************/
 
 #include "emu.h"
+#include "emupal.h"
 #include "screen.h"
 #include "cpu/upd7810/upd7811.h"
 #include "video/hd44780.h"
@@ -99,11 +100,11 @@ void rz1_state::map(address_map &map)
 //  map(0x0000, 0x0fff).rom().region("maincpu", 0);
 	map(0x2000, 0x3fff).ram();
 	map(0x4000, 0x7fff).rom().region("program", 0);
-	map(0x8000, 0x8fff).w(this, FUNC(rz1_state::upd934g_c_w));
-	map(0x9000, 0x9fff).rw(this, FUNC(rz1_state::key_r), FUNC(rz1_state::upd934g_b_w));
+	map(0x8000, 0x8fff).w(FUNC(rz1_state::upd934g_c_w));
+	map(0x9000, 0x9fff).rw(FUNC(rz1_state::key_r), FUNC(rz1_state::upd934g_b_w));
 	map(0xa000, 0xbfff).ram(); // sample ram 1
 	map(0xc000, 0xdfff).ram(); // sample ram 2
-	map(0xe000, 0xe001).w(this, FUNC(rz1_state::leds_w));
+	map(0xe000, 0xe001).w(FUNC(rz1_state::leds_w));
 }
 
 
@@ -333,13 +334,13 @@ PALETTE_INIT_MEMBER(rz1_state, rz1)
 //**************************************************************************
 
 MACHINE_CONFIG_START( rz1_state::rz1 )
-	MCFG_CPU_ADD("maincpu", UPD7811, 12_MHz_XTAL)
-	MCFG_CPU_PROGRAM_MAP(map)
-	MCFG_UPD7810_PORTA_READ_CB(READ8(rz1_state, port_a_r))
-	MCFG_UPD7810_PORTA_WRITE_CB(WRITE8(rz1_state, port_a_w))
-	MCFG_UPD7810_PORTB_WRITE_CB(WRITE8(rz1_state, port_b_w))
-	MCFG_UPD7810_PORTC_READ_CB(READ8(rz1_state, port_c_r))
-	MCFG_UPD7810_PORTC_WRITE_CB(WRITE8(rz1_state, port_c_w))
+	MCFG_DEVICE_ADD("maincpu", UPD7811, 12_MHz_XTAL)
+	MCFG_DEVICE_PROGRAM_MAP(map)
+	MCFG_UPD7810_PORTA_READ_CB(READ8(*this, rz1_state, port_a_r))
+	MCFG_UPD7810_PORTA_WRITE_CB(WRITE8(*this, rz1_state, port_a_w))
+	MCFG_UPD7810_PORTB_WRITE_CB(WRITE8(*this, rz1_state, port_b_w))
+	MCFG_UPD7810_PORTC_READ_CB(READ8(*this, rz1_state, port_c_r))
+	MCFG_UPD7810_PORTC_WRITE_CB(WRITE8(*this, rz1_state, port_c_w))
 
 	// video hardware
 	MCFG_SCREEN_ADD("screen", LCD)
@@ -359,12 +360,12 @@ MACHINE_CONFIG_START( rz1_state::rz1 )
 
 	MCFG_DEFAULT_LAYOUT(layout_rz1)
 
-	MCFG_SPEAKER_STANDARD_MONO("speaker")
-	MCFG_SOUND_ADD("upd934g_c", UPD934G, 1333000)
-	MCFG_UPD934G_DATA_CB(READ8(rz1_state, upd934g_c_data_r))
+	SPEAKER(config, "speaker").front_center();
+	MCFG_DEVICE_ADD("upd934g_c", UPD934G, 1333000)
+	MCFG_UPD934G_DATA_CB(READ8(*this, rz1_state, upd934g_c_data_r))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
-	MCFG_SOUND_ADD("upd934g_b", UPD934G, 1280000)
-	MCFG_UPD934G_DATA_CB(READ8(rz1_state, upd934g_b_data_r))
+	MCFG_DEVICE_ADD("upd934g_b", UPD934G, 1280000)
+	MCFG_UPD934G_DATA_CB(READ8(*this, rz1_state, upd934g_b_data_r))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
 MACHINE_CONFIG_END
 
@@ -392,5 +393,5 @@ ROM_END
 //  SYSTEM DRIVERS
 //**************************************************************************
 
-//    YEAR  NAME  PARENT  COMPAT   MACHINE  INPUT  CLASS      INIT  COMPANY  FULLNAME  FLAGS
-CONS( 1986, rz1,  0,      0,       rz1,     rz1,   rz1_state, 0,   "Casio",  "RZ-1",   MACHINE_SUPPORTS_SAVE )
+//    YEAR  NAME  PARENT  COMPAT  MACHINE  INPUT  CLASS      INIT        COMPANY  FULLNAME  FLAGS
+CONS( 1986, rz1,  0,      0,      rz1,     rz1,   rz1_state, empty_init, "Casio", "RZ-1",   MACHINE_SUPPORTS_SAVE )

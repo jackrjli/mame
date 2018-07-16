@@ -68,7 +68,7 @@ WRITE16_MEMBER(tigeroad_state::tigeroad_soundcmd_w)
 WRITE8_MEMBER(tigeroad_state::msm5205_w)
 {
 	m_msm->reset_w(BIT(data, 7));
-	m_msm->data_w(data);
+	m_msm->write_data(data);
 	m_msm->vclk_w(1);
 	m_msm->vclk_w(0);
 }
@@ -117,12 +117,12 @@ void tigeroad_state::main_map(address_map &map)
 
 	map(0xfe0800, 0xfe0cff).ram().share("spriteram");
 	map(0xfe0d00, 0xfe1807).ram();     /* still part of OBJ RAM */
-	map(0xfe4000, 0xfe4001).portr("P1_P2").w(this, FUNC(tigeroad_state::tigeroad_videoctrl_w));   /* char bank, coin counters, + ? */
-	map(0xfe4002, 0xfe4003).portr("SYSTEM").w(this, FUNC(tigeroad_state::tigeroad_soundcmd_w)); /* AM_WRITE(tigeroad_soundcmd_w) is replaced in init for for f1dream protection */
+	map(0xfe4000, 0xfe4001).portr("P1_P2").w(FUNC(tigeroad_state::tigeroad_videoctrl_w));   /* char bank, coin counters, + ? */
+	map(0xfe4002, 0xfe4003).portr("SYSTEM").w(FUNC(tigeroad_state::tigeroad_soundcmd_w)); /* AM_WRITE(tigeroad_soundcmd_w) is replaced in init for for f1dream protection */
 	map(0xfe4004, 0xfe4005).portr("DSW");
-	map(0xfe8000, 0xfe8003).w(this, FUNC(tigeroad_state::tigeroad_scroll_w));
+	map(0xfe8000, 0xfe8003).w(FUNC(tigeroad_state::tigeroad_scroll_w));
 	map(0xfe800e, 0xfe800f).writeonly();    /* fe800e = watchdog or IRQ acknowledge */
-	map(0xfec000, 0xfec7ff).ram().w(this, FUNC(tigeroad_state::tigeroad_videoram_w)).share("videoram");
+	map(0xfec000, 0xfec7ff).ram().w(FUNC(tigeroad_state::tigeroad_videoram_w)).share("videoram");
 
 	map(0xff8000, 0xff87ff).ram().w(m_palette, FUNC(palette_device::write16)).share("palette");
 	map(0xffc000, 0xffffff).ram().share("ram16");
@@ -143,12 +143,12 @@ WRITE8_MEMBER(f1dream_state::mcu_shared_w)
 void f1dream_state::f1dream_map(address_map &map)
 {
 	main_map(map);
-	map(0xfe4002, 0xfe4003).portr("SYSTEM").w(this, FUNC(f1dream_state::blktiger_to_mcu_w));
+	map(0xfe4002, 0xfe4003).portr("SYSTEM").w(FUNC(f1dream_state::blktiger_to_mcu_w));
 }
 
 void f1dream_state::f1dream_mcu_io(address_map &map)
 {
-	map(0x7f0, 0x7ff).rw(this, FUNC(f1dream_state::mcu_shared_r), FUNC(f1dream_state::mcu_shared_w));
+	map(0x7f0, 0x7ff).rw(FUNC(f1dream_state::mcu_shared_r), FUNC(f1dream_state::mcu_shared_w));
 }
 
 
@@ -156,24 +156,24 @@ void pushman_state::pushman_map(address_map &map)
 {
 	main_map(map);
 
-	map(0x060000, 0x060007).r(this, FUNC(pushman_state::mcu_comm_r));
-	map(0x060000, 0x060003).w(this, FUNC(pushman_state::pushman_mcu_comm_w));
+	map(0x060000, 0x060007).r(FUNC(pushman_state::mcu_comm_r));
+	map(0x060000, 0x060003).w(FUNC(pushman_state::pushman_mcu_comm_w));
 }
 
 void pushman_state::bballs_map(address_map &map)
 {
 	map.global_mask(0xfffff);
 	map(0x00000, 0x3ffff).rom();
-	map(0x60000, 0x60007).r(this, FUNC(pushman_state::mcu_comm_r));
-	map(0x60000, 0x60001).w(this, FUNC(pushman_state::bballs_mcu_comm_w));
+	map(0x60000, 0x60007).r(FUNC(pushman_state::mcu_comm_r));
+	map(0x60000, 0x60001).w(FUNC(pushman_state::bballs_mcu_comm_w));
 	// are these mirror addresses or does this PCB have a different addressing?
 	map(0xe0800, 0xe17ff).ram().share("spriteram");
-	map(0xe4000, 0xe4001).portr("P1_P2").w(this, FUNC(pushman_state::tigeroad_videoctrl_w));
-	map(0xe4002, 0xe4003).portr("SYSTEM").w(this, FUNC(pushman_state::tigeroad_soundcmd_w));
+	map(0xe4000, 0xe4001).portr("P1_P2").w(FUNC(pushman_state::tigeroad_videoctrl_w));
+	map(0xe4002, 0xe4003).portr("SYSTEM").w(FUNC(pushman_state::tigeroad_soundcmd_w));
 	map(0xe4004, 0xe4005).portr("DSW");
-	map(0xe8000, 0xe8003).w(this, FUNC(pushman_state::tigeroad_scroll_w));
+	map(0xe8000, 0xe8003).w(FUNC(pushman_state::tigeroad_scroll_w));
 	map(0xe800e, 0xe800f).nopw(); /* ? */
-	map(0xec000, 0xec7ff).ram().w(this, FUNC(pushman_state::tigeroad_videoram_w)).share("videoram");
+	map(0xec000, 0xec7ff).ram().w(FUNC(pushman_state::tigeroad_videoram_w)).share("videoram");
 
 	map(0xf8000, 0xf87ff).ram().w(m_palette, FUNC(palette_device::write16)).share("palette");
 	map(0xfc000, 0xfffff).ram().share("ram16");
@@ -205,7 +205,7 @@ void tigeroad_state::sample_port_map(address_map &map)
 {
 	map.global_mask(0xff);
 	map(0x00, 0x00).r("soundlatch2", FUNC(generic_latch_8_device::read));
-	map(0x01, 0x01).w(this, FUNC(tigeroad_state::msm5205_w));
+	map(0x01, 0x01).w(FUNC(tigeroad_state::msm5205_w));
 }
 
 /* Pushman / Bouncing Balls */
@@ -642,7 +642,7 @@ static const gfx_layout sprite_layout =
 };
 
 
-static GFXDECODE_START( tigeroad )
+static GFXDECODE_START( gfx_tigeroad )
 	GFXDECODE_ENTRY( "text", 0, text_layout,      0x300, 16 )
 	GFXDECODE_ENTRY( "tiles", 0, tile_layout,     0x100, 16 )
 	GFXDECODE_ENTRY( "sprites", 0, sprite_layout, 0x200, 16 )
@@ -651,18 +651,18 @@ GFXDECODE_END
 MACHINE_CONFIG_START(tigeroad_state::tigeroad)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", M68000, XTAL(10'000'000)) /* verified on pcb */
-	MCFG_CPU_PROGRAM_MAP(main_map)
-	MCFG_CPU_VBLANK_INT_DRIVER("screen", tigeroad_state,  irq2_line_hold)
+	MCFG_DEVICE_ADD("maincpu", M68000, XTAL(10'000'000)) /* verified on pcb */
+	MCFG_DEVICE_PROGRAM_MAP(main_map)
+	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", tigeroad_state,  irq2_line_hold)
 
-	MCFG_CPU_ADD("audiocpu", Z80, XTAL(3'579'545)) /* verified on pcb */
-	MCFG_CPU_PROGRAM_MAP(sound_map)
-	MCFG_CPU_IO_MAP(sound_port_map)
+	MCFG_DEVICE_ADD("audiocpu", Z80, XTAL(3'579'545)) /* verified on pcb */
+	MCFG_DEVICE_PROGRAM_MAP(sound_map)
+	MCFG_DEVICE_IO_MAP(sound_port_map)
 
 	/* IRQs are triggered by the YM2203 */
 
 	/* video hardware */
-	MCFG_BUFFERED_SPRITERAM16_ADD("spriteram")
+	MCFG_DEVICE_ADD("spriteram", BUFFERED_SPRITERAM16)
 
 	MCFG_SCREEN_ADD("screen", RASTER)
 	MCFG_SCREEN_REFRESH_RATE(60.08)   /* verified on pcb */
@@ -670,10 +670,10 @@ MACHINE_CONFIG_START(tigeroad_state::tigeroad)
 	MCFG_SCREEN_SIZE(32*8, 32*8)
 	MCFG_SCREEN_VISIBLE_AREA(0*8, 32*8-1, 2*8, 30*8-1)
 	MCFG_SCREEN_UPDATE_DRIVER(tigeroad_state, screen_update_tigeroad)
-	MCFG_SCREEN_VBLANK_CALLBACK(DEVWRITELINE("spriteram", buffered_spriteram16_device, vblank_copy_rising))
+	MCFG_SCREEN_VBLANK_CALLBACK(WRITELINE("spriteram", buffered_spriteram16_device, vblank_copy_rising))
 	MCFG_SCREEN_PALETTE("palette")
 
-	MCFG_GFXDECODE_ADD("gfxdecode", "palette", tigeroad)
+	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_tigeroad)
 
 	MCFG_DEVICE_ADD("spritegen", TIGEROAD_SPRITE, 0)
 
@@ -681,16 +681,16 @@ MACHINE_CONFIG_START(tigeroad_state::tigeroad)
 	MCFG_PALETTE_FORMAT(xxxxRRRRGGGGBBBB)
 
 	/* sound hardware */
-	MCFG_SPEAKER_STANDARD_MONO("mono")
+	SPEAKER(config, "mono").front_center();
 
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch")
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch2")
 
-	MCFG_SOUND_ADD("ym1", YM2203, XTAL(3'579'545)) /* verified on pcb */
+	MCFG_DEVICE_ADD("ym1", YM2203, XTAL(3'579'545)) /* verified on pcb */
 	MCFG_YM2203_IRQ_HANDLER(INPUTLINE("audiocpu", 0))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.25)
 
-	MCFG_SOUND_ADD("ym2", YM2203, XTAL(3'579'545)) /* verified on pcb */
+	MCFG_DEVICE_ADD("ym2", YM2203, XTAL(3'579'545)) /* verified on pcb */
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.25)
 MACHINE_CONFIG_END
 
@@ -698,13 +698,13 @@ MACHINE_CONFIG_END
 MACHINE_CONFIG_START(f1dream_state::f1dream)
 	tigeroad(config);
 
-	MCFG_CPU_MODIFY("maincpu")
-	MCFG_CPU_PROGRAM_MAP(f1dream_map)
+	MCFG_DEVICE_MODIFY("maincpu")
+	MCFG_DEVICE_PROGRAM_MAP(f1dream_map)
 
-	MCFG_CPU_ADD("mcu", I8751, XTAL(10'000'000)) /* ??? */
-	MCFG_CPU_IO_MAP(f1dream_mcu_io)
-	MCFG_MCS51_PORT_P1_OUT_CB(WRITE8(f1dream_state, out1_w))
-	MCFG_MCS51_PORT_P3_OUT_CB(WRITE8(f1dream_state, out3_w))
+	MCFG_DEVICE_ADD("mcu", I8751, XTAL(10'000'000)) /* ??? */
+	MCFG_DEVICE_IO_MAP(f1dream_mcu_io)
+	MCFG_MCS51_PORT_P1_OUT_CB(WRITE8(*this, f1dream_state, out1_w))
+	MCFG_MCS51_PORT_P3_OUT_CB(WRITE8(*this, f1dream_state, out3_w))
 MACHINE_CONFIG_END
 
 /* same as above but with additional Z80 for samples playback */
@@ -713,13 +713,13 @@ MACHINE_CONFIG_START(tigeroad_state::toramich)
 
 	/* basic machine hardware */
 
-	MCFG_CPU_ADD("sample", Z80, 3579545) /* ? */
-	MCFG_CPU_PROGRAM_MAP(sample_map)
-	MCFG_CPU_IO_MAP(sample_port_map)
-	MCFG_CPU_PERIODIC_INT_DRIVER(tigeroad_state, irq0_line_hold, 4000)  /* ? */
+	MCFG_DEVICE_ADD("sample", Z80, 3579545) /* ? */
+	MCFG_DEVICE_PROGRAM_MAP(sample_map)
+	MCFG_DEVICE_IO_MAP(sample_port_map)
+	MCFG_DEVICE_PERIODIC_INT_DRIVER(tigeroad_state, irq0_line_hold, 4000)  /* ? */
 
 	/* sound hardware */
-	MCFG_SOUND_ADD("msm", MSM5205, 384000)
+	MCFG_DEVICE_ADD("msm", MSM5205, 384000)
 	MCFG_MSM5205_PRESCALER_SELECTOR(SEX_4B)  /* 4KHz playback ?  */
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.0)
 MACHINE_CONFIG_END
@@ -728,18 +728,18 @@ MACHINE_CONFIG_END
 MACHINE_CONFIG_START(tigeroad_state::f1dream_comad)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", M68000, 8000000)
-	MCFG_CPU_PROGRAM_MAP(main_map)
-	MCFG_CPU_VBLANK_INT_DRIVER("screen", tigeroad_state,  irq2_line_hold)
+	MCFG_DEVICE_ADD("maincpu", M68000, 8000000)
+	MCFG_DEVICE_PROGRAM_MAP(main_map)
+	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", tigeroad_state,  irq2_line_hold)
 
-	MCFG_CPU_ADD("audiocpu", Z80, 4000000)
-	MCFG_CPU_PROGRAM_MAP(comad_sound_map)
-	MCFG_CPU_IO_MAP(comad_sound_io_map)
+	MCFG_DEVICE_ADD("audiocpu", Z80, 4000000)
+	MCFG_DEVICE_PROGRAM_MAP(comad_sound_map)
+	MCFG_DEVICE_IO_MAP(comad_sound_io_map)
 
 	MCFG_QUANTUM_TIME(attotime::from_hz(3600))
 
 	/* video hardware */
-	MCFG_BUFFERED_SPRITERAM16_ADD("spriteram")
+	MCFG_DEVICE_ADD("spriteram", BUFFERED_SPRITERAM16)
 
 	MCFG_SCREEN_ADD("screen", RASTER)
 	MCFG_SCREEN_REFRESH_RATE(60.08)   /* verified on pcb */
@@ -747,11 +747,11 @@ MACHINE_CONFIG_START(tigeroad_state::f1dream_comad)
 	MCFG_SCREEN_SIZE(32*8, 32*8)
 	MCFG_SCREEN_VISIBLE_AREA(0*8, 32*8-1, 2*8, 30*8-1)
 	MCFG_SCREEN_UPDATE_DRIVER(tigeroad_state, screen_update_tigeroad)
-	MCFG_SCREEN_VBLANK_CALLBACK(DEVWRITELINE("spriteram", buffered_spriteram16_device, vblank_copy_rising))
+	MCFG_SCREEN_VBLANK_CALLBACK(WRITELINE("spriteram", buffered_spriteram16_device, vblank_copy_rising))
 
 	MCFG_SCREEN_PALETTE("palette")
 
-	MCFG_GFXDECODE_ADD("gfxdecode", "palette", tigeroad)
+	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_tigeroad)
 
 	MCFG_DEVICE_ADD("spritegen", TIGEROAD_SPRITE, 0)
 
@@ -759,15 +759,15 @@ MACHINE_CONFIG_START(tigeroad_state::f1dream_comad)
 	MCFG_PALETTE_FORMAT(xxxxRRRRGGGGBBBB)
 
 	/* sound hardware */
-	MCFG_SPEAKER_STANDARD_MONO("mono")
+	SPEAKER(config, "mono").front_center();
 
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch")
 
-	MCFG_SOUND_ADD("ym1", YM2203, 2000000)
+	MCFG_DEVICE_ADD("ym1", YM2203, 2000000)
 	MCFG_YM2203_IRQ_HANDLER(INPUTLINE("audiocpu", 0))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.40)
 
-	MCFG_SOUND_ADD("ym2", YM2203, 2000000)
+	MCFG_DEVICE_ADD("ym2", YM2203, 2000000)
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.40)
 MACHINE_CONFIG_END
 
@@ -784,20 +784,20 @@ void pushman_state::machine_start()
 
 MACHINE_CONFIG_START(pushman_state::pushman)
 	f1dream_comad(config);
-	MCFG_CPU_MODIFY("maincpu")
-	MCFG_CPU_PROGRAM_MAP(pushman_map)
+	MCFG_DEVICE_MODIFY("maincpu")
+	MCFG_DEVICE_PROGRAM_MAP(pushman_map)
 
-	MCFG_CPU_ADD("mcu", M68705R3, 4000000)    /* No idea */
-	MCFG_M68705_PORTA_W_CB(WRITE8(pushman_state, mcu_pa_w))
-	MCFG_M68705_PORTB_W_CB(WRITE8(pushman_state, mcu_pb_w))
-	MCFG_M68705_PORTC_W_CB(WRITE8(pushman_state, mcu_pc_w))
+	MCFG_DEVICE_ADD("mcu", M68705R3, 4000000)    /* No idea */
+	MCFG_M68705_PORTA_W_CB(WRITE8(*this, pushman_state, mcu_pa_w))
+	MCFG_M68705_PORTB_W_CB(WRITE8(*this, pushman_state, mcu_pb_w))
+	MCFG_M68705_PORTC_W_CB(WRITE8(*this, pushman_state, mcu_pc_w))
 MACHINE_CONFIG_END
 
 
 MACHINE_CONFIG_START(pushman_state::bballs)
 	pushman(config);
-	MCFG_CPU_MODIFY("maincpu")
-	MCFG_CPU_PROGRAM_MAP(bballs_map)
+	MCFG_DEVICE_MODIFY("maincpu")
+	MCFG_DEVICE_PROGRAM_MAP(bballs_map)
 MACHINE_CONFIG_END
 
 
@@ -1263,21 +1263,21 @@ ROM_END
 /***************************************************************************/
 
 
-GAME( 1987, tigeroad, 0,        tigeroad, tigeroad, tigeroad_state, 0,       ROT0, "Capcom", "Tiger Road (US)", 0 )
-GAME( 1987, tigeroadu,tigeroad, tigeroad, tigeroad, tigeroad_state, 0,       ROT0, "Capcom (Romstar license)", "Tiger Road (US, Romstar license)", 0 )
-GAME( 1987, toramich, tigeroad, toramich, toramich, tigeroad_state, 0,       ROT0, "Capcom", "Tora e no Michi (Japan)", 0 )
-GAME( 1987, tigeroadb,tigeroad, tigeroad, tigeroad, tigeroad_state, 0,       ROT0, "bootleg", "Tiger Road (US bootleg)", 0 )
+GAME( 1987, tigeroad, 0,        tigeroad, tigeroad, tigeroad_state, empty_init, ROT0, "Capcom", "Tiger Road (US)", 0 )
+GAME( 1987, tigeroadu,tigeroad, tigeroad, tigeroad, tigeroad_state, empty_init, ROT0, "Capcom (Romstar license)", "Tiger Road (US, Romstar license)", 0 )
+GAME( 1987, toramich, tigeroad, toramich, toramich, tigeroad_state, empty_init, ROT0, "Capcom", "Tora e no Michi (Japan)", 0 )
+GAME( 1987, tigeroadb,tigeroad, tigeroad, tigeroad, tigeroad_state, empty_init, ROT0, "bootleg", "Tiger Road (US bootleg)", 0 )
 
 /* F1 Dream has an Intel 8751 microcontroller for protection */
-GAME( 1988, f1dream,  0,        f1dream,      f1dream,  f1dream_state,  0,       ROT0, "Capcom (Romstar license)", "F-1 Dream", 0 )
-GAME( 1988, f1dreamb, f1dream,  tigeroad,     f1dream,  tigeroad_state, 0,       ROT0, "bootleg", "F-1 Dream (bootleg, set 1)", 0 )
-GAME( 1988, f1dreamba,f1dream,  tigeroad,     f1dream,  tigeroad_state, 0,       ROT0, "bootleg", "F-1 Dream (bootleg, set 2)", 0 )
+GAME( 1988, f1dream,  0,        f1dream,      f1dream,  f1dream_state,  empty_init, ROT0, "Capcom (Romstar license)", "F-1 Dream", 0 )
+GAME( 1988, f1dreamb, f1dream,  tigeroad,     f1dream,  tigeroad_state, empty_init, ROT0, "bootleg", "F-1 Dream (bootleg, set 1)", 0 )
+GAME( 1988, f1dreamba,f1dream,  tigeroad,     f1dream,  tigeroad_state, empty_init, ROT0, "bootleg", "F-1 Dream (bootleg, set 2)", 0 )
 
 /* This Comad hardware is based around the F1 Dream design */
-GAME( 1990, pushman,  0,        pushman, pushman,   pushman_state,  0,       ROT0, "Comad", "Pushman (Korea, set 1)", MACHINE_SUPPORTS_SAVE )
-GAME( 1990, pushmana, pushman,  pushman, pushman,   pushman_state,  0,       ROT0, "Comad", "Pushman (Korea, set 2)", MACHINE_SUPPORTS_SAVE )
-GAME( 1990, pushmans, pushman,  pushman, pushman,   pushman_state,  0,       ROT0, "Comad (American Sammy license)", "Pushman (American Sammy license)", MACHINE_SUPPORTS_SAVE )
-GAME( 1990, pushmant, pushman,  pushman, pushman,   pushman_state,  0,       ROT0, "Comad (Top Tronic license)", "Pushman (Top Tronic license)", MACHINE_SUPPORTS_SAVE )
+GAME( 1990, pushman,  0,        pushman, pushman,   pushman_state, empty_init, ROT0, "Comad", "Pushman (Korea, set 1)", MACHINE_SUPPORTS_SAVE )
+GAME( 1990, pushmana, pushman,  pushman, pushman,   pushman_state, empty_init, ROT0, "Comad", "Pushman (Korea, set 2)", MACHINE_SUPPORTS_SAVE )
+GAME( 1990, pushmans, pushman,  pushman, pushman,   pushman_state, empty_init, ROT0, "Comad (American Sammy license)", "Pushman (American Sammy license)", MACHINE_SUPPORTS_SAVE )
+GAME( 1990, pushmant, pushman,  pushman, pushman,   pushman_state, empty_init, ROT0, "Comad (Top Tronic license)", "Pushman (Top Tronic license)", MACHINE_SUPPORTS_SAVE )
 
-GAME( 1991, bballs,   0,        bballs,  bballs,    pushman_state,  0,       ROT0, "Comad", "Bouncing Balls", MACHINE_SUPPORTS_SAVE )
-GAME( 1991, bballsa,  bballs,   bballs,  bballs,    pushman_state,  0,       ROT0, "Comad", "Bouncing Balls (Adult)", MACHINE_SUPPORTS_SAVE )
+GAME( 1991, bballs,   0,        bballs,  bballs,    pushman_state, empty_init, ROT0, "Comad", "Bouncing Balls", MACHINE_SUPPORTS_SAVE )
+GAME( 1991, bballsa,  bballs,   bballs,  bballs,    pushman_state, empty_init, ROT0, "Comad", "Bouncing Balls (Adult)", MACHINE_SUPPORTS_SAVE )

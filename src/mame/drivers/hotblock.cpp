@@ -41,6 +41,7 @@ so it could be by them instead
 #include "emu.h"
 #include "cpu/i86/i86.h"
 #include "sound/ay8910.h"
+#include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
 
@@ -133,14 +134,14 @@ WRITE8_MEMBER(hotblock_state::video_write)
 void hotblock_state::hotblock_map(address_map &map)
 {
 	map(0x00000, 0x0ffff).ram();
-	map(0x10000, 0x1ffff).rw(this, FUNC(hotblock_state::video_read), FUNC(hotblock_state::video_write)).share("vram");
+	map(0x10000, 0x1ffff).rw(FUNC(hotblock_state::video_read), FUNC(hotblock_state::video_write)).share("vram");
 	map(0x20000, 0xfffff).rom();
 }
 
 void hotblock_state::hotblock_io(address_map &map)
 {
-	map(0x0000, 0x0000).w(this, FUNC(hotblock_state::port0_w));
-	map(0x0004, 0x0004).rw(this, FUNC(hotblock_state::port4_r), FUNC(hotblock_state::port4_w));
+	map(0x0000, 0x0000).w(FUNC(hotblock_state::port0_w));
+	map(0x0004, 0x0004).rw(FUNC(hotblock_state::port4_r), FUNC(hotblock_state::port4_w));
 	map(0x8000, 0x8001).w("aysnd", FUNC(ym2149_device::address_data_w));
 	map(0x8001, 0x8001).r("aysnd", FUNC(ym2149_device::data_r));
 }
@@ -209,9 +210,9 @@ INPUT_PORTS_END
 MACHINE_CONFIG_START(hotblock_state::hotblock)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", I8088, 10000000)
-	MCFG_CPU_PROGRAM_MAP(hotblock_map)
-	MCFG_CPU_IO_MAP(hotblock_io)
+	MCFG_DEVICE_ADD("maincpu", I8088, 10000000)
+	MCFG_DEVICE_PROGRAM_MAP(hotblock_map)
+	MCFG_DEVICE_IO_MAP(hotblock_io)
 
 	/* video hardware */
 	MCFG_SCREEN_ADD("screen", RASTER)
@@ -224,9 +225,9 @@ MACHINE_CONFIG_START(hotblock_state::hotblock)
 
 
 	/* sound hardware */
-	MCFG_SPEAKER_STANDARD_MONO("mono")
+	SPEAKER(config, "mono").front_center();
 
-	MCFG_SOUND_ADD("aysnd", YM2149, 1000000)
+	MCFG_DEVICE_ADD("aysnd", YM2149, 1000000)
 	MCFG_AY8910_PORT_A_READ_CB(IOPORT("P1"))
 	MCFG_AY8910_PORT_B_READ_CB(IOPORT("P2"))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
@@ -238,4 +239,4 @@ ROM_START( hotblock )
 	ROM_LOAD( "hotblk6.ic5", 0x080000, 0x080000, CRC(3176d231) SHA1(ac22fd0e9820c6714f51a3d8315eb5d43ef91eeb) )
 ROM_END
 
-GAME( 1993, hotblock, 0,        hotblock, hotblock, hotblock_state, 0, ROT0,  "NIX?", "Hot Blocks - Tetrix II", MACHINE_SUPPORTS_SAVE )
+GAME( 1993, hotblock, 0, hotblock, hotblock, hotblock_state, empty_init, ROT0, "NIX?", "Hot Blocks - Tetrix II", MACHINE_SUPPORTS_SAVE )

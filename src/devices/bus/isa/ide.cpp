@@ -26,12 +26,12 @@ WRITE8_MEMBER(isa16_ide_device::ide16_alt_w )
 
 void isa16_ide_device::map(address_map &map)
 {
-	map(0x0, 0x7).rw("ide", FUNC(ide_controller_device::read_cs0), FUNC(ide_controller_device::write_cs0));
+	map(0x0, 0x7).rw("ide", FUNC(ide_controller_device::cs0_r), FUNC(ide_controller_device::cs0_w));
 }
 
 void isa16_ide_device::alt_map(address_map &map)
 {
-	map(0x6, 0x6).rw(this, FUNC(isa16_ide_device::ide16_alt_r), FUNC(isa16_ide_device::ide16_alt_w));
+	map(0x6, 0x6).rw(FUNC(isa16_ide_device::ide16_alt_r), FUNC(isa16_ide_device::ide16_alt_w));
 }
 
 WRITE_LINE_MEMBER(isa16_ide_device::ide_interrupt)
@@ -49,8 +49,8 @@ WRITE_LINE_MEMBER(isa16_ide_device::ide_interrupt)
 void isa16_ide_device::cdrom_headphones(device_t *device)
 {
 	device = device->subdevice("cdda");
-	MCFG_SOUND_ROUTE(0, "^^^^lheadphone", 1.0)
-	MCFG_SOUND_ROUTE(1, "^^^^rheadphone", 1.0)
+	MCFG_SOUND_ROUTE(0, "^^lheadphone", 1.0)
+	MCFG_SOUND_ROUTE(1, "^^rheadphone", 1.0)
 }
 
 static INPUT_PORTS_START( ide )
@@ -72,9 +72,10 @@ DEFINE_DEVICE_TYPE(ISA16_IDE, isa16_ide_device, "isa_ide", "IDE Fixed Drive Adap
 
 MACHINE_CONFIG_START(isa16_ide_device::device_add_mconfig)
 	MCFG_IDE_CONTROLLER_ADD("ide", ata_devices, "hdd", nullptr, false)
-	MCFG_ATA_INTERFACE_IRQ_HANDLER(WRITELINE(isa16_ide_device, ide_interrupt))
+	MCFG_ATA_INTERFACE_IRQ_HANDLER(WRITELINE(*this, isa16_ide_device, ide_interrupt))
 
-	MCFG_SPEAKER_STANDARD_STEREO("lheadphone", "rheadphone")
+	SPEAKER(config, "lheadphone").front_left();
+	SPEAKER(config, "rheadphone").front_right();
 
 	MCFG_DEVICE_MODIFY("ide:0")
 	MCFG_SLOT_OPTION_MACHINE_CONFIG("cdrom", cdrom_headphones)

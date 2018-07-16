@@ -26,7 +26,7 @@ void i80130_device::rom_map(address_map &map)
 
 void i80130_device::io_map(address_map &map)
 {
-	map(0x00, 0x0f).rw(this, FUNC(i80130_device::io_r), FUNC(i80130_device::io_w));
+	map(0x00, 0x0f).rw(FUNC(i80130_device::io_r), FUNC(i80130_device::io_w));
 	//AM_RANGE(0x00, 0x01) AM_MIRROR(0x2) AM_DEVREADWRITE8("pic", pic8259_device, read, write, 0x00ff)
 	//AM_RANGE(0x08, 0x0f) AM_DEVREADWRITE8("pit", pit8254_device, read, write, 0x00ff)
 }
@@ -102,15 +102,15 @@ const tiny_rom_entry *i80130_device::device_rom_region() const
 
 MACHINE_CONFIG_START(i80130_device::device_add_mconfig)
 	MCFG_DEVICE_ADD("pic", PIC8259, 0)
-	MCFG_PIC8259_OUT_INT_CB(WRITELINE(i80130_device, irq_w))
+	MCFG_PIC8259_OUT_INT_CB(WRITELINE(*this, i80130_device, irq_w))
 
 	MCFG_DEVICE_ADD("pit", PIT8254, 0)
 	MCFG_PIT8253_CLK0(0)
-	MCFG_PIT8253_OUT0_HANDLER(WRITELINE(i80130_device, systick_w))
+	MCFG_PIT8253_OUT0_HANDLER(WRITELINE(*this, i80130_device, systick_w))
 	MCFG_PIT8253_CLK1(0)
-	MCFG_PIT8253_OUT1_HANDLER(WRITELINE(i80130_device, delay_w))
+	MCFG_PIT8253_OUT1_HANDLER(WRITELINE(*this, i80130_device, delay_w))
 	MCFG_PIT8253_CLK2(0)
-	MCFG_PIT8253_OUT2_HANDLER(WRITELINE(i80130_device, baud_w))
+	MCFG_PIT8253_OUT2_HANDLER(WRITELINE(*this, i80130_device, baud_w))
 MACHINE_CONFIG_END
 
 

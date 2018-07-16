@@ -11,6 +11,7 @@
 #include "machine/timer.h"
 #include "cpu/tms34010/tms34010.h"
 #include "sound/upd7759.h"
+#include "emupal.h"
 
 struct duart_t
 {
@@ -62,6 +63,7 @@ class jpmimpct_state : public driver_device
 public:
 	jpmimpct_state(const machine_config &mconfig, device_type type, const char *tag)
 		: driver_device(mconfig, type, tag)
+		, m_duart_1_timer(*this, "duart_1_timer")
 		, m_vfd(*this, "vfd")
 		, m_vram(*this, "vram")
 		, m_maincpu(*this, "maincpu")
@@ -76,7 +78,8 @@ public:
 		, m_reel5(*this, "reel5")
 		, m_meters(*this, "meters")
 		, m_digits(*this, "digit%u", 0U)
-		{ }
+		, m_lamp_output(*this, "lamp%u", 0U)
+	{ }
 
 	DECLARE_WRITE_LINE_MEMBER(reel0_optic_cb) { if (state) m_optic_pattern |= 0x01; else m_optic_pattern &= ~0x01; }
 	DECLARE_WRITE_LINE_MEMBER(reel1_optic_cb) { if (state) m_optic_pattern |= 0x02; else m_optic_pattern &= ~0x02; }
@@ -142,6 +145,8 @@ private:
 	struct bt477_t m_bt477;
 	void jpm_draw_lamps(int data, int lamp_strobe);
 	void update_irqs();
+
+	required_device<timer_device> m_duart_1_timer;
 	optional_device<s16lf01_device> m_vfd;
 	optional_shared_ptr<uint16_t> m_vram;
 	required_device<cpu_device> m_maincpu;
@@ -156,4 +161,5 @@ private:
 	optional_device<stepper_device> m_reel5;
 	required_device<meters_device> m_meters;
 	output_finder<300> m_digits;
+	output_finder<256> m_lamp_output;
 };

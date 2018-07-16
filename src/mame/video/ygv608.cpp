@@ -228,7 +228,7 @@ static const gfx_layout pts_16x16_8bits_layout =
 	16*16*8
 };
 
-static GFXDECODE_START( ygv608 )
+static GFXDECODE_START( gfx_ygv608 )
 	GFXDECODE_DEVICE( DEVICE_SELF, 0x00000000, pts_8x8_4bits_layout,    0,  16 )
 	GFXDECODE_DEVICE( DEVICE_SELF, 0x00000000, pts_16x16_4bits_layout,  0,  16 )
 	GFXDECODE_DEVICE( DEVICE_SELF, 0x00000000, pts_32x32_4bits_layout,  0,  16 )
@@ -252,41 +252,41 @@ void ygv608_device::regs_map(address_map &map)
 {
 
 	// address pointers
-	map(0, 0).rw(this, FUNC(ygv608_device::pattern_name_table_y_r), FUNC(ygv608_device::pattern_name_table_y_w));
-	map(1, 1).rw(this, FUNC(ygv608_device::pattern_name_table_x_r), FUNC(ygv608_device::pattern_name_table_x_w));
+	map(0, 0).rw(FUNC(ygv608_device::pattern_name_table_y_r), FUNC(ygv608_device::pattern_name_table_y_w));
+	map(1, 1).rw(FUNC(ygv608_device::pattern_name_table_x_r), FUNC(ygv608_device::pattern_name_table_x_w));
 
-	map(2, 2).rw(this, FUNC(ygv608_device::ram_access_ctrl_r), FUNC(ygv608_device::ram_access_ctrl_w));
+	map(2, 2).rw(FUNC(ygv608_device::ram_access_ctrl_r), FUNC(ygv608_device::ram_access_ctrl_w));
 
-	map(3, 3).rw(this, FUNC(ygv608_device::sprite_address_r), FUNC(ygv608_device::sprite_address_w));
-	map(4, 4).rw(this, FUNC(ygv608_device::scroll_address_r), FUNC(ygv608_device::scroll_address_w));
-	map(5, 5).rw(this, FUNC(ygv608_device::palette_address_r), FUNC(ygv608_device::palette_address_w));
-	map(6, 6).rw(this, FUNC(ygv608_device::sprite_bank_r), FUNC(ygv608_device::sprite_bank_w));
+	map(3, 3).rw(FUNC(ygv608_device::sprite_address_r), FUNC(ygv608_device::sprite_address_w));
+	map(4, 4).rw(FUNC(ygv608_device::scroll_address_r), FUNC(ygv608_device::scroll_address_w));
+	map(5, 5).rw(FUNC(ygv608_device::palette_address_r), FUNC(ygv608_device::palette_address_w));
+	map(6, 6).rw(FUNC(ygv608_device::sprite_bank_r), FUNC(ygv608_device::sprite_bank_w));
 
 	// screen control
-	map(7, 7).rw(this, FUNC(ygv608_device::screen_ctrl_7_r), FUNC(ygv608_device::screen_ctrl_7_w));
-	map(8, 8).rw(this, FUNC(ygv608_device::screen_ctrl_8_r), FUNC(ygv608_device::screen_ctrl_8_w));
-	map(9, 9).rw(this, FUNC(ygv608_device::screen_ctrl_9_r), FUNC(ygv608_device::screen_ctrl_9_w));
-	map(10, 10).rw(this, FUNC(ygv608_device::screen_ctrl_10_r), FUNC(ygv608_device::screen_ctrl_10_w));
-	map(11, 11).rw(this, FUNC(ygv608_device::screen_ctrl_11_r), FUNC(ygv608_device::screen_ctrl_11_w));
-	map(12, 12).rw(this, FUNC(ygv608_device::screen_ctrl_12_r), FUNC(ygv608_device::screen_ctrl_12_w));
+	map(7, 7).rw(FUNC(ygv608_device::screen_ctrl_7_r), FUNC(ygv608_device::screen_ctrl_7_w));
+	map(8, 8).rw(FUNC(ygv608_device::screen_ctrl_8_r), FUNC(ygv608_device::screen_ctrl_8_w));
+	map(9, 9).rw(FUNC(ygv608_device::screen_ctrl_9_r), FUNC(ygv608_device::screen_ctrl_9_w));
+	map(10, 10).rw(FUNC(ygv608_device::screen_ctrl_10_r), FUNC(ygv608_device::screen_ctrl_10_w));
+	map(11, 11).rw(FUNC(ygv608_device::screen_ctrl_11_r), FUNC(ygv608_device::screen_ctrl_11_w));
+	map(12, 12).rw(FUNC(ygv608_device::screen_ctrl_12_r), FUNC(ygv608_device::screen_ctrl_12_w));
 
-	map(13, 13).w(this, FUNC(ygv608_device::border_color_w));
+	map(13, 13).w(FUNC(ygv608_device::border_color_w));
 	// interrupt section
-	map(14, 14).rw(this, FUNC(ygv608_device::irq_mask_r), FUNC(ygv608_device::irq_mask_w));
-	map(15, 16).rw(this, FUNC(ygv608_device::irq_ctrl_r), FUNC(ygv608_device::irq_ctrl_w));
+	map(14, 14).rw(FUNC(ygv608_device::irq_mask_r), FUNC(ygv608_device::irq_mask_w));
+	map(15, 16).rw(FUNC(ygv608_device::irq_ctrl_r), FUNC(ygv608_device::irq_ctrl_w));
 	// base address
-	map(17, 24).w(this, FUNC(ygv608_device::base_address_w));
+	map(17, 24).w(FUNC(ygv608_device::base_address_w));
 
 	// ROZ parameters
-	map(25, 27).w(this, FUNC(ygv608_device::roz_ax_w));
-	map(28, 29).w(this, FUNC(ygv608_device::roz_dx_w));
-	map(30, 31).w(this, FUNC(ygv608_device::roz_dxy_w));
-	map(32, 34).w(this, FUNC(ygv608_device::roz_ay_w));
-	map(35, 36).w(this, FUNC(ygv608_device::roz_dy_w));
-	map(37, 38).w(this, FUNC(ygv608_device::roz_dyx_w));
+	map(25, 27).w(FUNC(ygv608_device::roz_ax_w));
+	map(28, 29).w(FUNC(ygv608_device::roz_dx_w));
+	map(30, 31).w(FUNC(ygv608_device::roz_dxy_w));
+	map(32, 34).w(FUNC(ygv608_device::roz_ay_w));
+	map(35, 36).w(FUNC(ygv608_device::roz_dy_w));
+	map(37, 38).w(FUNC(ygv608_device::roz_dyx_w));
 
 	// CRTC
-	map(39, 46).w(this, FUNC(ygv608_device::crtc_w));
+	map(39, 46).w(FUNC(ygv608_device::crtc_w));
 //  47-48 ROM transfer control - DMA source address
 //  49 ROM transfer control - DMA size
 }
@@ -299,14 +299,14 @@ void ygv608_device::regs_map(address_map &map)
 
 void ygv608_device::port_map(address_map &map)
 {
-	map(0x00, 0x00).rw(this, FUNC(ygv608_device::pattern_name_table_r), FUNC(ygv608_device::pattern_name_table_w));
-	map(0x01, 0x01).rw(this, FUNC(ygv608_device::sprite_data_r), FUNC(ygv608_device::sprite_data_w));
-	map(0x02, 0x02).rw(this, FUNC(ygv608_device::scroll_data_r), FUNC(ygv608_device::scroll_data_w));
-	map(0x03, 0x03).rw(this, FUNC(ygv608_device::palette_data_r), FUNC(ygv608_device::palette_data_w));
-	map(0x04, 0x04).rw(this, FUNC(ygv608_device::register_data_r), FUNC(ygv608_device::register_data_w));
-	map(0x05, 0x05).nopr().w(this, FUNC(ygv608_device::register_select_w));
-	map(0x06, 0x06).rw(this, FUNC(ygv608_device::status_port_r), FUNC(ygv608_device::status_port_w));
-	map(0x07, 0x07).rw(this, FUNC(ygv608_device::system_control_r), FUNC(ygv608_device::system_control_w));
+	map(0x00, 0x00).rw(FUNC(ygv608_device::pattern_name_table_r), FUNC(ygv608_device::pattern_name_table_w));
+	map(0x01, 0x01).rw(FUNC(ygv608_device::sprite_data_r), FUNC(ygv608_device::sprite_data_w));
+	map(0x02, 0x02).rw(FUNC(ygv608_device::scroll_data_r), FUNC(ygv608_device::scroll_data_w));
+	map(0x03, 0x03).rw(FUNC(ygv608_device::palette_data_r), FUNC(ygv608_device::palette_data_w));
+	map(0x04, 0x04).rw(FUNC(ygv608_device::register_data_r), FUNC(ygv608_device::register_data_w));
+	map(0x05, 0x05).nopr().w(FUNC(ygv608_device::register_select_w));
+	map(0x06, 0x06).rw(FUNC(ygv608_device::status_port_r), FUNC(ygv608_device::status_port_w));
+	map(0x07, 0x07).rw(FUNC(ygv608_device::system_control_r), FUNC(ygv608_device::system_control_w));
 }
 
 
@@ -316,8 +316,9 @@ void ygv608_device::port_map(address_map &map)
 
 ygv608_device::ygv608_device( const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock )
 	: device_t(mconfig, YGV608, tag, owner, clock),
-	  device_gfx_interface(mconfig, *this, GFXDECODE_NAME(ygv608)),
+	  device_gfx_interface(mconfig, *this, gfx_ygv608),
 	  device_memory_interface(mconfig, *this),
+	  device_video_interface(mconfig, *this),
 	  m_io_space_config("io", ENDIANNESS_BIG, 8, 6, 0, address_map_constructor(FUNC(ygv608_device::regs_map), this)),
 	  m_vblank_handler(*this),
 	  m_raster_handler(*this)
@@ -378,7 +379,6 @@ void ygv608_device::device_start()
 	m_iospace = &space(AS_IO);
 
 	// TODO: tagging configuration
-	m_screen = downcast<screen_device *>(machine().device("screen"));
 	m_vblank_handler.resolve();
 	m_raster_handler.resolve();
 	m_vblank_timer = timer_alloc(VBLANK_TIMER);
@@ -1386,7 +1386,7 @@ READ8_MEMBER(ygv608_device::register_data_r)
 READ8_MEMBER( ygv608_device::status_port_r )
 {
 	// TODO: we need to use h/vpos in case of border support instead due of how MAME framework works here.
-	return (m_screen_status & 0x1c) | (m_screen->hblank()<<1) | m_screen->vblank();
+	return (m_screen_status & 0x1c) | (screen().hblank()<<1) | screen().vblank();
 }
 
 // P#7R - system control port
@@ -2085,7 +2085,7 @@ attotime ygv608_device::raster_sync_offset()
 	}
 
 	// TODO: actual sync not taken into account, needs a better test than NCV2 limited case
-	return m_screen->time_until_pos(m_raster_irq_vpos,m_raster_irq_hpos);
+	return screen().time_until_pos(m_raster_irq_vpos,m_raster_irq_hpos);
 }
 
 // R#17 / R#24 - base address
@@ -2261,14 +2261,14 @@ void ygv608_device::screen_configure()
 
 	// TODO: Dig Dug Original wants this to be 60.60 Hz (like original Namco HW), lets compensate somehow
 	//      (clock is really 6144000 x 8 = 49152000, so it must have same parameters in practice)
-	attoseconds_t period = HZ_TO_ATTOSECONDS(m_screen->clock()) * (m_crtc.vtotal + m_crtc.display_vsync) * ((m_crtc.htotal + 12 - m_crtc.display_hsync) / 2);
+	attoseconds_t period = HZ_TO_ATTOSECONDS(screen().clock()) * (m_crtc.vtotal + m_crtc.display_vsync) * ((m_crtc.htotal + 12 - m_crtc.display_hsync) / 2);
 
-	m_screen->configure(m_crtc.htotal / 2, m_crtc.vtotal, visarea, period );
+	screen().configure(m_crtc.htotal / 2, m_crtc.vtotal, visarea, period );
 
 	// reset vblank timer
 	m_vblank_timer->reset();
-	//m_vblank_timer->adjust(m_screen->time_until_pos(m_crtc.display_vstart+m_crtc.display_height,0), 0, m_screen->frame_period());
-	m_vblank_timer->adjust(m_screen->time_until_pos(m_crtc.display_height,0), 0, m_screen->frame_period());
+	//m_vblank_timer->adjust(screen().time_until_pos(m_crtc.display_vstart+m_crtc.display_height,0), 0, screen().frame_period());
+	m_vblank_timer->adjust(screen().time_until_pos(m_crtc.display_height,0), 0, screen().frame_period());
 }
 
 

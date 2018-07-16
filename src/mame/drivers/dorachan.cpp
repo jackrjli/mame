@@ -19,6 +19,7 @@ It appears that unused bits in port 03 are to operate the discrete sound channel
 
 #include "emu.h"
 #include "cpu/z80/z80.h"
+#include "emupal.h"
 #include "screen.h"
 
 
@@ -152,10 +153,10 @@ void dorachan_state::dorachan_map(address_map &map)
 	map(0x0000, 0x17ff).rom();
 	map(0x1800, 0x1fff).ram();
 	map(0x2000, 0x23ff).rom();
-	map(0x2400, 0x2400).mirror(0x03ff).r(this, FUNC(dorachan_state::protection_r));
+	map(0x2400, 0x2400).mirror(0x03ff).r(FUNC(dorachan_state::protection_r));
 	map(0x2800, 0x2800).mirror(0x03ff).portr("IN0");
 	map(0x2c00, 0x2c00).mirror(0x03ff).portr("IN1");
-	map(0x3800, 0x3800).mirror(0x03ff).r(this, FUNC(dorachan_state::v128_r));
+	map(0x3800, 0x3800).mirror(0x03ff).r(FUNC(dorachan_state::v128_r));
 	map(0x4000, 0x5fff).ram().share("videoram");
 	map(0x6000, 0x77ff).rom();
 }
@@ -164,8 +165,8 @@ void dorachan_state::dorachan_io_map(address_map &map)
 {
 	map.global_mask(0xff);
 	map(0x01, 0x01).nopw();
-	map(0x02, 0x02).w(this, FUNC(dorachan_state::protection_w));
-	map(0x03, 0x03).w(this, FUNC(dorachan_state::control_w));
+	map(0x02, 0x02).w(FUNC(dorachan_state::protection_w));
+	map(0x03, 0x03).w(FUNC(dorachan_state::control_w));
 }
 
 
@@ -227,10 +228,10 @@ void dorachan_state::machine_reset()
 MACHINE_CONFIG_START(dorachan_state::dorachan)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", Z80, 2000000)
-	MCFG_CPU_PROGRAM_MAP(dorachan_map)
-	MCFG_CPU_IO_MAP(dorachan_io_map)
-	MCFG_CPU_PERIODIC_INT_DRIVER(dorachan_state, irq0_line_hold, 2*60)
+	MCFG_DEVICE_ADD("maincpu", Z80, 2000000)
+	MCFG_DEVICE_PROGRAM_MAP(dorachan_map)
+	MCFG_DEVICE_IO_MAP(dorachan_io_map)
+	MCFG_DEVICE_PERIODIC_INT_DRIVER(dorachan_state, irq0_line_hold, 2*60)
 
 	/* video hardware */
 	MCFG_SCREEN_ADD("screen", RASTER)
@@ -278,4 +279,4 @@ ROM_END
  *
  *************************************/
 
-GAME( 1980, dorachan, 0, dorachan, dorachan, dorachan_state, 0, ROT270, "Alpha Denshi Co. / Craul Denshi", "Dora-chan (Japan)", MACHINE_NO_SOUND | MACHINE_SUPPORTS_SAVE )
+GAME( 1980, dorachan, 0, dorachan, dorachan, dorachan_state, empty_init, ROT270, "Alpha Denshi Co. / Craul Denshi", "Dora-chan (Japan)", MACHINE_NO_SOUND | MACHINE_SUPPORTS_SAVE )

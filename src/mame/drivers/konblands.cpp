@@ -22,6 +22,7 @@
 #include "cpu/m6809/m6809.h"
 #include "sound/sn76496.h"
 #include "machine/ldv1000.h"
+#include "emupal.h"
 #include "screen.h"
 #include "speaker.h"
 
@@ -150,16 +151,16 @@ WRITE8_MEMBER(konblands_state::firq_enable_w)
 void konblands_state::konblands_map(address_map &map)
 {
 	map(0x0000, 0x0000).portr("DSW1").nopw(); // sn latch
-	map(0x0800, 0x0800).portr("DSW2").w(this, FUNC(konblands_state::ldp_w));
-	map(0x1000, 0x1000).nopw().r(this, FUNC(konblands_state::ldp_r)); // led
+	map(0x0800, 0x0800).portr("DSW2").w(FUNC(konblands_state::ldp_w));
+	map(0x1000, 0x1000).nopw().r(FUNC(konblands_state::ldp_r)); // led
 	map(0x1001, 0x1001).nopw(); // coin counter 2
 	map(0x1002, 0x1002).nopw(); // coin counter 1
 	map(0x1003, 0x1003).nopw(); // enable overlay transparency
-	map(0x1004, 0x1004).w(this, FUNC(konblands_state::nmi_enable_w));
+	map(0x1004, 0x1004).w(FUNC(konblands_state::nmi_enable_w));
 	map(0x1005, 0x1005).nopw(); // enable audio
-	map(0x1006, 0x1006).w(this, FUNC(konblands_state::irq_enable_w));
-	map(0x1007, 0x1007).w(this, FUNC(konblands_state::firq_enable_w));
-	map(0x1800, 0x1800).portr("INPUTS").w("sn", FUNC(sn76496_device::write));
+	map(0x1006, 0x1006).w(FUNC(konblands_state::irq_enable_w));
+	map(0x1007, 0x1007).w(FUNC(konblands_state::firq_enable_w));
+	map(0x1800, 0x1800).portr("INPUTS").w("sn", FUNC(sn76496_device::command_w));
 	map(0x4000, 0x47ff).ram().share("vram");
 	map(0x4800, 0x4bff).ram();
 	map(0x5800, 0x5800).nopw(); // watchdog
@@ -169,15 +170,15 @@ void konblands_state::konblands_map(address_map &map)
 
 void konblands_state::konblandsh_map(address_map &map)
 {
-	map(0x0000, 0x0000).r(this, FUNC(konblands_state::ldp_r));
-	map(0x0400, 0x0400).w(this, FUNC(konblands_state::ldp_w));
+	map(0x0000, 0x0000).r(FUNC(konblands_state::ldp_r));
+	map(0x0400, 0x0400).w(FUNC(konblands_state::ldp_w));
 	map(0x0802, 0x0802).nopw(); // led
 	map(0x0803, 0x0803).nopw(); // enable overlay transparency
-	map(0x0806, 0x0806).nopr().w(this, FUNC(konblands_state::irq_enable_w));
-	map(0x0807, 0x0807).nopr().w(this, FUNC(konblands_state::firq_enable_w));
+	map(0x0806, 0x0806).nopr().w(FUNC(konblands_state::irq_enable_w));
+	map(0x0807, 0x0807).nopr().w(FUNC(konblands_state::firq_enable_w));
 	map(0x0c00, 0x0c00).portr("INPUTS");
 	map(0x1000, 0x1000).portr("DSW1");
-	map(0x1400, 0x1400).w("sn", FUNC(sn76496_device::write));
+	map(0x1400, 0x1400).w("sn", FUNC(sn76496_device::command_w));
 	map(0x1800, 0x1800).nopw(); // sn latch
 	map(0x2000, 0x27ff).ram().share("vram");
 	map(0x2800, 0x2fff).ram();
@@ -241,7 +242,7 @@ static const gfx_layout charlayout =
 	8*8*4
 };
 
-static GFXDECODE_START( konblands )
+static GFXDECODE_START( gfx_konblands )
 	GFXDECODE_ENTRY( "gfx", 0, charlayout,     0, 1 )
 GFXDECODE_END
 
@@ -260,7 +261,7 @@ void konblands_state::machine_reset()
 INTERRUPT_GEN_MEMBER(konblands_state::vblank_irq)
 {
 	if (m_nmi_enable == true)
-		m_maincpu->set_input_line(INPUT_LINE_NMI, PULSE_LINE);
+		m_maincpu->pulse_input_line(INPUT_LINE_NMI, attotime::zero);
 }
 
 INTERRUPT_GEN_MEMBER(konblands_state::timer_irq)
@@ -278,14 +279,14 @@ WRITE_LINE_MEMBER(konblands_state::ld_command_strobe_cb)
 MACHINE_CONFIG_START(konblands_state::konblands)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu",MC6809E,MASTER_CLOCK/12)
-	MCFG_CPU_PROGRAM_MAP(konblands_map)
-	MCFG_CPU_VBLANK_INT_DRIVER("screen", konblands_state,  vblank_irq)
-	MCFG_CPU_PERIODIC_INT_DRIVER(konblands_state, timer_irq,  8) // 8 times per frame
+	MCFG_DEVICE_ADD("maincpu",MC6809E,MASTER_CLOCK/12)
+	MCFG_DEVICE_PROGRAM_MAP(konblands_map)
+	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", konblands_state,  vblank_irq)
+	MCFG_DEVICE_PERIODIC_INT_DRIVER(konblands_state, timer_irq,  8) // 8 times per frame
 
 	/* video hardware */
 	MCFG_LASERDISC_LDV1000_ADD("laserdisc")
-	MCFG_LASERDISC_LDV1000_COMMAND_STROBE_CB(WRITELINE(konblands_state, ld_command_strobe_cb))
+	MCFG_LASERDISC_LDV1000_COMMAND_STROBE_CB(WRITELINE(*this, konblands_state, ld_command_strobe_cb))
 	// TODO: might be different
 	MCFG_LASERDISC_OVERLAY_DRIVER(512, 256, konblands_state, screen_update)
 	MCFG_LASERDISC_OVERLAY_PALETTE("palette")
@@ -293,21 +294,21 @@ MACHINE_CONFIG_START(konblands_state::konblands)
 	/* video hardware */
 	MCFG_LASERDISC_SCREEN_ADD_NTSC("screen", "laserdisc")
 
-	MCFG_GFXDECODE_ADD("gfxdecode", "palette", konblands)
+	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_konblands)
 
 	MCFG_PALETTE_ADD("palette", 32)
 	MCFG_PALETTE_INIT_OWNER(konblands_state, konblands)
 
 	/* sound hardware */
-	MCFG_SPEAKER_STANDARD_MONO("mono")
-	MCFG_SOUND_ADD("sn", SN76496, MASTER_CLOCK/12)
+	SPEAKER(config, "mono").front_center();
+	MCFG_DEVICE_ADD("sn", SN76496, MASTER_CLOCK/12)
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
 MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(konblands_state::konblandsh)
 	konblands(config);
-	MCFG_CPU_MODIFY("maincpu")
-	MCFG_CPU_PROGRAM_MAP(konblandsh_map)
+	MCFG_DEVICE_MODIFY("maincpu")
+	MCFG_DEVICE_PROGRAM_MAP(konblandsh_map)
 MACHINE_CONFIG_END
 
 /***************************************************************************
@@ -348,5 +349,5 @@ ROM_START( kbadlandsh )
 ROM_END
 
 
-GAME( 1984, kbadlands,  0,           konblands,  konblands, konblands_state,  0,       ROT0, "Konami",      "Badlands (Konami, set 1)", MACHINE_NO_SOUND | MACHINE_NOT_WORKING )
-GAME( 1984, kbadlandsh, kbadlands,   konblandsh, konblands, konblands_state,  0,       ROT0, "Konami",      "Badlands (Konami, set 2)", MACHINE_NO_SOUND | MACHINE_NOT_WORKING )
+GAME( 1984, kbadlands,  0,         konblands,  konblands, konblands_state, empty_init, ROT0, "Konami",      "Badlands (Konami, set 1)", MACHINE_NO_SOUND | MACHINE_NOT_WORKING )
+GAME( 1984, kbadlandsh, kbadlands, konblandsh, konblands, konblands_state, empty_init, ROT0, "Konami",      "Badlands (Konami, set 2)", MACHINE_NO_SOUND | MACHINE_NOT_WORKING )

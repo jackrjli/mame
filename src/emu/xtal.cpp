@@ -48,6 +48,9 @@
 
 #include "emu.h"
 
+#include <cfloat>
+#include <cmath>
+
 
 // This array *must* stay in order, it's binary-searched
 const double XTAL::known_xtals[] = {
@@ -55,6 +58,7 @@ const double XTAL::known_xtals[] = {
     Frequency       Sugarvassed            Examples
     -----------  ----------------------    ---------------------------------------- */
 		 32'768, /* 32.768_kHz_XTAL        Used to drive RTC chips */
+		 38'400, /* 38.4_kHz_XTAL          Resonator */
 		384'000, /* 384_kHz_XTAL           Resonator - Commonly used for driving OKI MSM5205 */
 		400'000, /* 400_kHz_XTAL           Resonator - OKI MSM5205 on Great Swordman h/w */
 		430'000, /* 430_kHz_XTAL           Resonator */
@@ -64,6 +68,7 @@ const double XTAL::known_xtals[] = {
 		640'000, /* 640_kHz_XTAL           Resonator - NEC UPD7759, Texas Instruments Speech Chips @ 8khz */
 		960'000, /* 960_kHz_XTAL           Resonator - Xerox Notetaker Keyboard UART */
 	  1'000'000, /* 1_MHz_XTAL             Used to drive OKI M6295 chips */
+	  1'008'000, /* 1.008_MHz_XTAL         Acorn Microcomputer (System 1) */
 	  1'056'000, /* 1.056_MHz_XTAL         Resonator - OKI M6295 on Trio The Punch h/w */
 	  1'294'400, /* 1.2944_MHz_XTAL        BBN BitGraph PSG */
 	  1'689'600, /* 1.6896_MHz_XTAL        Diablo 1355WP Printer */
@@ -183,7 +188,7 @@ const double XTAL::known_xtals[] = {
 	 14'192'640, /* 14.19264_MHz_XTAL      Central Data 2650 */
 	 14'218'000, /* 14.218_MHz_XTAL        Dragon */
 	 14'300'000, /* 14.3_MHz_XTAL          Agat-7 */
-	 14'314'000, /* 14.314_MHz_XTAL        Taito TTL Board             */
+	 14'314'000, /* 14.314_MHz_XTAL        Taito TTL Board  */
 	 14'318'181, /* 14.318181_MHz_XTAL     Extremely common, used on 100's of PCBs (4x NTSC subcarrier) */
 	 14'705'882, /* 14.705882_MHz_XTAL     Aleck64 */
 	 14'745'600, /* 14.7456_MHz_XTAL       Namco System 12 & System Super 22/23 for JVS */
@@ -197,6 +202,7 @@ const double XTAL::known_xtals[] = {
 	 15'400'000, /* 15.4_MHz_XTAL          DVK KSM */
 	 15'468'480, /* 15.46848_MHz_XTAL      Bank Panic h/w, Sega G80 */
 	 15'582'000, /* 15.582_MHz_XTAL        Zentec Zephyr */
+	 15'700'000, /* 15.700_MHz_XTAL        Motogonki */
 	 15'897'600, /* 15.8976_MHz_XTAL       IAI Swyft */
 	 15'920'000, /* 15.92_MHz_XTAL         HP Integral PC */
 	 15'974'400, /* 15.9744_MHz_XTAL       Osborne 1 (9600 * 52 * 32) */
@@ -301,6 +307,7 @@ const double XTAL::known_xtals[] = {
 	 33'868'800, /* 33.8688_MHz_XTAL       Usually used to drive 90's Yamaha OPL/FM chips with /2 divider */
 	 34'000'000, /* 34_MHz_XTAL            Gaelco PCBs */
 	 34'291'712, /* 34.291712_MHz_XTAL     Fairlight CMI master card */
+	 35'904'000, /* 35.904_MHz_XTAL        Used on HP98543 graphics board */
 	 36'000'000, /* 36_MHz_XTAL            Sega Model 1 video board */
 	 38'769'220, /* 38.76922_MHz_XTAL      Namco System 21 video board */
 	 39'321'600, /* 39.3216_MHz_XTAL       Sun 2/120 */
@@ -376,8 +383,9 @@ bool XTAL::validate(double base_clock)
 		if(slot > last_index)
 			slot = slot ^ (step | (step >> 1));
 		else {
-			double sfreq = known_xtals[slot];
-			if(base_clock == sfreq) {
+			const double sfreq = known_xtals[slot];
+			const double diff = std::abs((base_clock - sfreq) / base_clock);
+			if(diff <= (2 * DBL_EPSILON)) {
 				last_correct_value = base_clock;
 				return true;
 			}

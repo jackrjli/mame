@@ -95,7 +95,7 @@ WRITE_LINE_MEMBER(tecmo_state::adpcm_int)
 		m_msm->reset_w(1);
 	else if (m_adpcm_data != -1)
 	{
-		m_msm->data_w(m_adpcm_data & 0x0f);
+		m_msm->write_data(m_adpcm_data & 0x0f);
 		m_adpcm_data = -1;
 	}
 	else
@@ -103,7 +103,7 @@ WRITE_LINE_MEMBER(tecmo_state::adpcm_int)
 		uint8_t *ROM = memregion("adpcm")->base();
 
 		m_adpcm_data = ROM[m_adpcm_pos++];
-		m_msm->data_w(m_adpcm_data >> 4);
+		m_msm->write_data(m_adpcm_data >> 4);
 	}
 }
 
@@ -141,9 +141,9 @@ void tecmo_state::rygar_map(address_map &map)
 {
 	map(0x0000, 0xbfff).rom();
 	map(0xc000, 0xcfff).ram();
-	map(0xd000, 0xd7ff).ram().w(this, FUNC(tecmo_state::txvideoram_w)).share("txvideoram");
-	map(0xd800, 0xdbff).ram().w(this, FUNC(tecmo_state::fgvideoram_w)).share("fgvideoram");
-	map(0xdc00, 0xdfff).ram().w(this, FUNC(tecmo_state::bgvideoram_w)).share("bgvideoram");
+	map(0xd000, 0xd7ff).ram().w(FUNC(tecmo_state::txvideoram_w)).share("txvideoram");
+	map(0xd800, 0xdbff).ram().w(FUNC(tecmo_state::fgvideoram_w)).share("fgvideoram");
+	map(0xdc00, 0xdfff).ram().w(FUNC(tecmo_state::bgvideoram_w)).share("bgvideoram");
 	map(0xe000, 0xe7ff).ram().share("spriteram");
 	map(0xe800, 0xefff).ram().w(m_palette, FUNC(palette_device::write8)).share("palette");
 	map(0xf000, 0xf7ff).bankr("bank1");
@@ -153,16 +153,16 @@ void tecmo_state::rygar_map(address_map &map)
 	map(0xf803, 0xf803).portr("BUTTONS2");
 	map(0xf804, 0xf804).portr("SYS_0");
 	map(0xf805, 0xf805).portr("SYS_1");
-	map(0xf806, 0xf806).r(this, FUNC(tecmo_state::dswa_l_r));
-	map(0xf807, 0xf807).r(this, FUNC(tecmo_state::dswa_h_r));
-	map(0xf808, 0xf808).r(this, FUNC(tecmo_state::dswb_l_r));
-	map(0xf809, 0xf809).r(this, FUNC(tecmo_state::dswb_h_r));
+	map(0xf806, 0xf806).r(FUNC(tecmo_state::dswa_l_r));
+	map(0xf807, 0xf807).r(FUNC(tecmo_state::dswa_h_r));
+	map(0xf808, 0xf808).r(FUNC(tecmo_state::dswb_l_r));
+	map(0xf809, 0xf809).r(FUNC(tecmo_state::dswb_h_r));
 	map(0xf80f, 0xf80f).portr("SYS_2");
-	map(0xf800, 0xf802).w(this, FUNC(tecmo_state::fgscroll_w));
-	map(0xf803, 0xf805).w(this, FUNC(tecmo_state::bgscroll_w));
+	map(0xf800, 0xf802).w(FUNC(tecmo_state::fgscroll_w));
+	map(0xf803, 0xf805).w(FUNC(tecmo_state::bgscroll_w));
 	map(0xf806, 0xf806).w("soundlatch", FUNC(generic_latch_8_device::write));
-	map(0xf807, 0xf807).w(this, FUNC(tecmo_state::flipscreen_w));
-	map(0xf808, 0xf808).w(this, FUNC(tecmo_state::bankswitch_w));
+	map(0xf807, 0xf807).w(FUNC(tecmo_state::flipscreen_w));
+	map(0xf808, 0xf808).w(FUNC(tecmo_state::bankswitch_w));
 	map(0xf80b, 0xf80b).w("watchdog", FUNC(watchdog_timer_device::reset_w));
 }
 
@@ -170,9 +170,9 @@ void tecmo_state::gemini_map(address_map &map)
 {
 	map(0x0000, 0xbfff).rom();
 	map(0xc000, 0xcfff).ram();
-	map(0xd000, 0xd7ff).ram().w(this, FUNC(tecmo_state::txvideoram_w)).share("txvideoram");
-	map(0xd800, 0xdbff).ram().w(this, FUNC(tecmo_state::fgvideoram_w)).share("fgvideoram");
-	map(0xdc00, 0xdfff).ram().w(this, FUNC(tecmo_state::bgvideoram_w)).share("bgvideoram");
+	map(0xd000, 0xd7ff).ram().w(FUNC(tecmo_state::txvideoram_w)).share("txvideoram");
+	map(0xd800, 0xdbff).ram().w(FUNC(tecmo_state::fgvideoram_w)).share("fgvideoram");
+	map(0xdc00, 0xdfff).ram().w(FUNC(tecmo_state::bgvideoram_w)).share("bgvideoram");
 	map(0xe000, 0xe7ff).ram().w(m_palette, FUNC(palette_device::write8)).share("palette");
 	map(0xe800, 0xefff).ram().share("spriteram");
 	map(0xf000, 0xf7ff).bankr("bank1");
@@ -182,25 +182,25 @@ void tecmo_state::gemini_map(address_map &map)
 	map(0xf803, 0xf803).portr("BUTTONS2");
 	map(0xf804, 0xf804).portr("SYS_0");
 	map(0xf805, 0xf805).portr("SYS_1");
-	map(0xf806, 0xf806).r(this, FUNC(tecmo_state::dswa_l_r));
-	map(0xf807, 0xf807).r(this, FUNC(tecmo_state::dswa_h_r));
-	map(0xf808, 0xf808).r(this, FUNC(tecmo_state::dswb_l_r));
-	map(0xf809, 0xf809).r(this, FUNC(tecmo_state::dswb_h_r));
+	map(0xf806, 0xf806).r(FUNC(tecmo_state::dswa_l_r));
+	map(0xf807, 0xf807).r(FUNC(tecmo_state::dswa_h_r));
+	map(0xf808, 0xf808).r(FUNC(tecmo_state::dswb_l_r));
+	map(0xf809, 0xf809).r(FUNC(tecmo_state::dswb_h_r));
 	map(0xf80f, 0xf80f).portr("SYS_2");
-	map(0xf800, 0xf802).w(this, FUNC(tecmo_state::fgscroll_w));
-	map(0xf803, 0xf805).w(this, FUNC(tecmo_state::bgscroll_w));
+	map(0xf800, 0xf802).w(FUNC(tecmo_state::fgscroll_w));
+	map(0xf803, 0xf805).w(FUNC(tecmo_state::bgscroll_w));
 	map(0xf806, 0xf806).w("soundlatch", FUNC(generic_latch_8_device::write));
-	map(0xf807, 0xf807).w(this, FUNC(tecmo_state::flipscreen_w));
-	map(0xf808, 0xf808).w(this, FUNC(tecmo_state::bankswitch_w));
+	map(0xf807, 0xf807).w(FUNC(tecmo_state::flipscreen_w));
+	map(0xf808, 0xf808).w(FUNC(tecmo_state::bankswitch_w));
 	map(0xf80b, 0xf80b).w("watchdog", FUNC(watchdog_timer_device::reset_w));
 }
 
 void tecmo_state::silkworm_map(address_map &map)
 {
 	map(0x0000, 0xbfff).rom();
-	map(0xc000, 0xc3ff).ram().w(this, FUNC(tecmo_state::bgvideoram_w)).share("bgvideoram");
-	map(0xc400, 0xc7ff).ram().w(this, FUNC(tecmo_state::fgvideoram_w)).share("fgvideoram");
-	map(0xc800, 0xcfff).ram().w(this, FUNC(tecmo_state::txvideoram_w)).share("txvideoram");
+	map(0xc000, 0xc3ff).ram().w(FUNC(tecmo_state::bgvideoram_w)).share("bgvideoram");
+	map(0xc400, 0xc7ff).ram().w(FUNC(tecmo_state::fgvideoram_w)).share("fgvideoram");
+	map(0xc800, 0xcfff).ram().w(FUNC(tecmo_state::txvideoram_w)).share("txvideoram");
 	map(0xd000, 0xdfff).ram();
 	map(0xe000, 0xe7ff).ram().share("spriteram");
 	map(0xe800, 0xefff).ram().w(m_palette, FUNC(palette_device::write8)).share("palette");
@@ -211,17 +211,17 @@ void tecmo_state::silkworm_map(address_map &map)
 	map(0xf803, 0xf803).portr("BUTTONS2");
 	map(0xf804, 0xf804).portr("SYS_0");
 	map(0xf805, 0xf805).portr("SYS_1");
-	map(0xf806, 0xf806).r(this, FUNC(tecmo_state::dswa_l_r));
-	map(0xf807, 0xf807).r(this, FUNC(tecmo_state::dswa_h_r));
-	map(0xf808, 0xf808).r(this, FUNC(tecmo_state::dswb_l_r));
-	map(0xf809, 0xf809).r(this, FUNC(tecmo_state::dswb_h_r));
+	map(0xf806, 0xf806).r(FUNC(tecmo_state::dswa_l_r));
+	map(0xf807, 0xf807).r(FUNC(tecmo_state::dswa_h_r));
+	map(0xf808, 0xf808).r(FUNC(tecmo_state::dswb_l_r));
+	map(0xf809, 0xf809).r(FUNC(tecmo_state::dswb_h_r));
 	map(0xf80e, 0xf80e).portr("SYS_3");
 	map(0xf80f, 0xf80f).portr("SYS_2");
-	map(0xf800, 0xf802).w(this, FUNC(tecmo_state::fgscroll_w));
-	map(0xf803, 0xf805).w(this, FUNC(tecmo_state::bgscroll_w));
+	map(0xf800, 0xf802).w(FUNC(tecmo_state::fgscroll_w));
+	map(0xf803, 0xf805).w(FUNC(tecmo_state::bgscroll_w));
 	map(0xf806, 0xf806).w("soundlatch", FUNC(generic_latch_8_device::write));
-	map(0xf807, 0xf807).w(this, FUNC(tecmo_state::flipscreen_w));
-	map(0xf808, 0xf808).w(this, FUNC(tecmo_state::bankswitch_w));
+	map(0xf807, 0xf807).w(FUNC(tecmo_state::flipscreen_w));
+	map(0xf808, 0xf808).w(FUNC(tecmo_state::bankswitch_w));
 	map(0xf809, 0xf809).nopw();    /* ? */
 	map(0xf80b, 0xf80b).nopw();    /* ? if mapped to watchdog like in the others, causes reset */
 }
@@ -231,9 +231,9 @@ void tecmo_state::rygar_sound_map(address_map &map)
 	map(0x0000, 0x3fff).rom();
 	map(0x4000, 0x47ff).ram();
 	map(0x8000, 0x8001).w("ymsnd", FUNC(ym3526_device::write));
-	map(0xc000, 0xc000).r("soundlatch", FUNC(generic_latch_8_device::read)).w(this, FUNC(tecmo_state::adpcm_start_w));
-	map(0xd000, 0xd000).w(this, FUNC(tecmo_state::adpcm_end_w));
-	map(0xe000, 0xe000).w(this, FUNC(tecmo_state::adpcm_vol_w));
+	map(0xc000, 0xc000).r("soundlatch", FUNC(generic_latch_8_device::read)).w(FUNC(tecmo_state::adpcm_start_w));
+	map(0xd000, 0xd000).w(FUNC(tecmo_state::adpcm_end_w));
+	map(0xe000, 0xe000).w(FUNC(tecmo_state::adpcm_vol_w));
 	map(0xf000, 0xf000).w("soundlatch", FUNC(generic_latch_8_device::acknowledge_w));
 }
 
@@ -244,9 +244,9 @@ void tecmo_state::tecmo_sound_map(address_map &map)
 												/* writes code to this area */
 	map(0x8000, 0x87ff).ram();
 	map(0xa000, 0xa001).w("ymsnd", FUNC(ym3812_device::write));
-	map(0xc000, 0xc000).r("soundlatch", FUNC(generic_latch_8_device::read)).w(this, FUNC(tecmo_state::adpcm_start_w));
-	map(0xc400, 0xc400).w(this, FUNC(tecmo_state::adpcm_end_w));
-	map(0xc800, 0xc800).w(this, FUNC(tecmo_state::adpcm_vol_w));
+	map(0xc000, 0xc000).r("soundlatch", FUNC(generic_latch_8_device::read)).w(FUNC(tecmo_state::adpcm_start_w));
+	map(0xc400, 0xc400).w(FUNC(tecmo_state::adpcm_end_w));
+	map(0xc800, 0xc800).w(FUNC(tecmo_state::adpcm_vol_w));
 	map(0xcc00, 0xcc00).w("soundlatch", FUNC(generic_latch_8_device::acknowledge_w));
 }
 
@@ -690,7 +690,7 @@ static const gfx_layout spritelayout =
 	32*8
 };
 
-static GFXDECODE_START( tecmo )
+static GFXDECODE_START( gfx_tecmo )
 	GFXDECODE_ENTRY( "gfx1", 0, charlayout, 256, 16 )   /* colors 256 - 511 */
 	GFXDECODE_ENTRY( "gfx2", 0, spritelayout, 0, 16 )   /* colors   0 - 255 */
 	GFXDECODE_ENTRY( "gfx3", 0, tilelayout, 512, 16 )   /* colors 512 - 767 */
@@ -717,12 +717,12 @@ void tecmo_state::machine_reset()
 MACHINE_CONFIG_START(tecmo_state::rygar)
 
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", Z80, XTAL(24'000'000)/4) /* verified on pcb */
-	MCFG_CPU_PROGRAM_MAP(rygar_map)
-	MCFG_CPU_VBLANK_INT_DRIVER("screen", tecmo_state,  irq0_line_hold)
+	MCFG_DEVICE_ADD("maincpu", Z80, XTAL(24'000'000)/4) /* verified on pcb */
+	MCFG_DEVICE_PROGRAM_MAP(rygar_map)
+	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", tecmo_state,  irq0_line_hold)
 
-	MCFG_CPU_ADD("soundcpu", Z80, XTAL(4'000'000)) /* verified on pcb */
-	MCFG_CPU_PROGRAM_MAP(rygar_sound_map)
+	MCFG_DEVICE_ADD("soundcpu", Z80, XTAL(4'000'000)) /* verified on pcb */
+	MCFG_DEVICE_PROGRAM_MAP(rygar_sound_map)
 
 	MCFG_WATCHDOG_ADD("watchdog")
 
@@ -732,7 +732,7 @@ MACHINE_CONFIG_START(tecmo_state::rygar)
 	MCFG_SCREEN_UPDATE_DRIVER(tecmo_state, screen_update)
 	MCFG_SCREEN_PALETTE("palette")
 
-	MCFG_GFXDECODE_ADD("gfxdecode", "palette", tecmo)
+	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_tecmo)
 	MCFG_PALETTE_ADD("palette", 1024)
 	MCFG_PALETTE_FORMAT(xxxxBBBBRRRRGGGG)
 	MCFG_PALETTE_ENDIANNESS(ENDIANNESS_BIG)
@@ -740,18 +740,18 @@ MACHINE_CONFIG_START(tecmo_state::rygar)
 	MCFG_DEVICE_ADD("spritegen", TECMO_SPRITE, 0)
 
 	/* sound hardware */
-	MCFG_SPEAKER_STANDARD_MONO("mono")
+	SPEAKER(config, "mono").front_center();
 
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch")
 	MCFG_GENERIC_LATCH_DATA_PENDING_CB(INPUTLINE("soundcpu", INPUT_LINE_NMI))
 	MCFG_GENERIC_LATCH_SEPARATE_ACKNOWLEDGE(true)
 
-	MCFG_SOUND_ADD("ymsnd", YM3526, XTAL(4'000'000)) /* verified on pcb */
+	MCFG_DEVICE_ADD("ymsnd", YM3526, XTAL(4'000'000)) /* verified on pcb */
 	MCFG_YM3526_IRQ_HANDLER(INPUTLINE("soundcpu", 0))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.0)
 
-	MCFG_SOUND_ADD("msm", MSM5205, XTAL(400'000)) /* verified on pcb, even if schematics shows a 384khz resonator */
-	MCFG_MSM5205_VCLK_CB(WRITELINE(tecmo_state, adpcm_int))    /* interrupt function */
+	MCFG_DEVICE_ADD("msm", MSM5205, XTAL(400'000)) /* verified on pcb, even if schematics shows a 384khz resonator */
+	MCFG_MSM5205_VCLK_CB(WRITELINE(*this, tecmo_state, adpcm_int))    /* interrupt function */
 	MCFG_MSM5205_PRESCALER_SELECTOR(S48_4B)      /* 8KHz               */
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
 MACHINE_CONFIG_END
@@ -761,15 +761,15 @@ MACHINE_CONFIG_START(tecmo_state::gemini)
 	rygar(config);
 
 	/* basic machine hardware */
-	MCFG_CPU_MODIFY("maincpu")
+	MCFG_DEVICE_MODIFY("maincpu")
 	// xtal found on bootleg, to be confirmed on a real board
-	MCFG_CPU_CLOCK(XTAL(8'000'000))
-	MCFG_CPU_PROGRAM_MAP(gemini_map)
+	MCFG_DEVICE_CLOCK(XTAL(8'000'000))
+	MCFG_DEVICE_PROGRAM_MAP(gemini_map)
 
-	MCFG_CPU_MODIFY("soundcpu")
-	MCFG_CPU_PROGRAM_MAP(tecmo_sound_map)
+	MCFG_DEVICE_MODIFY("soundcpu")
+	MCFG_DEVICE_PROGRAM_MAP(tecmo_sound_map)
 
-	MCFG_SOUND_REPLACE("ymsnd", YM3812, XTAL(4'000'000))
+	MCFG_DEVICE_REPLACE("ymsnd", YM3812, XTAL(4'000'000))
 	MCFG_YM3812_IRQ_HANDLER(INPUTLINE("soundcpu", 0))
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.0)
 MACHINE_CONFIG_END
@@ -785,9 +785,9 @@ MACHINE_CONFIG_START(tecmo_state::silkworm)
 	gemini(config);
 
 	/* basic machine hardware */
-	MCFG_CPU_MODIFY("maincpu")
-	MCFG_CPU_CLOCK(6000000)
-	MCFG_CPU_PROGRAM_MAP(silkworm_map)
+	MCFG_DEVICE_MODIFY("maincpu")
+	MCFG_DEVICE_CLOCK(6000000)
+	MCFG_DEVICE_PROGRAM_MAP(silkworm_map)
 MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(tecmo_state::backfirt)
@@ -802,8 +802,8 @@ MACHINE_CONFIG_START(tecmo_state::silkwormp)
 
 	/* bootleg pcb doesn't have the MSM5205 populated */
 	MCFG_DEVICE_REMOVE("msm")
-	MCFG_CPU_MODIFY("soundcpu")
-	MCFG_CPU_PROGRAM_MAP(silkwormp_sound_map)
+	MCFG_DEVICE_MODIFY("soundcpu")
+	MCFG_DEVICE_PROGRAM_MAP(silkwormp_sound_map)
 MACHINE_CONFIG_END
 
 
@@ -1316,22 +1316,22 @@ ROM_END
    video_type is used to distinguish Rygar, Silkworm and Gemini Wing.
    This is needed because there is a difference in the tile and sprite indexing.
 */
-DRIVER_INIT_MEMBER(tecmo_state,rygar)
+void tecmo_state::init_rygar()
 {
 	m_video_type = 0;
 }
 
-DRIVER_INIT_MEMBER(tecmo_state,silkworm)
+void tecmo_state::init_silkworm()
 {
 	m_video_type = 1;
 }
 
-DRIVER_INIT_MEMBER(tecmo_state,gemini)
+void tecmo_state::init_gemini()
 {
 	m_video_type = 2;
 }
 
-DRIVER_INIT_MEMBER(tecmo_state,backfirt)
+void tecmo_state::init_backfirt()
 {
 	m_video_type = 2;
 
@@ -1345,14 +1345,14 @@ DRIVER_INIT_MEMBER(tecmo_state,backfirt)
 
 
 
-GAME( 1986, rygar,     0,        rygar,     rygar,     tecmo_state, rygar,    ROT0,  "Tecmo",   "Rygar (US set 1)",             MACHINE_SUPPORTS_SAVE )
-GAME( 1986, rygar2,    rygar,    rygar,     rygar,     tecmo_state, rygar,    ROT0,  "Tecmo",   "Rygar (US set 2)",             MACHINE_SUPPORTS_SAVE )
-GAME( 1986, rygar3,    rygar,    rygar,     rygar,     tecmo_state, rygar,    ROT0,  "Tecmo",   "Rygar (US set 3 Old Version)", MACHINE_SUPPORTS_SAVE )
-GAME( 1986, rygarj,    rygar,    rygar,     rygar,     tecmo_state, rygar,    ROT0,  "Tecmo",   "Argus no Senshi (Japan)",      MACHINE_SUPPORTS_SAVE )
-GAME( 1987, gemini,    0,        gemini,    gemini,    tecmo_state, gemini,   ROT90, "Tecmo",   "Gemini Wing (Japan)",          MACHINE_SUPPORTS_SAVE ) // Japan regional warning screen
-GAME( 1987, geminib,   gemini,   geminib,   gemini,    tecmo_state, gemini,   ROT90, "bootleg", "Gemini Wing (bootleg)",        MACHINE_SUPPORTS_SAVE ) // Japan regional warning screen
-GAME( 1988, silkworm,  0,        silkworm,  silkworm,  tecmo_state, silkworm, ROT0,  "Tecmo",   "Silk Worm (World)",            MACHINE_SUPPORTS_SAVE ) // No regional "Warning, if you are playing ..." screen
-GAME( 1988, silkwormj, silkworm, silkworm,  silkworm,  tecmo_state, silkworm, ROT0,  "Tecmo",   "Silk Worm (Japan)",            MACHINE_SUPPORTS_SAVE ) // Japan regional warning screen
-GAME( 1988, silkwormp, silkworm, silkwormp, silkwormp, tecmo_state, silkworm, ROT0,  "Tecmo",   "Silk Worm (prototype)",        MACHINE_SUPPORTS_SAVE ) // prototype
-GAME( 1988, silkwormb, silkworm, silkwormp, silkwormp, tecmo_state, silkworm, ROT0,  "bootleg", "Silk Worm (bootleg)",          MACHINE_SUPPORTS_SAVE ) // bootleg of (a different?) prototype
-GAME( 1988, backfirt,  0,        backfirt,  backfirt,  tecmo_state, backfirt, ROT0,  "Tecmo",   "Back Fire (Tecmo, bootleg)",   MACHINE_SUPPORTS_SAVE )
+GAME( 1986, rygar,     0,        rygar,     rygar,     tecmo_state, init_rygar,    ROT0,  "Tecmo",   "Rygar (US set 1)",             MACHINE_SUPPORTS_SAVE )
+GAME( 1986, rygar2,    rygar,    rygar,     rygar,     tecmo_state, init_rygar,    ROT0,  "Tecmo",   "Rygar (US set 2)",             MACHINE_SUPPORTS_SAVE )
+GAME( 1986, rygar3,    rygar,    rygar,     rygar,     tecmo_state, init_rygar,    ROT0,  "Tecmo",   "Rygar (US set 3 Old Version)", MACHINE_SUPPORTS_SAVE )
+GAME( 1986, rygarj,    rygar,    rygar,     rygar,     tecmo_state, init_rygar,    ROT0,  "Tecmo",   "Argus no Senshi (Japan)",      MACHINE_SUPPORTS_SAVE )
+GAME( 1987, gemini,    0,        gemini,    gemini,    tecmo_state, init_gemini,   ROT90, "Tecmo",   "Gemini Wing (Japan)",          MACHINE_SUPPORTS_SAVE ) // Japan regional warning screen
+GAME( 1987, geminib,   gemini,   geminib,   gemini,    tecmo_state, init_gemini,   ROT90, "bootleg", "Gemini Wing (bootleg)",        MACHINE_SUPPORTS_SAVE ) // Japan regional warning screen
+GAME( 1988, silkworm,  0,        silkworm,  silkworm,  tecmo_state, init_silkworm, ROT0,  "Tecmo",   "Silk Worm (World)",            MACHINE_SUPPORTS_SAVE ) // No regional "Warning, if you are playing ..." screen
+GAME( 1988, silkwormj, silkworm, silkworm,  silkworm,  tecmo_state, init_silkworm, ROT0,  "Tecmo",   "Silk Worm (Japan)",            MACHINE_SUPPORTS_SAVE ) // Japan regional warning screen
+GAME( 1988, silkwormp, silkworm, silkwormp, silkwormp, tecmo_state, init_silkworm, ROT0,  "Tecmo",   "Silk Worm (prototype)",        MACHINE_SUPPORTS_SAVE ) // prototype
+GAME( 1988, silkwormb, silkworm, silkwormp, silkwormp, tecmo_state, init_silkworm, ROT0,  "bootleg", "Silk Worm (bootleg)",          MACHINE_SUPPORTS_SAVE ) // bootleg of (a different?) prototype
+GAME( 1988, backfirt,  0,        backfirt,  backfirt,  tecmo_state, init_backfirt, ROT0,  "Tecmo",   "Back Fire (Tecmo, bootleg)",   MACHINE_SUPPORTS_SAVE )

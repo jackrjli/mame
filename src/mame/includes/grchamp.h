@@ -9,6 +9,7 @@
 #include "machine/input_merger.h"
 #include "machine/watchdog.h"
 #include "sound/discrete.h"
+#include "emupal.h"
 #include "screen.h"
 
 class grchamp_state : public driver_device
@@ -137,4 +138,4 @@ private:
 
 /*----------- defined in audio/grchamp.c -----------*/
 
-DISCRETE_SOUND_EXTERN( grchamp );
+DISCRETE_SOUND_EXTERN( grchamp_discrete );

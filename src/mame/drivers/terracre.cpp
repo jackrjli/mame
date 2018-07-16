@@ -109,19 +109,19 @@ void terracre_state::terracre_map(address_map &map)
 	map(0x000000, 0x01ffff).rom();
 	map(0x020000, 0x0201ff).ram().share("spriteram");
 	map(0x020200, 0x021fff).ram();
-	map(0x022000, 0x022fff).w(this, FUNC(terracre_state::amazon_background_w)).share("bg_videoram");
+	map(0x022000, 0x022fff).w(FUNC(terracre_state::amazon_background_w)).share("bg_videoram");
 	map(0x023000, 0x023fff).ram();
 	map(0x024000, 0x024001).portr("P1");
 	map(0x024002, 0x024003).portr("P2");
 	map(0x024004, 0x024005).portr("SYSTEM");
 	map(0x024006, 0x024007).portr("DSW");
-	map(0x026000, 0x026001).w(this, FUNC(terracre_state::amazon_flipscreen_w));  /* flip screen & coin counters */
-	map(0x026002, 0x026003).w(this, FUNC(terracre_state::amazon_scrollx_w));
-	map(0x026004, 0x026005).nopr().w(this, FUNC(terracre_state::amazon_scrolly_w));
+	map(0x026000, 0x026001).w(FUNC(terracre_state::amazon_flipscreen_w));  /* flip screen & coin counters */
+	map(0x026002, 0x026003).w(FUNC(terracre_state::amazon_scrollx_w));
+	map(0x026004, 0x026005).nopr().w(FUNC(terracre_state::amazon_scrolly_w));
 	map(0x02600a, 0x02600b).noprw(); // video related
-	map(0x02600c, 0x02600d).w(this, FUNC(terracre_state::amazon_sound_w));
+	map(0x02600c, 0x02600d).w(FUNC(terracre_state::amazon_sound_w));
 	map(0x02600e, 0x02600f).noprw(); // video related
-	map(0x028000, 0x0287ff).ram().w(this, FUNC(terracre_state::amazon_foreground_w)).share("fg_videoram");
+	map(0x028000, 0x0287ff).ram().w(FUNC(terracre_state::amazon_foreground_w)).share("fg_videoram");
 }
 
 void terracre_state::amazon_base_map(address_map &map)
@@ -129,18 +129,18 @@ void terracre_state::amazon_base_map(address_map &map)
 	map(0x000000, 0x01ffff).rom();
 	map(0x040000, 0x0401ff).ram().share("spriteram");
 	map(0x040200, 0x040fff).ram();
-	map(0x042000, 0x042fff).w(this, FUNC(terracre_state::amazon_background_w)).share("bg_videoram");
+	map(0x042000, 0x042fff).w(FUNC(terracre_state::amazon_background_w)).share("bg_videoram");
 	map(0x044000, 0x044001).portr("IN0");
 	map(0x044002, 0x044003).portr("IN1");
 	map(0x044004, 0x044005).portr("IN2");
 	map(0x044006, 0x044007).portr("IN3");
-	map(0x046000, 0x046001).w(this, FUNC(terracre_state::amazon_flipscreen_w));  /* flip screen & coin counters */
-	map(0x046002, 0x046003).w(this, FUNC(terracre_state::amazon_scrollx_w));
-	map(0x046004, 0x046005).nopr().w(this, FUNC(terracre_state::amazon_scrolly_w));
+	map(0x046000, 0x046001).w(FUNC(terracre_state::amazon_flipscreen_w));  /* flip screen & coin counters */
+	map(0x046002, 0x046003).w(FUNC(terracre_state::amazon_scrollx_w));
+	map(0x046004, 0x046005).nopr().w(FUNC(terracre_state::amazon_scrolly_w));
 	map(0x04600a, 0x04600b).noprw(); // video related
-	map(0x04600c, 0x04600d).w(this, FUNC(terracre_state::amazon_sound_w));
+	map(0x04600c, 0x04600d).w(FUNC(terracre_state::amazon_sound_w));
 	map(0x04600e, 0x04600f).noprw(); // video related
-	map(0x050000, 0x050fff).ram().w(this, FUNC(terracre_state::amazon_foreground_w)).share("fg_videoram");
+	map(0x050000, 0x050fff).ram().w(FUNC(terracre_state::amazon_foreground_w)).share("fg_videoram");
 	map(0x070000, 0x070003).noprw(); // protection (nop for bootlegs)
 }
 
@@ -162,9 +162,9 @@ void terracre_state::sound_3526_io_map(address_map &map)
 {
 	map.global_mask(0xff);
 	map(0x00, 0x01).w("ymsnd", FUNC(ym3526_device::write));
-	map(0x02, 0x02).w("dac1", FUNC(dac_byte_interface::write));
-	map(0x03, 0x03).w("dac2", FUNC(dac_byte_interface::write));
-	map(0x04, 0x04).r(this, FUNC(terracre_state::soundlatch_clear_r));
+	map(0x02, 0x02).w("dac1", FUNC(dac_byte_interface::data_w));
+	map(0x03, 0x03).w("dac2", FUNC(dac_byte_interface::data_w));
+	map(0x04, 0x04).r(FUNC(terracre_state::soundlatch_clear_r));
 	map(0x06, 0x06).r(m_soundlatch, FUNC(generic_latch_8_device::read));
 }
 
@@ -172,9 +172,9 @@ void terracre_state::sound_2203_io_map(address_map &map)
 {
 	map.global_mask(0xff);
 	map(0x00, 0x01).w("ym1", FUNC(ym2203_device::write));
-	map(0x02, 0x02).w("dac1", FUNC(dac_byte_interface::write));
-	map(0x03, 0x03).w("dac2", FUNC(dac_byte_interface::write));
-	map(0x04, 0x04).r(this, FUNC(terracre_state::soundlatch_clear_r));
+	map(0x02, 0x02).w("dac1", FUNC(dac_byte_interface::data_w));
+	map(0x03, 0x03).w("dac2", FUNC(dac_byte_interface::data_w));
+	map(0x04, 0x04).r(FUNC(terracre_state::soundlatch_clear_r));
 	map(0x06, 0x06).r(m_soundlatch, FUNC(generic_latch_8_device::read));
 }
 
@@ -447,7 +447,7 @@ static const gfx_layout sprite_layout =
 	32*16
 };
 
-static GFXDECODE_START( terracre )
+static GFXDECODE_START( gfx_terracre )
 	GFXDECODE_ENTRY( "gfx1", 0, char_layout,            0,   1 )
 	GFXDECODE_ENTRY( "gfx2", 0, tile_layout,         1*16,  16 )
 	GFXDECODE_ENTRY( "gfx3", 0, sprite_layout, 1*16+16*16, 256 )
@@ -455,16 +455,16 @@ GFXDECODE_END
 
 
 MACHINE_CONFIG_START(terracre_state::ym3526)
-	MCFG_CPU_ADD("maincpu", M68000, XTAL(16'000'000)/2)   // 8mhz
-	MCFG_CPU_PROGRAM_MAP(terracre_map)
-	MCFG_CPU_VBLANK_INT_DRIVER("screen", terracre_state,  irq1_line_hold)
+	MCFG_DEVICE_ADD("maincpu", M68000, XTAL(16'000'000)/2)   // 8mhz
+	MCFG_DEVICE_PROGRAM_MAP(terracre_map)
+	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", terracre_state,  irq1_line_hold)
 
-	MCFG_CPU_ADD("audiocpu", Z80, XTAL(16'000'000)/4)     // 4.0mhz when compared to sound recordings, should be derived from XTAL(22'000'000)? how?
-	MCFG_CPU_PROGRAM_MAP(sound_map)
-	MCFG_CPU_IO_MAP(sound_3526_io_map)
-	MCFG_CPU_PERIODIC_INT_DRIVER(terracre_state, irq0_line_hold,  XTAL(16'000'000)/4/512) // ?
+	MCFG_DEVICE_ADD("audiocpu", Z80, XTAL(16'000'000)/4)     // 4.0mhz when compared to sound recordings, should be derived from XTAL(22'000'000)? how?
+	MCFG_DEVICE_PROGRAM_MAP(sound_map)
+	MCFG_DEVICE_IO_MAP(sound_3526_io_map)
+	MCFG_DEVICE_PERIODIC_INT_DRIVER(terracre_state, irq0_line_hold,  XTAL(16'000'000)/4/512) // ?
 
-	MCFG_BUFFERED_SPRITERAM16_ADD("spriteram")
+	MCFG_DEVICE_ADD("spriteram", BUFFERED_SPRITERAM16)
 
 	MCFG_SCREEN_ADD("screen", RASTER)
 	MCFG_SCREEN_REFRESH_RATE( 60 )
@@ -472,36 +472,36 @@ MACHINE_CONFIG_START(terracre_state::ym3526)
 	MCFG_SCREEN_SIZE(32*8, 32*8)
 	MCFG_SCREEN_VISIBLE_AREA(0*8, 32*8-1, 2*8, 30*8-1)
 	MCFG_SCREEN_UPDATE_DRIVER(terracre_state, screen_update_amazon)
-	MCFG_SCREEN_VBLANK_CALLBACK(DEVWRITELINE("spriteram", buffered_spriteram16_device, vblank_copy_rising))
+	MCFG_SCREEN_VBLANK_CALLBACK(WRITELINE("spriteram", buffered_spriteram16_device, vblank_copy_rising))
 	MCFG_SCREEN_PALETTE("palette")
 
-	MCFG_GFXDECODE_ADD("gfxdecode", "palette", terracre)
+	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_terracre)
 	MCFG_PALETTE_ADD("palette", 1*16+16*16+16*256)
 	MCFG_PALETTE_INDIRECT_ENTRIES(256)
 	MCFG_PALETTE_INIT_OWNER(terracre_state, terracre)
 
-	MCFG_SPEAKER_STANDARD_MONO("speaker")
+	SPEAKER(config, "speaker").front_center();
 
 	MCFG_GENERIC_LATCH_8_ADD("soundlatch")
 
-	MCFG_SOUND_ADD("ymsnd", YM3526, XTAL(16'000'000)/4)
+	MCFG_DEVICE_ADD("ymsnd", YM3526, XTAL(16'000'000)/4)
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
 
-	MCFG_SOUND_ADD("dac1", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.5) // unknown DAC
-	MCFG_SOUND_ADD("dac2", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.5) // unknown DAC
+	MCFG_DEVICE_ADD("dac1", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.5) // unknown DAC
+	MCFG_DEVICE_ADD("dac2", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.5) // unknown DAC
 	MCFG_DEVICE_ADD("vref", VOLTAGE_REGULATOR, 0) MCFG_VOLTAGE_REGULATOR_OUTPUT(5.0)
-	MCFG_SOUND_ROUTE_EX(0, "dac1", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE_EX(0, "dac1", -1.0, DAC_VREF_NEG_INPUT)
-	MCFG_SOUND_ROUTE_EX(0, "dac2", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE_EX(0, "dac2", -1.0, DAC_VREF_NEG_INPUT)
+	MCFG_SOUND_ROUTE(0, "dac1", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE(0, "dac1", -1.0, DAC_VREF_NEG_INPUT)
+	MCFG_SOUND_ROUTE(0, "dac2", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE(0, "dac2", -1.0, DAC_VREF_NEG_INPUT)
 MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(terracre_state::ym2203)
 	ym3526(config);
-	MCFG_CPU_MODIFY("audiocpu")
-	MCFG_CPU_IO_MAP(sound_2203_io_map)
+	MCFG_DEVICE_MODIFY("audiocpu")
+	MCFG_DEVICE_IO_MAP(sound_2203_io_map)
 
 	MCFG_DEVICE_REMOVE("ymsnd")
 
-	MCFG_SOUND_ADD("ym1", YM2203, XTAL(16'000'000)/4)
+	MCFG_DEVICE_ADD("ym1", YM2203, XTAL(16'000'000)/4)
 	MCFG_SOUND_ROUTE(0, "speaker", 0.2)
 	MCFG_SOUND_ROUTE(1, "speaker", 0.2)
 	MCFG_SOUND_ROUTE(2, "speaker", 0.2)
@@ -510,14 +510,14 @@ MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(terracre_state::amazon_base)
 	ym3526(config);
-	MCFG_CPU_MODIFY("maincpu")
-	MCFG_CPU_PROGRAM_MAP(amazon_base_map)
+	MCFG_DEVICE_MODIFY("maincpu")
+	MCFG_DEVICE_PROGRAM_MAP(amazon_base_map)
 MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(amazon_state::amazon_1412m2)
 	amazon_base(config);
-	MCFG_CPU_MODIFY("maincpu")
-	MCFG_CPU_PROGRAM_MAP(amazon_1412m2_map)
+	MCFG_DEVICE_MODIFY("maincpu")
+	MCFG_DEVICE_PROGRAM_MAP(amazon_1412m2_map)
 
 	MCFG_DEVICE_ADD("prot_chip", NB1412M2, XTAL(16'000'000)) // divided by 4 maybe
 MACHINE_CONFIG_END
@@ -890,17 +890,17 @@ ROM_END
 
 
 
-//    YEAR, NAME,     PARENT,   MACHINE, INPUT,    STATE,          INIT,     MONITOR, COMPANY,      FULLNAME, FLAGS
-GAME( 1985, terracre, 0,        ym3526,  terracre, terracre_state, 0,        ROT270,  "Nichibutsu", "Terra Cresta (YM3526 set 1)", MACHINE_SUPPORTS_SAVE )
-GAME( 1985, terracreo,terracre, ym3526,  terracre, terracre_state, 0,        ROT270,  "Nichibutsu", "Terra Cresta (YM3526 set 2)", MACHINE_SUPPORTS_SAVE )
-GAME( 1985, terracrea,terracre, ym3526,  terracre, terracre_state, 0,        ROT270,  "Nichibutsu", "Terra Cresta (YM3526 set 3)", MACHINE_SUPPORTS_SAVE )
-GAME( 1985, terracren,terracre, ym2203,  terracre, terracre_state, 0,        ROT270,  "Nichibutsu", "Terra Cresta (YM2203)", MACHINE_SUPPORTS_SAVE )
+//    YEAR, NAME,     PARENT,   MACHINE, INPUT,    STATE,                 INIT,        MONITOR, COMPANY,      FULLNAME, FLAGS
+GAME( 1985, terracre, 0,        ym3526,  terracre, terracre_state,        empty_init, ROT270,  "Nichibutsu", "Terra Cresta (YM3526 set 1)", MACHINE_SUPPORTS_SAVE )
+GAME( 1985, terracreo,terracre, ym3526,  terracre, terracre_state,        empty_init, ROT270,  "Nichibutsu", "Terra Cresta (YM3526 set 2)", MACHINE_SUPPORTS_SAVE )
+GAME( 1985, terracrea,terracre, ym3526,  terracre, terracre_state,        empty_init, ROT270,  "Nichibutsu", "Terra Cresta (YM3526 set 3)", MACHINE_SUPPORTS_SAVE )
+GAME( 1985, terracren,terracre, ym2203,  terracre, terracre_state,        empty_init, ROT270,  "Nichibutsu", "Terra Cresta (YM2203)", MACHINE_SUPPORTS_SAVE )
 
 // later HW: supports 1412M2 device, see also mightguy.cpp
-GAME( 1986, amazon,   0,        amazon_1412m2,  amazon,   amazon_state, 0,   ROT270,  "Nichibutsu", "Soldier Girl Amazon", MACHINE_SUPPORTS_SAVE )
-GAME( 1986, amatelas, amazon,   amazon_1412m2,  amazon,   amazon_state, 0,   ROT270,  "Nichibutsu", "Sei Senshi Amatelass", MACHINE_SUPPORTS_SAVE )
-GAME( 1987, horekid,  0,        amazon_1412m2,  horekid,  amazon_state, 0,   ROT270,  "Nichibutsu", "Kid no Hore Hore Daisakusen", MACHINE_SUPPORTS_SAVE )
+GAME( 1986, amazon,   0,        amazon_1412m2,  amazon,   amazon_state,   empty_init, ROT270,  "Nichibutsu", "Soldier Girl Amazon", MACHINE_SUPPORTS_SAVE )
+GAME( 1986, amatelas, amazon,   amazon_1412m2,  amazon,   amazon_state,   empty_init, ROT270,  "Nichibutsu", "Sei Senshi Amatelass", MACHINE_SUPPORTS_SAVE )
+GAME( 1987, horekid,  0,        amazon_1412m2,  horekid,  amazon_state,   empty_init, ROT270,  "Nichibutsu", "Kid no Hore Hore Daisakusen", MACHINE_SUPPORTS_SAVE )
 
 // bootlegs
-GAME( 1987, horekidb, horekid,  amazon_base,    horekid,  terracre_state, 0,  ROT270,  "bootleg",    "Kid no Hore Hore Daisakusen (bootleg)", MACHINE_SUPPORTS_SAVE )
-GAME( 1987, boobhack, horekid,  amazon_base,    horekid,  terracre_state, 0,  ROT270,  "bootleg",    "Booby Kids (Italian manufactured graphic hack / bootleg of Kid no Hore Hore Daisakusen (bootleg))", MACHINE_SUPPORTS_SAVE )
+GAME( 1987, horekidb, horekid,  amazon_base,    horekid,  terracre_state, empty_init, ROT270,  "bootleg",    "Kid no Hore Hore Daisakusen (bootleg)", MACHINE_SUPPORTS_SAVE )
+GAME( 1987, boobhack, horekid,  amazon_base,    horekid,  terracre_state, empty_init, ROT270,  "bootleg",    "Booby Kids (Italian manufactured graphic hack / bootleg of Kid no Hore Hore Daisakusen (bootleg))", MACHINE_SUPPORTS_SAVE )
