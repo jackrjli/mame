@@ -284,8 +284,10 @@ MACHINE_CONFIG_START(pdc_device::device_add_mconfig)
 	m_dma8237->out_iow_callback<1>().set(FUNC(pdc_device::m68k_dma_w));
 
 	/* Hard Disk Controller - HDC9224 */
-	MCFG_DEVICE_ADD(HDC_TAG, HDC9224, 0)
-	MCFG_MFM_HARDDISK_CONN_ADD("h1", pdc_harddisks, nullptr, MFM_BYTE, 3000, 20, MFMHD_GEN_FORMAT)
+	// TODO: connect the HDC lines
+	HDC9224(config, HDC_TAG, 0);
+	MFM_HD_CONNECTOR(config, "h1", pdc_harddisks, nullptr, MFM_BYTE, 3000, 20, MFMHD_GEN_FORMAT);
+
 MACHINE_CONFIG_END
 
 ioport_constructor pdc_device::device_input_ports() const
@@ -319,6 +321,10 @@ pdc_device::pdc_device(const machine_config &mconfig, const char *tag, device_t 
 
 void pdc_device::device_start()
 {
+	/* Resolve callbacks */
+	m_m68k_r_cb.resolve_safe(0);
+	m_m68k_w_cb.resolve_safe();
+
 	/* Save States */
 	save_item(NAME(reg_p0));
 	save_item(NAME(reg_p1));
@@ -346,10 +352,6 @@ void pdc_device::device_reset()
 
 	/* Reset CPU */
 	m_pdccpu->reset();
-
-	/* Resolve callbacks */
-	m_m68k_r_cb.resolve_safe(0);
-	m_m68k_w_cb.resolve_safe();
 
 	m_fdc->set_rate(500000) ;
 }

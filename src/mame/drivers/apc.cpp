@@ -309,7 +309,7 @@ READ8_MEMBER(apc_state::apc_port_28_r)
 	uint8_t res;
 
 	if(offset & 1)
-		res = m_pit->read(space, (offset & 6) >> 1);
+		res = m_pit->read((offset & 6) >> 1);
 	else
 	{
 		if(offset & 4)
@@ -318,7 +318,7 @@ READ8_MEMBER(apc_state::apc_port_28_r)
 			res = 0xff;
 		}
 		else
-			res = m_i8259_s->read(space, (offset & 2) >> 1);
+			res = m_i8259_s->read((offset & 2) >> 1);
 	}
 
 	return res;
@@ -327,13 +327,13 @@ READ8_MEMBER(apc_state::apc_port_28_r)
 WRITE8_MEMBER(apc_state::apc_port_28_w)
 {
 	if(offset & 1)
-		m_pit->write(space, (offset & 6) >> 1, data);
+		m_pit->write((offset & 6) >> 1, data);
 	else
 	{
 		if(offset & 4)
 			printf("Write undefined port %02x\n",offset+0x28);
 		else
-			m_i8259_s->write(space, (offset & 2) >> 1, data);
+			m_i8259_s->write((offset & 2) >> 1, data);
 	}
 }
 
@@ -970,7 +970,7 @@ MACHINE_CONFIG_START(apc_state::apc)
 	m_dmac->out_dack_callback<2>().set(FUNC(apc_state::apc_dack2_w));
 	m_dmac->out_dack_callback<3>().set(FUNC(apc_state::apc_dack3_w));
 
-	MCFG_NVRAM_ADD_1FILL(m_cmos)
+	NVRAM(config, m_cmos, nvram_device::DEFAULT_ALL_1);
 	MCFG_UPD1990A_ADD(m_rtc, XTAL(32'768), NOOP, NOOP)
 
 	MCFG_UPD765A_ADD(m_fdc, true, true)

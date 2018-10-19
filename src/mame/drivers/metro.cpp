@@ -3446,9 +3446,9 @@ MACHINE_CONFIG_START(metro_state::dokyusp)
 	MCFG_DEVICE_PROGRAM_MAP(dokyusp_map)
 	MCFG_DEVICE_IRQ_ACKNOWLEDGE_DRIVER(metro_state,metro_irq_callback)
 
-	MCFG_DEVICE_ADD("eeprom", EEPROM_SERIAL_93C46_16BIT)
+	EEPROM_93C46_16BIT(config, "eeprom");
 
-	MCFG_WATCHDOG_ADD("watchdog")
+	WATCHDOG_TIMER(config, "watchdog");
 
 	/* video hardware */
 	i4300_config_384x224(config);
@@ -3474,9 +3474,9 @@ MACHINE_CONFIG_START(metro_state::gakusai)
 	MCFG_DEVICE_PROGRAM_MAP(gakusai_map)
 	MCFG_DEVICE_IRQ_ACKNOWLEDGE_DRIVER(metro_state,metro_irq_callback)
 
-	MCFG_DEVICE_ADD("eeprom", EEPROM_SERIAL_93C46_16BIT)
+	EEPROM_93C46_16BIT(config, "eeprom");
 
-	MCFG_WATCHDOG_ADD("watchdog")
+	WATCHDOG_TIMER(config, "watchdog");
 
 	/* video hardware */
 	i4300_config_320x240(config);
@@ -3503,9 +3503,9 @@ MACHINE_CONFIG_START(metro_state::gakusai2)
 
 	MCFG_DEVICE_IRQ_ACKNOWLEDGE_DRIVER(metro_state,metro_irq_callback)
 
-	MCFG_DEVICE_ADD("eeprom", EEPROM_SERIAL_93C46_16BIT)
+	EEPROM_93C46_16BIT(config, "eeprom");
 
-	MCFG_WATCHDOG_ADD("watchdog")
+	WATCHDOG_TIMER(config, "watchdog");
 
 	/* video hardware */
 	i4300_config_320x240(config);
@@ -3671,7 +3671,7 @@ MACHINE_CONFIG_START(metro_state::mouja)
 	MCFG_DEVICE_PROGRAM_MAP(mouja_map)
 	MCFG_DEVICE_IRQ_ACKNOWLEDGE_DRIVER(metro_state,metro_irq_callback)
 
-	MCFG_WATCHDOG_ADD("watchdog")
+	WATCHDOG_TIMER(config, "watchdog");
 
 	/* video hardware */
 	i4300_config(config);

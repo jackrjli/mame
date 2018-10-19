@@ -474,19 +474,18 @@ MACHINE_CONFIG_START(sg1000a_state::sg1000a)
 	MCFG_DEVICE_PROGRAM_MAP(program_map)
 	MCFG_DEVICE_IO_MAP(io_map)
 
-	MCFG_DEVICE_ADD("ppi8255", I8255, 0)
-	MCFG_I8255_IN_PORTA_CB(IOPORT("P1"))
-	MCFG_I8255_IN_PORTB_CB(IOPORT("P2"))
-	MCFG_I8255_IN_PORTC_CB(IOPORT("DSW"))
-	MCFG_I8255_OUT_PORTC_CB(WRITE8(*this, sg1000a_state, sg1000a_coin_counter_w))
+	i8255_device &ppi(I8255(config, "ppi8255"));
+	ppi.in_pa_callback().set_ioport("P1");
+	ppi.in_pb_callback().set_ioport("P2");
+	ppi.in_pc_callback().set_ioport("DSW");
+	ppi.out_pc_callback().set(FUNC(sg1000a_state::sg1000a_coin_counter_w));
 
 	/* video hardware */
-	MCFG_DEVICE_ADD( "tms9928a", TMS9928A, XTAL(10'738'635) / 2 )
-	MCFG_TMS9928A_VRAM_SIZE(0x4000)
-	MCFG_TMS9928A_OUT_INT_LINE_CB(INPUTLINE("maincpu", INPUT_LINE_IRQ0))
-
-	MCFG_TMS9928A_SCREEN_ADD_NTSC( "screen" )
-	MCFG_SCREEN_UPDATE_DEVICE( "tms9928a", tms9928a_device, screen_update )
+	tms9928a_device &vdp(TMS9928A(config, "tms9928a", XTAL(10'738'635)));
+	vdp.set_screen("screen");
+	vdp.set_vram_size(0x4000);
+	vdp.int_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ0);
+	SCREEN(config, "screen", SCREEN_TYPE_RASTER);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

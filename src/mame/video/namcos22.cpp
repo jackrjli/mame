@@ -9,7 +9,7 @@
  * - texture u/v mapping is often 1 pixel off, resulting in many glitch lines/gaps between textures. The glitch may be in MAME core:
  *       it used to be much worse with the legacy_poly_manager
  * - tokyowar tanks are not shootable, same for timecris helicopter, there's still a very small hitbox but almost impossible to hit.
- *       airco22b may have a similar problem. (is this related to dsp? or cpu?)
+ *       is this related to dsp? or cpu?
  * - find out how/where vics num_sprites is determined exactly, currently a workaround is needed for airco22b and dirtdash
  * - improve ss22 fogging:
  *       + scene changes too rapidly sometimes, eg. dirtdash snow level finish (see attract), or aquajet going down the waterfall
@@ -307,11 +307,11 @@ void namcos22_renderer::poly3d_drawquad(screen_device &screen, bitmap_rgb32 &bit
 	int cy = 240 + node->data.quad.vy;
 	m_clipx = cx;
 	m_clipy = cy;
-	m_cliprect.set(cx + node->data.quad.vw, cx - node->data.quad.vw, cy + node->data.quad.vh, cy - node->data.quad.vh);
-	if (m_cliprect.min_x < 0)   m_cliprect.min_x = 0;
-	if (m_cliprect.max_x > 639) m_cliprect.max_x = 639;
-	if (m_cliprect.min_y < 0)   m_cliprect.min_y = 0;
-	if (m_cliprect.max_y > 479) m_cliprect.max_y = 479;
+	m_cliprect.set(
+			std::max<s32>(cx + node->data.quad.vw, 0),
+			std::min<s32>(cx - node->data.quad.vw, 639),
+			std::max<s32>(cy + node->data.quad.vh, 0),
+			std::min<s32>(cy - node->data.quad.vh, 479));
 
 	// non-direct case: project and z-clip
 	if (!direct)
@@ -583,11 +583,11 @@ void namcos22_renderer::poly3d_drawsprite(
 void namcos22_renderer::render_sprite(screen_device &screen, bitmap_rgb32 &bitmap, struct namcos22_scenenode *node)
 {
 	// scene clip
-	m_cliprect.set(node->data.sprite.cx_min, node->data.sprite.cx_max, node->data.sprite.cy_min, node->data.sprite.cy_max);
-	if (m_cliprect.min_x < 0)   m_cliprect.min_x = 0;
-	if (m_cliprect.max_x > 639) m_cliprect.max_x = 639;
-	if (m_cliprect.min_y < 0)   m_cliprect.min_y = 0;
-	if (m_cliprect.max_y > 479) m_cliprect.max_y = 479;
+	m_cliprect.set(
+			std::max<s32>(node->data.sprite.cx_min, 0),
+			std::min<s32>(node->data.sprite.cx_max, 639),
+			std::max<s32>(node->data.sprite.cy_min, 0),
+			std::min<s32>(node->data.sprite.cy_max, 479));
 
 	int offset = 0;
 
@@ -602,20 +602,19 @@ void namcos22_renderer::render_sprite(screen_device &screen, bitmap_rgb32 &bitma
 				code += nthword(&m_state.m_spriteram[0x800/4], offset + node->data.sprite.linktype*4);
 
 			poly3d_drawsprite(
-				screen,
-				bitmap,
-				code,
-				node->data.sprite.color,
-				node->data.sprite.flipx,
-				node->data.sprite.flipy,
-				node->data.sprite.xpos + col * node->data.sprite.sizex,
-				node->data.sprite.ypos + row * node->data.sprite.sizey,
-				(node->data.sprite.sizex << 16) / 32,
-				(node->data.sprite.sizey << 16) / 32,
-				node->data.sprite.cz,
-				node->data.sprite.pri,
-				0xff - node->data.sprite.translucency
-			);
+					screen,
+					bitmap,
+					code,
+					node->data.sprite.color,
+					node->data.sprite.flipx,
+					node->data.sprite.flipy,
+					node->data.sprite.xpos + col * node->data.sprite.sizex,
+					node->data.sprite.ypos + row * node->data.sprite.sizey,
+					(node->data.sprite.sizex << 16) / 32,
+					(node->data.sprite.sizey << 16) / 32,
+					node->data.sprite.cz,
+					node->data.sprite.pri,
+					0xff - node->data.sprite.translucency);
 			offset++;
 		}
 	}
@@ -1881,7 +1880,7 @@ void namcos22_state::namcos22s_mix_text_layer(screen_device &screen, bitmap_rgb3
 	// prepare alpha
 	uint8_t alpha_check12 = nthbyte(m_mixer, 0x12);
 	uint8_t alpha_check13 = nthbyte(m_mixer, 0x13);
-	uint8_t alpha_mask    = nthbyte(m_mixer, 0x14);
+	uint8_t alpha_mask    = nthbyte(m_mixer, 0x14) & 0xf;
 	uint8_t alpha_factor  = nthbyte(m_mixer, 0x15);
 
 	// prepare spot
@@ -1895,12 +1894,12 @@ void namcos22_state::namcos22s_mix_text_layer(screen_device &screen, bitmap_rgb3
 	rgbaint_t fade_color(0, m_screen_fade_r, m_screen_fade_g, m_screen_fade_b);
 
 	// mix textlayer with poly/sprites
-	for (int y = cliprect.min_y; y <= cliprect.max_y; y++)
+	for (int y = cliprect.top(); y <= cliprect.bottom(); y++)
 	{
 		src = &m_mix_bitmap->pix16(y);
 		dest = &bitmap.pix32(y);
 		pri = &screen.priority().pix8(y);
-		for (int x = cliprect.min_x; x <= cliprect.max_x; x++)
+		for (int x = cliprect.left(); x <= cliprect.right(); x++)
 		{
 			// skip if transparent or under poly/sprite
 			if (pri[x] == prival)
@@ -1911,7 +1910,7 @@ void namcos22_state::namcos22s_mix_text_layer(screen_device &screen, bitmap_rgb3
 				if (alpha_factor)
 				{
 					uint8_t pen = src[x] & 0xff;
-					if ((pen & 0xf) == alpha_mask || pen == alpha_check12 || pen == alpha_check13)
+					if ((pen & 0xf) == alpha_mask || (pen >= alpha_check12 && pen <= alpha_check13))
 					{
 						rgb.blend(rgbaint_t(dest[x]), 0xff - alpha_factor);
 					}
@@ -1970,12 +1969,12 @@ void namcos22_state::namcos22_mix_text_layer(screen_device &screen, bitmap_rgb32
 	};
 
 	// mix textlayer with poly/sprites
-	for (int y = cliprect.min_y; y <= cliprect.max_y; y++)
+	for (int y = cliprect.top(); y <= cliprect.bottom(); y++)
 	{
 		src = &m_mix_bitmap->pix16(y);
 		dest = &bitmap.pix32(y);
 		pri = &screen.priority().pix8(y);
-		for (int x = cliprect.min_x; x <= cliprect.max_x; x++)
+		for (int x = cliprect.left(); x <= cliprect.right(); x++)
 		{
 			uint32_t pixel = dest[x];
 
@@ -2314,10 +2313,10 @@ uint32_t namcos22_state::screen_update_namcos22s(screen_device &screen, bitmap_r
 	const uint8_t *rlut = (const uint8_t *)&m_mixer[0x100/4];
 	const uint8_t *glut = (const uint8_t *)&m_mixer[0x200/4];
 	const uint8_t *blut = (const uint8_t *)&m_mixer[0x300/4];
-	for (int y = cliprect.min_y; y <= cliprect.max_y; y++)
+	for (int y = cliprect.top(); y <= cliprect.bottom(); y++)
 	{
 		uint32_t *dest = &bitmap.pix32(y);
-		for (int x = cliprect.min_x; x <= cliprect.max_x; x++)
+		for (int x = cliprect.left(); x <= cliprect.right(); x++)
 		{
 			int rgb = dest[x];
 			int r = rlut[NATIVE_ENDIAN_VALUE_LE_BE(3, 0) ^ ((rgb >> 16) & 0xff)];

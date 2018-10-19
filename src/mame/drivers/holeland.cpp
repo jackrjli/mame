@@ -288,7 +288,7 @@ MACHINE_CONFIG_START(holeland_state::holeland)
 	m_latch->q_out_cb<6>().set(FUNC(holeland_state::flipscreen_x_w));
 	m_latch->q_out_cb<7>().set(FUNC(holeland_state::flipscreen_y_w));
 
-	MCFG_WATCHDOG_ADD("watchdog")
+	WATCHDOG_TIMER(config, "watchdog");
 
 	/* video hardware */
 	MCFG_SCREEN_ADD("screen", RASTER)
@@ -363,13 +363,13 @@ MACHINE_CONFIG_START(holeland_state::crzrally)
 	MCFG_DEVICE_IO_MAP(io_map)
 	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", holeland_state,  irq0_line_hold)
 
-	MCFG_NVRAM_ADD_1FILL("nvram")
+	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_1);
 
 	LS259(config, m_latch);
 	m_latch->parallel_out_cb().set(FUNC(holeland_state::pal_offs_w)).mask(0x03);
 	m_latch->q_out_cb<5>().set(FUNC(holeland_state::coin_counter_w));
 
-	MCFG_WATCHDOG_ADD("watchdog")
+	WATCHDOG_TIMER(config, "watchdog");
 
 	/* video hardware */
 	MCFG_SCREEN_ADD("screen", RASTER)

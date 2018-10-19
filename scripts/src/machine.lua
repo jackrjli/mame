@@ -612,6 +612,18 @@ end
 
 ---------------------------------------------------
 --
+--@src/devices/machine/am79c90.h,MACHINES["AM79C90"] = true
+---------------------------------------------------
+
+if (MACHINES["AM79C90"]~=null) then
+	files {
+		MAME_DIR .. "src/devices/machine/am79c90.cpp",
+		MAME_DIR .. "src/devices/machine/am79c90.h",
+	}
+end
+
+---------------------------------------------------
+--
 --@src/devices/machine/am9513.h,MACHINES["AM9513"] = true
 ---------------------------------------------------
 
@@ -2123,6 +2135,18 @@ end
 
 ---------------------------------------------------
 --
+--@src/devices/machine/pcf8583.h,MACHINES["PCF8583"] = true
+---------------------------------------------------
+
+if (MACHINES["PCF8583"]~=null) then
+	files {
+		MAME_DIR .. "src/devices/machine/pcf8583.cpp",
+		MAME_DIR .. "src/devices/machine/pcf8583.h",
+	}
+end
+
+---------------------------------------------------
+--
 --@src/devices/machine/pcf8593.h,MACHINES["PCF8593"] = true
 ---------------------------------------------------
 
@@ -2526,6 +2550,18 @@ if (MACHINES["SERFLASH"]~=null) then
 	files {
 		MAME_DIR .. "src/devices/machine/serflash.cpp",
 		MAME_DIR .. "src/devices/machine/serflash.h",
+	}
+end
+
+---------------------------------------------------
+--
+--@src/devices/machine/sda2006.h,MACHINES["SDA2006"] = true
+---------------------------------------------------
+
+if (MACHINES["SDA2006"]~=null) then
+	files {
+		MAME_DIR .. "src/devices/machine/sda2006.cpp",
+		MAME_DIR .. "src/devices/machine/sda2006.h",
 	}
 end
 
@@ -3144,6 +3180,18 @@ end
 
 ---------------------------------------------------
 --
+--@src/devices/machine/dp83932c.h,MACHINES["DP83932C"] = true
+---------------------------------------------------
+
+if (MACHINES["DP83932C"]~=null) then
+	files {
+		MAME_DIR .. "src/devices/machine/dp83932c.cpp",
+		MAME_DIR .. "src/devices/machine/dp83932c.h",
+	}
+end
+
+---------------------------------------------------
+--
 --@src/devices/machine/pc_lpt.h,MACHINES["PC_LPT"] = true
 ---------------------------------------------------
 
@@ -3697,5 +3745,17 @@ if (MACHINES["IOPTIMER"]~=null) then
 	files {
 		MAME_DIR .. "src/devices/machine/ioptimer.cpp",
 		MAME_DIR .. "src/devices/machine/ioptimer.h",
+	}
+end
+
+---------------------------------------------------
+--
+--@src/devices/machine/sun4c_mmu.h,MACHINES["SUN4C_MMU"] = true
+---------------------------------------------------
+
+if (MACHINES["SUN4C_MMU"]~=null) then
+	files {
+		MAME_DIR .. "src/devices/machine/sun4c_mmu.cpp",
+		MAME_DIR .. "src/devices/machine/sun4c_mmu.h",
 	}
 end
