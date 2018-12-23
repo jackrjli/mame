@@ -57,8 +57,8 @@ CPUS["ARM7"] = true
 CPUS["JAGUAR"] = true
 CPUS["CUBEQCPU"] = true
 CPUS["ESRIP"] = true
-CPUS["MIPS"] = true
-CPUS["R3000"] = true
+CPUS["MIPS1"] = true
+CPUS["MIPS3"] = true
 CPUS["PSX"] = true
 CPUS["SH"] = true
 CPUS["DSP16"] = true
@@ -288,6 +288,7 @@ VIDEOS["CESBLIT"] = true
 VIDEOS["CRTC_EGA"] = true
 --VIDEOS["DL1416"] = true
 VIDEOS["DM9368"] = true
+VIDEOS["DP8350"] = true
 --VIDEOS["EF9340_1"] = true
 --VIDEOS["EF9345"] = true
 --VIDEOS["EF9364"] = true
@@ -401,6 +402,7 @@ MACHINES["ADC1213X"] = true
 MACHINES["AICARTC"] = true
 --MACHINES["AM2847"] = true
 MACHINES["AM53CF96"] = true
+MACHINES["AM79C90"] = true
 --MACHINES["AM9513"] = true
 MACHINES["AM9517A"] = true
 MACHINES["AMIGAFDC"] = true
@@ -423,6 +425,7 @@ MACHINES["CR589"] = true
 --MACHINES["CS8221"] = true
 MACHINES["CXD1095"] = true
 MACHINES["DP8390"] = true
+--MACHINES["DP8573"] = true
 MACHINES["DS1204"] = true
 MACHINES["DS1205"] = true
 MACHINES["DS1302"] = true
@@ -573,6 +576,7 @@ MACHINES["SERFLASH"] = true
 MACHINES["SMC91C9X"] = true
 MACHINES["SEGA_SCU"] = true
 MACHINES["SMPC"] = true
+--MACHINES["SPG2XX"] = true
 MACHINES["STVCD"] = true
 --MACHINES["SUN4C_MMU"] = true
 MACHINES["TC0091LVC"] = true
@@ -629,6 +633,7 @@ MACHINES["TMS1024"] = true
 MACHINES["GENPC"] = true
 MACHINES["GEN_LATCH"] = true
 MACHINES["WATCHDOG"] = true
+MACHINES["SMARTMEDIA"] = true
 MACHINES["INPUT_MERGER"] = true
 MACHINES["K054321"] = true
 MACHINES["ADC0844"] = true
@@ -717,6 +722,7 @@ BUSES["SCSI"] = true
 --BUSES["SCV"] = true
 BUSES["SEGA8"] = true
 BUSES["SG1000_EXP"] = true
+BUSES["SGIKBD"] = true
 BUSES["SMS_CTRL"] = true
 BUSES["SMS_EXP"] = true
 --BUSES["SNES"] = true
@@ -1305,9 +1311,6 @@ files {
 
 createMAMEProjects(_target, _subtarget, "atlus")
 files {
-	MAME_DIR .. "src/mame/drivers/blmbycar.cpp",
-	MAME_DIR .. "src/mame/includes/blmbycar.h",
-	MAME_DIR .. "src/mame/video/blmbycar.cpp",
 	MAME_DIR .. "src/mame/drivers/ohmygod.cpp",
 	MAME_DIR .. "src/mame/includes/ohmygod.h",
 	MAME_DIR .. "src/mame/video/ohmygod.cpp",
@@ -1743,14 +1746,15 @@ files {
 	MAME_DIR .. "src/mame/includes/fantland.h",
 	MAME_DIR .. "src/mame/video/fantland.cpp",
 	MAME_DIR .. "src/mame/drivers/mwarr.cpp",
+	MAME_DIR .. "src/mame/drivers/stlforce.cpp",
+	MAME_DIR .. "src/mame/includes/stlforce.h",
+	MAME_DIR .. "src/mame/video/edevices.cpp",
+	MAME_DIR .. "src/mame/video/edevices.h",	
 	MAME_DIR .. "src/mame/drivers/mugsmash.cpp",
 	MAME_DIR .. "src/mame/includes/mugsmash.h",
 	MAME_DIR .. "src/mame/video/mugsmash.cpp",
 	MAME_DIR .. "src/mame/drivers/ppmast93.cpp",
 	MAME_DIR .. "src/mame/drivers/pzletime.cpp",
-	MAME_DIR .. "src/mame/drivers/stlforce.cpp",
-	MAME_DIR .. "src/mame/includes/stlforce.h",
-	MAME_DIR .. "src/mame/video/stlforce.cpp",
 	MAME_DIR .. "src/mame/drivers/twins.cpp",
 }
 
@@ -1906,6 +1910,11 @@ files {
 	MAME_DIR .. "src/mame/includes/wrally.h",
 	MAME_DIR .. "src/mame/machine/wrally.cpp",
 	MAME_DIR .. "src/mame/video/wrally.cpp",
+	MAME_DIR .. "src/mame/drivers/blmbycar.cpp",
+	MAME_DIR .. "src/mame/includes/blmbycar.h",
+	MAME_DIR .. "src/mame/video/blmbycar.cpp",
+	MAME_DIR .. "src/mame/video/gaelco_wrally_sprites.cpp",
+	MAME_DIR .. "src/mame/video/gaelco_wrally_sprites.h",
 	MAME_DIR .. "src/mame/drivers/xorworld.cpp",
 	MAME_DIR .. "src/mame/includes/xorworld.h",
 	MAME_DIR .. "src/mame/video/xorworld.cpp",

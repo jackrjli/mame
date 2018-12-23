@@ -966,7 +966,7 @@ MACHINE_CONFIG_START(pasopia7_state::p7_base)
 	m_ppi2->in_pc_callback().set(FUNC(pasopia7_state::nmi_reg_r));
 	m_ppi2->out_pc_callback().set(FUNC(pasopia7_state::nmi_reg_w));
 
-	MCFG_UPD765A_ADD("fdc", true, true)
+	UPD765A(config, m_fdc, true, true);
 	MCFG_FLOPPY_DRIVE_ADD("fdc:0", pasopia7_floppies, "525hd", floppy_image_device::default_floppy_formats)
 	MCFG_FLOPPY_DRIVE_ADD("fdc:1", pasopia7_floppies, "525hd", floppy_image_device::default_floppy_formats)
 MACHINE_CONFIG_END
@@ -985,9 +985,10 @@ MACHINE_CONFIG_START(pasopia7_state::p7_raster)
 	MCFG_PALETTE_ADD_3BIT_BRG("palette")
 	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_pasopia7)
 
-	MCFG_MC6845_ADD("crtc", H46505, "screen", VDP_CLOCK) /* unknown clock, hand tuned to get ~60 fps */
-	MCFG_MC6845_SHOW_BORDER_AREA(false)
-	MCFG_MC6845_CHAR_WIDTH(8)
+	H46505(config, m_crtc, VDP_CLOCK); /* unknown clock, hand tuned to get ~60 fps */
+	m_crtc->set_screen("screen");
+	m_crtc->set_show_border_area(false);
+	m_crtc->set_char_width(8);
 MACHINE_CONFIG_END
 
 
@@ -1006,9 +1007,10 @@ MACHINE_CONFIG_START(pasopia7_state::p7_lcd)
 	MCFG_PALETTE_INIT_OWNER(pasopia7_state,p7_lcd)
 	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_pasopia7)
 
-	MCFG_MC6845_ADD("crtc", H46505, "screen", LCD_CLOCK) /* unknown clock, hand tuned to get ~60 fps */
-	MCFG_MC6845_SHOW_BORDER_AREA(false)
-	MCFG_MC6845_CHAR_WIDTH(8)
+	H46505(config, m_crtc, LCD_CLOCK); /* unknown clock, hand tuned to get ~60 fps */
+	m_crtc->set_screen("screen");
+	m_crtc->set_show_border_area(false);
+	m_crtc->set_char_width(8);
 MACHINE_CONFIG_END
 
 /* ROM definition */

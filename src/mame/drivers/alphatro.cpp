@@ -722,9 +722,9 @@ MACHINE_CONFIG_START(alphatro_state::alphatro)
 	WAVE(config, "wave", "cassette").add_route(ALL_OUTPUTS, "mono", 0.25);
 
 	/* Devices */
-	MCFG_UPD765A_ADD("fdc", true, true)
-	MCFG_UPD765_INTRQ_CALLBACK(WRITELINE(*this, alphatro_state, fdc_irq_w))
-	MCFG_UPD765_DRQ_CALLBACK(WRITELINE(m_dmac, i8257_device, dreq2_w))
+	UPD765A(config, m_fdc, true, true);
+	m_fdc->intrq_wr_callback().set(FUNC(alphatro_state::fdc_irq_w));
+	m_fdc->drq_wr_callback().set(m_dmac, FUNC(i8257_device::dreq2_w));
 	MCFG_FLOPPY_DRIVE_ADD("fdc:0", alphatro_floppies, "525dd", alphatro_state::floppy_formats)
 	MCFG_FLOPPY_DRIVE_ADD("fdc:1", alphatro_floppies, "525dd", alphatro_state::floppy_formats)
 	MCFG_SOFTWARE_LIST_ADD("flop_list", "alphatro_flop")
@@ -737,10 +737,11 @@ MACHINE_CONFIG_START(alphatro_state::alphatro)
 	m_dmac->out_iow_cb<2>().set("fdc", FUNC(upd765a_device::mdma_w));
 	m_dmac->out_tc_cb().set("fdc", FUNC(upd765a_device::tc_line_w));
 
-	MCFG_MC6845_ADD("crtc", MC6845, "screen", XTAL(12'288'000) / 8) // clk unknown
-	MCFG_MC6845_SHOW_BORDER_AREA(false)
-	MCFG_MC6845_CHAR_WIDTH(8)
-	MCFG_MC6845_UPDATE_ROW_CB(alphatro_state, crtc_update_row)
+	MC6845(config, m_crtc, XTAL(12'288'000) / 8); // clk unknown
+	m_crtc->set_screen(m_screen);
+	m_crtc->set_show_border_area(false);
+	m_crtc->set_char_width(8);
+	m_crtc->set_update_row_callback(FUNC(alphatro_state::crtc_update_row), this);
 
 	I8251(config, m_usart, 0);
 	m_usart->txd_handler().set(FUNC(alphatro_state::txdata_callback));

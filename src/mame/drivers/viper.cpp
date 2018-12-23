@@ -81,7 +81,7 @@
         boxingm             Goes to attract mode when ran with memory card check. Coins up.
         code1d,b            RTC self check bad
         gticlub2            Attract mode works. Coins up. Hangs in car selection.
-        gticlub2ea          Doesn't boot: bad CHD?
+        gticlub2ea          Asks for password.
         jpark3              POST?: Shows "Now loading..." then black screen (sets global timer 1 on EPIC) - with IRQ3 crashes at first 3d frame
         mocapglf            Security code error
         mocapb,j            Crash after self checks
@@ -600,20 +600,20 @@ static inline void write64le_with_32le_device_handler(write32_delegate handler, 
 
 static inline uint64_t read64be_with_32le_device_handler(read32_delegate handler, address_space &space, offs_t offset, uint64_t mem_mask)
 {
-	mem_mask = flipendian_int64(mem_mask);
+	mem_mask = swapendian_int64(mem_mask);
 	uint64_t result = 0;
 	if (ACCESSING_BITS_0_31)
 		result = (uint64_t)(handler)(space, offset * 2, mem_mask & 0xffffffff);
 	if (ACCESSING_BITS_32_63)
 		result |= (uint64_t)(handler)(space, offset * 2 + 1, mem_mask >> 32) << 32;
-	return flipendian_int64(result);
+	return swapendian_int64(result);
 }
 
 
 static inline void write64be_with_32le_device_handler(write32_delegate handler,  address_space &space, offs_t offset, uint64_t data, uint64_t mem_mask)
 {
-	data = flipendian_int64(data);
-	mem_mask = flipendian_int64(mem_mask);
+	data = swapendian_int64(data);
+	mem_mask = swapendian_int64(mem_mask);
 	if (ACCESSING_BITS_0_31)
 		handler(space, offset * 2, data & 0xffffffff, mem_mask & 0xffffffff);
 	if (ACCESSING_BITS_32_63)
@@ -1050,7 +1050,7 @@ READ32_MEMBER(viper_state::epic_r)
 		}
 	}
 
-	return flipendian_int32(ret);
+	return swapendian_int32(ret);
 }
 
 WRITE32_MEMBER(viper_state::epic_w)
@@ -1058,7 +1058,7 @@ WRITE32_MEMBER(viper_state::epic_w)
 	int reg;
 	reg = offset * 4;
 
-	data = flipendian_int32(data);
+	data = swapendian_int32(data);
 
 #if VIPER_DEBUG_EPIC_REGS
 	if (reg != 0x600b0)     // interrupt clearing is spammy
@@ -2553,8 +2553,8 @@ ROM_START(gticlub2ea) //*
 	ROM_REGION(0x2000, "m48t58", ROMREGION_ERASE00)     /* M48T58 Timekeeper NVRAM */
 	ROM_LOAD("941eaa_nvram.u39", 0x00000, 0x2000, BAD_DUMP CRC(5ee7004d) SHA1(92e0ce01049308f459985d466fbfcfac82f34a47))
 
-	DISK_REGION( "ata:0:hdd:image" )
-	DISK_IMAGE( "941a02", 0,  NO_DUMP )
+	DISK_REGION( "ata:0:hdd:image" ) // 32 MB Memory Card labeled 941 EA A02
+	DISK_IMAGE( "941a02", 0,  SHA1(dd180ad92dd344b38f160e31833077e342cee38d) ) // with ATA id included
 ROM_END
 
 /* This CF card has sticker B41C02 */

@@ -2370,14 +2370,14 @@ MACHINE_CONFIG_START(pc9801_state::pc9801_common)
 	MCFG_SCREEN_UPDATE_DRIVER(pc9801_state, screen_update)
 	MCFG_SCREEN_VBLANK_CALLBACK(WRITELINE(*this, pc9801_state, vrtc_irq))
 
-	MCFG_DEVICE_ADD("upd7220_chr", UPD7220, 21.0526_MHz_XTAL / 8)
-	MCFG_DEVICE_ADDRESS_MAP(0, upd7220_1_map)
-	MCFG_UPD7220_DRAW_TEXT_CALLBACK_OWNER(pc9801_state, hgdc_draw_text)
-	MCFG_UPD7220_VSYNC_CALLBACK(WRITELINE("upd7220_btm", upd7220_device, ext_sync_w))
+	UPD7220(config, m_hgdc1, 21.0526_MHz_XTAL / 8);
+	m_hgdc1->set_addrmap(0, &pc9801_state::upd7220_1_map);
+	m_hgdc1->set_draw_text_callback(FUNC(pc9801_state::hgdc_draw_text), this);
+	m_hgdc1->vsync_wr_callback().set(m_hgdc2, FUNC(upd7220_device::ext_sync_w));
 
-	MCFG_DEVICE_ADD("upd7220_btm", UPD7220, 21.0526_MHz_XTAL / 8)
-	MCFG_DEVICE_ADDRESS_MAP(0, upd7220_2_map)
-	MCFG_UPD7220_DISPLAY_PIXELS_CALLBACK_OWNER(pc9801_state, hgdc_display_pixels)
+	UPD7220(config, m_hgdc2, 21.0526_MHz_XTAL / 8);
+	m_hgdc2->set_addrmap(0, &pc9801_state::upd7220_2_map);
+	m_hgdc2->set_display_pixels_callback(FUNC(pc9801_state::hgdc_display_pixels), this);
 
 	SPEAKER(config, "mono").front_center();
 
@@ -2407,7 +2407,7 @@ MACHINE_CONFIG_START(pc9801_state::pc9801)
 	FLOPPY_CONNECTOR(config, "upd765_2dd:1", pc9801_floppies, "525dd", pc9801_state::floppy_formats);
 
 	pc9801_sasi(config);
-	MCFG_UPD1990A_ADD(UPD1990A_TAG, XTAL(32'768), NOOP, NOOP)
+	UPD1990A(config, m_rtc);
 
 	m_dmac->in_ior_callback<3>().set(m_fdc_2dd, FUNC(upd765a_device::mdma_r));
 	m_dmac->out_iow_callback<3>().set(m_fdc_2dd, FUNC(upd765a_device::mdma_w));
@@ -2434,7 +2434,7 @@ MACHINE_CONFIG_START(pc9801_state::pc9801rs)
 	MCFG_DEVICE_CLOCK(MAIN_CLOCK_X1*8); // unknown clock
 
 	pc9801_ide(config);
-	MCFG_UPD4990A_ADD("upd1990a", XTAL(32'768), NOOP, NOOP)
+	UPD4990A(config, m_rtc);
 
 	RAM(config, m_ram).set_default_size("1664K").set_extra_options("640K,3712K,7808K,14M");
 
@@ -2485,10 +2485,9 @@ MACHINE_CONFIG_START(pc9801_state::pc9821)
 	MCFG_DEVICE_IO_MAP(pc9821_io)
 	MCFG_DEVICE_IRQ_ACKNOWLEDGE_DEVICE("pic8259_master", pic8259_device, inta_cb)
 
-	MCFG_DEVICE_MODIFY("pit8253")
-	MCFG_PIT8253_CLK0(MAIN_CLOCK_X2)
-	MCFG_PIT8253_CLK1(MAIN_CLOCK_X2)
-	MCFG_PIT8253_CLK2(MAIN_CLOCK_X2)
+	m_pit8253->set_clk<0>(MAIN_CLOCK_X2);
+	m_pit8253->set_clk<1>(MAIN_CLOCK_X2);
+	m_pit8253->set_clk<2>(MAIN_CLOCK_X2);
 
 	MCFG_MACHINE_START_OVERRIDE(pc9801_state,pc9821)
 	MCFG_MACHINE_RESET_OVERRIDE(pc9801_state,pc9821)
