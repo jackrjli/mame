@@ -155,13 +155,13 @@ WRITE8_MEMBER(midyunit_state::yawdim_oki_bank_w)
 
 CUSTOM_INPUT_MEMBER(midyunit_state::narc_talkback_strobe_r)
 {
-	return (m_narc_sound->read(machine().dummy_space(), 0) >> 8) & 1;
+	return (m_narc_sound->read() >> 8) & 1;
 }
 
 
 CUSTOM_INPUT_MEMBER(midyunit_state::narc_talkback_data_r)
 {
-	return m_narc_sound->read(machine().dummy_space(), 0) & 0xff;
+	return m_narc_sound->read() & 0xff;
 }
 
 
@@ -190,7 +190,6 @@ void midyunit_state::main_map(address_map &map)
 	map(0x01e00000, 0x01e0001f).w(FUNC(midyunit_state::midyunit_sound_w));
 	map(0x01f00000, 0x01f0001f).w(FUNC(midyunit_state::midyunit_control_w));
 	map(0x02000000, 0x05ffffff).r(FUNC(midyunit_state::midyunit_gfxrom_r)).share("gfx_rom");
-	map(0xc0000000, 0xc00001ff).rw("maincpu", FUNC(tms34010_device::io_register_r), FUNC(tms34010_device::io_register_w));
 	map(0xff800000, 0xffffffff).rom().region("user1", 0);
 }
 
@@ -1102,36 +1101,36 @@ INPUT_PORTS_END
 MACHINE_CONFIG_START(midyunit_state::zunit)
 
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", TMS34010, FAST_MASTER_CLOCK)
-	MCFG_DEVICE_PROGRAM_MAP(main_map)
-	MCFG_TMS340X0_HALT_ON_RESET(false) /* halt on reset */
-	MCFG_TMS340X0_PIXEL_CLOCK(MEDRES_PIXEL_CLOCK) /* pixel clock */
-	MCFG_TMS340X0_PIXELS_PER_CLOCK(2) /* pixels per clock */
-	MCFG_TMS340X0_SCANLINE_IND16_CB(midyunit_state, scanline_update)       /* scanline updater (indexed16) */
-	MCFG_TMS340X0_TO_SHIFTREG_CB(midyunit_state, to_shiftreg)           /* write to shiftreg function */
-	MCFG_TMS340X0_FROM_SHIFTREG_CB(midyunit_state, from_shiftreg)          /* read from shiftreg function */
+	TMS34010(config, m_maincpu, FAST_MASTER_CLOCK);
+	m_maincpu->set_addrmap(AS_PROGRAM, &midyunit_state::main_map);
+	m_maincpu->set_halt_on_reset(false);
+	m_maincpu->set_pixel_clock(MEDRES_PIXEL_CLOCK);
+	m_maincpu->set_pixels_per_clock(2);
+	m_maincpu->set_scanline_ind16_callback(FUNC(midyunit_state::scanline_update));
+	m_maincpu->set_shiftreg_in_callback(FUNC(midyunit_state::to_shiftreg));
+	m_maincpu->set_shiftreg_out_callback(FUNC(midyunit_state::from_shiftreg));
 
 	MCFG_MACHINE_RESET_OVERRIDE(midyunit_state,midyunit)
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 
 	/* video hardware */
-	MCFG_PALETTE_ADD("palette", 8192)
+	PALETTE(config, m_palette).set_entries(8192);
 
 	MCFG_SCREEN_ADD("screen", RASTER)
 	MCFG_SCREEN_VIDEO_ATTRIBUTES(VIDEO_ALWAYS_UPDATE)
 	// from TMS340 registers
 	MCFG_SCREEN_RAW_PARAMS(MEDRES_PIXEL_CLOCK*2, 674, 122, 634, 433, 27, 427)
 	MCFG_SCREEN_UPDATE_DEVICE("maincpu", tms34010_device, tms340x0_ind16)
-	MCFG_SCREEN_PALETTE("palette")
+	MCFG_SCREEN_PALETTE(m_palette)
 
 	MCFG_VIDEO_START_OVERRIDE(midyunit_state,midzunit)
 
 	/* sound hardware */
 	SPEAKER(config, "lspeaker").front_left();
 	SPEAKER(config, "rspeaker").front_right();
-	MCFG_DEVICE_ADD("narcsnd", WILLIAMS_NARC_SOUND)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "lspeaker", 1.0)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "rspeaker", 1.0)
+	WILLIAMS_NARC_SOUND(config, m_narc_sound);
+	m_narc_sound->add_route(ALL_OUTPUTS, "lspeaker", 1.0);
+	m_narc_sound->add_route(ALL_OUTPUTS, "rspeaker", 1.0);
 MACHINE_CONFIG_END
 
 
@@ -1145,20 +1144,20 @@ MACHINE_CONFIG_END
 MACHINE_CONFIG_START(midyunit_state::yunit_core)
 
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", TMS34010, SLOW_MASTER_CLOCK)
-	MCFG_DEVICE_PROGRAM_MAP(main_map)
-	MCFG_TMS340X0_HALT_ON_RESET(false) /* halt on reset */
-	MCFG_TMS340X0_PIXEL_CLOCK(STDRES_PIXEL_CLOCK) /* pixel clock */
-	MCFG_TMS340X0_PIXELS_PER_CLOCK(2) /* pixels per clock */
-	MCFG_TMS340X0_SCANLINE_IND16_CB(midyunit_state, scanline_update)       /* scanline updater (indexed16) */
-	MCFG_TMS340X0_TO_SHIFTREG_CB(midyunit_state, to_shiftreg)           /* write to shiftreg function */
-	MCFG_TMS340X0_FROM_SHIFTREG_CB(midyunit_state, from_shiftreg)          /* read from shiftreg function */
+	TMS34010(config, m_maincpu, SLOW_MASTER_CLOCK);
+	m_maincpu->set_addrmap(AS_PROGRAM, &midyunit_state::main_map);
+	m_maincpu->set_halt_on_reset(false);
+	m_maincpu->set_pixel_clock(STDRES_PIXEL_CLOCK);
+	m_maincpu->set_pixels_per_clock(2);
+	m_maincpu->set_scanline_ind16_callback(FUNC(midyunit_state::scanline_update));
+	m_maincpu->set_shiftreg_in_callback(FUNC(midyunit_state::to_shiftreg));
+	m_maincpu->set_shiftreg_out_callback(FUNC(midyunit_state::from_shiftreg));
 
 	MCFG_MACHINE_RESET_OVERRIDE(midyunit_state,midyunit)
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 
 	/* video hardware */
-	MCFG_PALETTE_ADD("palette", 256)
+	PALETTE(config, m_palette).set_entries(256);
 
 	MCFG_SCREEN_ADD("screen", RASTER)
 	MCFG_SCREEN_VIDEO_ATTRIBUTES(VIDEO_ALWAYS_UPDATE)
@@ -1166,7 +1165,7 @@ MACHINE_CONFIG_START(midyunit_state::yunit_core)
 	// we use the largest visarea (smashtv's) here so that aviwrite will work nicely
 	MCFG_SCREEN_RAW_PARAMS(STDRES_PIXEL_CLOCK*2, 506, 90, 500, 289, 20, 276)
 	MCFG_SCREEN_UPDATE_DEVICE("maincpu", tms34010_device, tms340x0_ind16)
-	MCFG_SCREEN_PALETTE("palette")
+	MCFG_SCREEN_PALETTE(m_palette)
 
 	/* sound hardware */
 	SPEAKER(config, "speaker").front_center();
@@ -1177,12 +1176,10 @@ MACHINE_CONFIG_START(midyunit_state::yunit_cvsd_4bit_slow)
 	yunit_core(config);
 
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("cvsd", WILLIAMS_CVSD_SOUND)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
+	WILLIAMS_CVSD_SOUND(config, m_cvsd_sound).add_route(ALL_OUTPUTS, "speaker", 1.0);
 
 	/* video hardware */
-	MCFG_PALETTE_MODIFY("palette")
-	MCFG_PALETTE_ENTRIES(256)
+	m_palette->set_entries(256);
 	MCFG_VIDEO_START_OVERRIDE(midyunit_state,midyunit_4bit)
 MACHINE_CONFIG_END
 
@@ -1191,15 +1188,12 @@ MACHINE_CONFIG_START(midyunit_state::yunit_cvsd_4bit_fast)
 	yunit_core(config);
 
 	/* basic machine hardware */
-	MCFG_DEVICE_MODIFY("maincpu")
-	MCFG_DEVICE_CLOCK(FAST_MASTER_CLOCK)
+	m_maincpu->set_clock(FAST_MASTER_CLOCK);
 
-	MCFG_DEVICE_ADD("cvsd", WILLIAMS_CVSD_SOUND)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
+	WILLIAMS_CVSD_SOUND(config, m_cvsd_sound).add_route(ALL_OUTPUTS, "speaker", 1.0);
 
 	/* video hardware */
-	MCFG_PALETTE_MODIFY("palette")
-	MCFG_PALETTE_ENTRIES(256)
+	m_palette->set_entries(256);
 	MCFG_VIDEO_START_OVERRIDE(midyunit_state,midyunit_4bit)
 MACHINE_CONFIG_END
 
@@ -1208,12 +1202,10 @@ MACHINE_CONFIG_START(midyunit_state::yunit_cvsd_6bit_slow)
 	yunit_core(config);
 
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("cvsd", WILLIAMS_CVSD_SOUND)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
+	WILLIAMS_CVSD_SOUND(config, m_cvsd_sound).add_route(ALL_OUTPUTS, "speaker", 1.0);
 
 	/* video hardware */
-	MCFG_PALETTE_MODIFY("palette")
-	MCFG_PALETTE_ENTRIES(4096)
+	m_palette->set_entries(4096);
 	MCFG_VIDEO_START_OVERRIDE(midyunit_state,midyunit_6bit)
 MACHINE_CONFIG_END
 
@@ -1222,15 +1214,12 @@ MACHINE_CONFIG_START(midyunit_state::yunit_adpcm_6bit_fast)
 	yunit_core(config);
 
 	/* basic machine hardware */
-	MCFG_DEVICE_MODIFY("maincpu")
-	MCFG_DEVICE_CLOCK(FAST_MASTER_CLOCK)
+	m_maincpu->set_clock(FAST_MASTER_CLOCK);
 
-	MCFG_DEVICE_ADD("adpcm", WILLIAMS_ADPCM_SOUND)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
+	WILLIAMS_ADPCM_SOUND(config, m_adpcm_sound).add_route(ALL_OUTPUTS, "speaker", 1.0);
 
 	/* video hardware */
-	MCFG_PALETTE_MODIFY("palette")
-	MCFG_PALETTE_ENTRIES(4096)
+	m_palette->set_entries(4096);
 	MCFG_VIDEO_START_OVERRIDE(midyunit_state,midyunit_6bit)
 MACHINE_CONFIG_END
 
@@ -1239,15 +1228,12 @@ MACHINE_CONFIG_START(midyunit_state::yunit_adpcm_6bit_faster)
 	yunit_core(config);
 
 	/* basic machine hardware */
-	MCFG_DEVICE_MODIFY("maincpu")
-	MCFG_DEVICE_CLOCK(FASTER_MASTER_CLOCK)
+	m_maincpu->set_clock(FASTER_MASTER_CLOCK);
 
-	MCFG_DEVICE_ADD("adpcm", WILLIAMS_ADPCM_SOUND)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 1.0)
+	WILLIAMS_ADPCM_SOUND(config, m_adpcm_sound).add_route(ALL_OUTPUTS, "speaker", 1.0);
 
 	/* video hardware */
-	MCFG_PALETTE_MODIFY("palette")
-	MCFG_PALETTE_ENTRIES(4096)
+	m_palette->set_entries(4096);
 	MCFG_VIDEO_START_OVERRIDE(midyunit_state,midyunit_6bit)
 MACHINE_CONFIG_END
 
@@ -1255,7 +1241,8 @@ MACHINE_CONFIG_END
 void midyunit_state::term2(machine_config &config)
 {
 	yunit_adpcm_6bit_faster(config);
-	ADC0844(config, m_term2_adc, 0); // U2 on Coil Lamp Driver Board (A-14915)
+
+	ADC0844(config, m_term2_adc); // U2 on Coil Lamp Driver Board (A-14915)
 	m_term2_adc->ch1_callback().set_ioport("STICK0_X");
 	m_term2_adc->ch2_callback().set_ioport("STICK0_Y");
 	m_term2_adc->ch3_callback().set_ioport("STICK1_X");
@@ -1272,8 +1259,7 @@ MACHINE_CONFIG_START(midyunit_state::mkyawdim)
 	MCFG_DEVICE_PROGRAM_MAP(yawdim_sound_map)
 
 	/* video hardware */
-	MCFG_PALETTE_MODIFY("palette")
-	MCFG_PALETTE_ENTRIES(4096)
+	m_palette->set_entries(4096);
 	MCFG_VIDEO_START_OVERRIDE(midyunit_state,mkyawdim)
 
 	/* sound hardware */

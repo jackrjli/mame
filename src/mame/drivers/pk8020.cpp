@@ -16,7 +16,6 @@
 #include "bus/rs232/rs232.h"
 #include "cpu/i8085/i8085.h"
 #include "machine/i8255.h"
-#include "imagedev/flopdrv.h"
 #include "formats/pk8020_dsk.h"
 #include "machine/ram.h"
 #include "screen.h"
@@ -205,11 +204,10 @@ MACHINE_CONFIG_START(pk8020_state::pk8020)
 	MCFG_SCREEN_SIZE(512, 256)
 	MCFG_SCREEN_VISIBLE_AREA(0, 512-1, 0, 256-1)
 	MCFG_SCREEN_UPDATE_DRIVER(pk8020_state, screen_update_pk8020)
-	MCFG_SCREEN_PALETTE("palette")
+	MCFG_SCREEN_PALETTE(m_palette)
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_pk8020)
-	MCFG_PALETTE_ADD("palette", 16)
-	MCFG_PALETTE_INIT_OWNER(pk8020_state, pk8020)
+	GFXDECODE(config, "gfxdecode", m_palette, gfx_pk8020);
+	PALETTE(config, m_palette, FUNC(pk8020_state::pk8020_palette), 16);
 
 	I8255(config, m_ppi8255_1);
 	m_ppi8255_1->in_pa_callback().set(FUNC(pk8020_state::pk8020_porta_r));
@@ -248,20 +246,19 @@ MACHINE_CONFIG_START(pk8020_state::pk8020)
 	FD1793(config, m_wd1793, 20_MHz_XTAL / 20);
 	m_wd1793->intrq_wr_callback().set(m_pic8259, FUNC(pic8259_device::ir7_w));
 
-	MCFG_FLOPPY_DRIVE_ADD("wd1793:0", pk8020_floppies, "qd", pk8020_state::floppy_formats)
-	MCFG_FLOPPY_DRIVE_ADD("wd1793:1", pk8020_floppies, "qd", pk8020_state::floppy_formats)
-	MCFG_FLOPPY_DRIVE_ADD("wd1793:2", pk8020_floppies, "qd", pk8020_state::floppy_formats)
-	MCFG_FLOPPY_DRIVE_ADD("wd1793:3", pk8020_floppies, "qd", pk8020_state::floppy_formats)
+	FLOPPY_CONNECTOR(config, "wd1793:0", pk8020_floppies, "qd", pk8020_state::floppy_formats);
+	FLOPPY_CONNECTOR(config, "wd1793:1", pk8020_floppies, "qd", pk8020_state::floppy_formats);
+	FLOPPY_CONNECTOR(config, "wd1793:2", pk8020_floppies, "qd", pk8020_state::floppy_formats);
+	FLOPPY_CONNECTOR(config, "wd1793:3", pk8020_floppies, "qd", pk8020_state::floppy_formats);
 
-	MCFG_SOFTWARE_LIST_ADD("flop_list", "korvet_flop")
+	SOFTWARE_LIST(config, "flop_list").set_original("korvet_flop");
 
 	/* audio hardware */
 	SPEAKER(config, "mono").front_center();
 	SPEAKER_SOUND(config, "speaker").add_route(ALL_OUTPUTS, "mono", 0.25);
 	WAVE(config, "wave", "cassette").add_route(ALL_OUTPUTS, "mono", 0.25);
 
-	MCFG_CASSETTE_ADD( "cassette" )
-	MCFG_CASSETTE_DEFAULT_STATE(CASSETTE_PLAY)
+	CASSETTE(config, "cassette").set_default_state(CASSETTE_PLAY);
 
 	/* internal ram */
 	RAM(config, RAM_TAG).set_default_size("258K").set_default_value(0x00); // 64 + 4*48 + 2 = 258

@@ -60,8 +60,8 @@
 class mole_state : public driver_device
 {
 public:
-	mole_state(const machine_config &mconfig, device_type type, const char *tag)
-		: driver_device(mconfig, type, tag),
+	mole_state(const machine_config &mconfig, device_type type, const char *tag) :
+		driver_device(mconfig, type, tag),
 		m_maincpu(*this, "maincpu"),
 		m_gfxdecode(*this, "gfxdecode")
 	{ }
@@ -339,8 +339,8 @@ MACHINE_CONFIG_START(mole_state::mole)
 	MCFG_SCREEN_UPDATE_DRIVER(mole_state, screen_update_mole)
 	MCFG_SCREEN_PALETTE("palette")
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_mole)
-	MCFG_PALETTE_ADD_3BIT_RBG("palette")
+	GFXDECODE(config, m_gfxdecode, "palette", gfx_mole);
+	PALETTE(config, "palette", palette_device::RBG_3BIT);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

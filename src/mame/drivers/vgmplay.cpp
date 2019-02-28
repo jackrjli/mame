@@ -3152,9 +3152,9 @@ void vgmplay_state::file_map(address_map &map)
 void vgmplay_state::soundchips_map(address_map &map)
 {
 	map(vgmplay_device::REG_SIZE, vgmplay_device::REG_SIZE + 3).r(FUNC(vgmplay_state::file_size_r));
-	map(vgmplay_device::A_SN76489_0 + 0, vgmplay_device::A_SN76489_0 + 0).w(m_sn76489[0], FUNC(sn76489_device::command_w));
+	map(vgmplay_device::A_SN76489_0 + 0, vgmplay_device::A_SN76489_0 + 0).w(m_sn76489[0], FUNC(sn76489_device::write));
 	//map(vgmplay_device::A_SN76489_0 + 1, vgmplay_device::A_SN76489_0 + 1).w(m_sn76489[0], FUNC(sn76489_device::stereo_w)); // TODO: GG stereo
-	map(vgmplay_device::A_SN76489_1 + 0, vgmplay_device::A_SN76489_1 + 0).w(m_sn76489[1], FUNC(sn76489_device::command_w));
+	map(vgmplay_device::A_SN76489_1 + 0, vgmplay_device::A_SN76489_1 + 0).w(m_sn76489[1], FUNC(sn76489_device::write));
 	//map(vgmplay_device::A_SN76489_1 + 1, vgmplay_device::A_SN76489_1 + 1).w(m_sn76489[1], FUNC(sn76489_device::stereo_w)); // TODO: GG stereo
 	map(vgmplay_device::A_YM2413_0, vgmplay_device::A_YM2413_0 + 1).w(m_ym2413[0], FUNC(ym2413_device::write));
 	map(vgmplay_device::A_YM2413_1, vgmplay_device::A_YM2413_1 + 1).w(m_ym2413[1], FUNC(ym2413_device::write));
@@ -3435,10 +3435,10 @@ MACHINE_CONFIG_START(vgmplay_state::vgmplay)
 	m_vgmplay->set_addrmap(AS_IO, &vgmplay_state::soundchips_map);
 	m_vgmplay->set_addrmap(AS_IO16, &vgmplay_state::soundchips16_map);
 
-	MCFG_QUICKLOAD_ADD("quickload", vgmplay_state, load_file, "vgm,vgz", 0)
+	MCFG_QUICKLOAD_ADD("quickload", vgmplay_state, load_file, "vgm,vgz")
 	MCFG_QUICKLOAD_INTERFACE("vgm_quik")
 
-	MCFG_SOFTWARE_LIST_ADD("vgm_list", "vgmplay")
+	SOFTWARE_LIST(config, "vgm_list").set_original("vgmplay");
 
 	config.set_default_layout(layout_vgmplay);
 
@@ -3606,7 +3606,7 @@ MACHINE_CONFIG_START(vgmplay_state::vgmplay)
 
 	TIMER(config, "sega32x_scanline_timer", 0);
 
-	PALETTE(config, "sega32x_palette", 0xc0 * 2);
+	PALETTE(config, "sega32x_palette").set_entries(0xc0 * 2);
 
 	m_sega32x->subdevice<cpu_device>("32x_master_sh2")->set_disable();
 	m_sega32x->subdevice<cpu_device>("32x_slave_sh2")->set_disable();
@@ -3657,13 +3657,13 @@ MACHINE_CONFIG_START(vgmplay_state::vgmplay)
 	m_multipcm[1]->add_route(1, "rspeaker", 1);
 
 	UPD7759(config, m_upd7759[0], 0);
-	m_upd7759[0]->set_drq_callback(DEVCB_WRITELINE(*this, vgmplay_state, upd7759_drq_w<0>));
+	m_upd7759[0]->drq().set(FUNC(vgmplay_state::upd7759_drq_w<0>));
 	m_upd7759[0]->set_addrmap(0, &vgmplay_state::upd7759_map<0>);
 	m_upd7759[0]->add_route(ALL_OUTPUTS, "lspeaker", 1.0);
 	m_upd7759[0]->add_route(ALL_OUTPUTS, "rspeaker", 1.0);
 
 	UPD7759(config, m_upd7759[1], 0);
-	m_upd7759[1]->set_drq_callback(DEVCB_WRITELINE(*this, vgmplay_state, upd7759_drq_w<1>));
+	m_upd7759[1]->drq().set(FUNC(vgmplay_state::upd7759_drq_w<1>));
 	m_upd7759[1]->set_addrmap(0, &vgmplay_state::upd7759_map<1>);
 	m_upd7759[1]->add_route(ALL_OUTPUTS, "lspeaker", 1.0);
 	m_upd7759[1]->add_route(ALL_OUTPUTS, "rspeaker", 1.0);

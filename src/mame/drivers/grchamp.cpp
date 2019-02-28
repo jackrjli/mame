@@ -756,12 +756,11 @@ MACHINE_CONFIG_START(grchamp_state::grchamp)
 	MCFG_DEVICE_PERIODIC_INT_DRIVER(grchamp_state, irq0_line_hold,  (double)SOUND_CLOCK/4/16/16/10/16)
 
 	WATCHDOG_TIMER(config, m_watchdog).set_vblank_count(m_screen, 8);
-	MCFG_QUANTUM_TIME(attotime::from_hz(6000))
+	config.m_minimum_quantum = attotime::from_hz(6000);
 
 	/* video hardware */
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_grchamp)
-	MCFG_PALETTE_ADD("palette", 32)
-	MCFG_PALETTE_INIT_OWNER(grchamp_state, grchamp)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_grchamp);
+	PALETTE(config, m_palette, FUNC(grchamp_state::grchamp_palette), 32);
 
 	MCFG_SCREEN_ADD(m_screen, RASTER)
 	MCFG_SCREEN_VIDEO_ATTRIBUTES(VIDEO_ALWAYS_UPDATE)
@@ -772,8 +771,7 @@ MACHINE_CONFIG_START(grchamp_state::grchamp)
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 
-	MCFG_INPUT_MERGER_ALL_HIGH("soundnmi")
-	MCFG_INPUT_MERGER_OUTPUT_HANDLER(INPUTLINE("audiocpu", INPUT_LINE_NMI))
+	INPUT_MERGER_ALL_HIGH(config, m_soundnmi).output_handler().set_inputline(m_audiocpu, INPUT_LINE_NMI);
 
 	ay8910_device &ay1(AY8910(config, "ay1", SOUND_CLOCK/4));    /* 3B */
 	ay1.port_a_write_callback().set(FUNC(grchamp_state::portA_0_w));

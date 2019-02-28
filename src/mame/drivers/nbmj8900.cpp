@@ -312,8 +312,7 @@ MACHINE_CONFIG_START(nbmj8900_state::ohpaipee)
 	MCFG_DEVICE_IO_MAP(ohpaipee_io_map)
 	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", nbmj8900_state, irq0_line_hold)
 
-	MCFG_NB1413M3_ADD("nb1413m3")
-	MCFG_NB1413M3_TYPE( NB1413M3_OHPAIPEE )
+	NB1413M3(config, m_nb1413m3, 0, NB1413M3_OHPAIPEE);
 
 	/* video hardware */
 	MCFG_SCREEN_ADD("screen", RASTER)
@@ -333,9 +332,10 @@ MACHINE_CONFIG_START(nbmj8900_state::ohpaipee)
 	MCFG_DEVICE_ADD("ymsnd", YM3812, 2500000)
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.7)
 
-	MCFG_DEVICE_ADD("dac", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.42) // unknown DAC
-	MCFG_DEVICE_ADD("vref", VOLTAGE_REGULATOR, 0) MCFG_VOLTAGE_REGULATOR_OUTPUT(5.0)
-	MCFG_SOUND_ROUTE(0, "dac", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE(0, "dac", -1.0, DAC_VREF_NEG_INPUT)
+	DAC_8BIT_R2R(config, "dac", 0).add_route(ALL_OUTPUTS, "speaker", 0.42); // unknown DAC
+	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref"));
+	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
+	vref.add_route(0, "dac", -1.0, DAC_VREF_NEG_INPUT);
 MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(nbmj8900_state::togenkyo)
@@ -345,8 +345,7 @@ MACHINE_CONFIG_START(nbmj8900_state::togenkyo)
 	MCFG_DEVICE_MODIFY("maincpu")
 	MCFG_DEVICE_PROGRAM_MAP(togenkyo_map)
 
-	MCFG_DEVICE_MODIFY("nb1413m3")
-	MCFG_NB1413M3_TYPE( NB1413M3_TOGENKYO )
+	m_nb1413m3->set_type(NB1413M3_TOGENKYO);
 MACHINE_CONFIG_END
 
 

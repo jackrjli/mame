@@ -86,7 +86,7 @@ WRITE8_MEMBER(redalert_state::redalert_AY8910_w)
 
 		/* BC1=1, BDIR=0 : read from PSG */
 		case 0x01:
-			m_ay8910_latch_1 = m_ay8910->data_r(space, 0);
+			m_ay8910_latch_1 = m_ay8910->data_r();
 			break;
 
 		/* BC1=0, BDIR=1 : write to PSG */
@@ -94,7 +94,7 @@ WRITE8_MEMBER(redalert_state::redalert_AY8910_w)
 		case 0x02:
 		case 0x03:
 		default:
-			m_ay8910->data_address_w(space, data, m_ay8910_latch_2);
+			m_ay8910->data_address_w(data, m_ay8910_latch_2);
 			break;
 	}
 }
@@ -197,18 +197,17 @@ void redalert_state::redalert_audio_m37b(machine_config &config)
  *
  *************************************/
 
-MACHINE_CONFIG_START(redalert_state::redalert_audio_voice)
-
-	MCFG_DEVICE_ADD("voice", I8085A, REDALERT_VOICE_CPU_CLOCK)
-	MCFG_DEVICE_PROGRAM_MAP(redalert_voice_map)
-	MCFG_I8085A_SID(READLINE(*this, redalert_state,sid_callback))
-	MCFG_I8085A_SOD(WRITELINE(*this, redalert_state,sod_callback))
+void redalert_state::redalert_audio_voice(machine_config &config)
+{
+	I8085A(config, m_voicecpu, REDALERT_VOICE_CPU_CLOCK);
+	m_voicecpu->set_addrmap(AS_PROGRAM, &redalert_state::redalert_voice_map);
+	m_voicecpu->in_sid_func().set(FUNC(redalert_state::sid_callback));
+	m_voicecpu->out_sod_func().set(FUNC(redalert_state::sod_callback));
 
 	GENERIC_LATCH_8(config, m_soundlatch2);
 
-	MCFG_DEVICE_ADD("cvsd", HC55516, REDALERT_HC55516_CLOCK)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
-MACHINE_CONFIG_END
+	HC55516(config, m_cvsd, REDALERT_HC55516_CLOCK).add_route(ALL_OUTPUTS, "mono", 0.50);
+}
 
 /*************************************
  *
@@ -270,28 +269,28 @@ WRITE8_MEMBER(redalert_state::demoneye_ay8910_data_w)
 	{
 		case 0x00:
 			if (m_ay8910_latch_1 & 0x10)
-				m_ay[0]->data_w(space, 0, data);
+				m_ay[0]->data_w(data);
 
 			if (m_ay8910_latch_1 & 0x20)
-				m_ay[1]->data_w(space, 0, data);
+				m_ay[1]->data_w(data);
 
 			break;
 
 		case 0x01:
 			if (m_ay8910_latch_1 & 0x10)
-				m_ay8910_latch_2 = m_ay[0]->data_r(space, 0);
+				m_ay8910_latch_2 = m_ay[0]->data_r();
 
 			if (m_ay8910_latch_1 & 0x20)
-				m_ay8910_latch_2 = m_ay[1]->data_r(space, 0);
+				m_ay8910_latch_2 = m_ay[1]->data_r();
 
 			break;
 
 		case 0x03:
 			if (m_ay8910_latch_1 & 0x10)
-				m_ay[0]->address_w(space, 0, data);
+				m_ay[0]->address_w(data);
 
 			if (m_ay8910_latch_1 & 0x20)
-				m_ay[1]->address_w(space, 0, data);
+				m_ay[1]->address_w(data);
 
 			break;
 

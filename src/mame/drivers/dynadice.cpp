@@ -47,12 +47,13 @@ dy_6.bin (near Z80)
 class dynadice_state : public driver_device
 {
 public:
-	dynadice_state(const machine_config &mconfig, device_type type, const char *tag)
-		: driver_device(mconfig, type, tag),
+	dynadice_state(const machine_config &mconfig, device_type type, const char *tag) :
+		driver_device(mconfig, type, tag),
 		m_videoram(*this, "videoram"),
 		m_maincpu(*this, "maincpu"),
 		m_gfxdecode(*this, "gfxdecode"),
-		m_ay8910(*this, "ay8910") { }
+		m_ay8910(*this, "ay8910")
+	{ }
 
 	void dynadice(machine_config &config);
 
@@ -118,10 +119,10 @@ WRITE8_MEMBER(dynadice_state::sound_control_w)
 
 */
 	if ((data & 7) == 7)
-		m_ay8910->address_w(space, 0, m_ay_data);
+		m_ay8910->address_w(m_ay_data);
 
 	if ((data & 7) == 6)
-		m_ay8910->data_w(space, 0, m_ay_data);
+		m_ay8910->data_w(m_ay_data);
 }
 
 
@@ -282,8 +283,8 @@ MACHINE_CONFIG_START(dynadice_state::dynadice)
 	MCFG_SCREEN_UPDATE_DRIVER(dynadice_state, screen_update)
 	MCFG_SCREEN_PALETTE("palette")
 
-	MCFG_DEVICE_ADD(m_gfxdecode, GFXDECODE, "palette", gfx_dynadice)
-	MCFG_PALETTE_ADD_3BIT_BRG("palette")
+	GFXDECODE(config, m_gfxdecode, "palette", gfx_dynadice);
+	PALETTE(config, "palette", palette_device::BRG_3BIT);
 
 	SPEAKER(config, "mono").front_center();
 

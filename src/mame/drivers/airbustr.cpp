@@ -568,7 +568,7 @@ MACHINE_CONFIG_START(airbustr_state::airbustr)
 	MCFG_DEVICE_ADD("master", Z80, XTAL(12'000'000)/2)   /* verified on pcb */
 	MCFG_DEVICE_PROGRAM_MAP(master_map)
 	MCFG_DEVICE_IO_MAP(master_io_map)
-	MCFG_TIMER_DRIVER_ADD_SCANLINE("scantimer", airbustr_state, airbustr_scanline, "screen", 0, 1)
+	TIMER(config, "scantimer").configure_scanline(FUNC(airbustr_state::airbustr_scanline), "screen", 0, 1);
 
 	MCFG_DEVICE_ADD("slave", Z80, XTAL(12'000'000)/2)    /* verified on pcb */
 	MCFG_DEVICE_PROGRAM_MAP(slave_map)
@@ -580,7 +580,7 @@ MACHINE_CONFIG_START(airbustr_state::airbustr)
 	MCFG_DEVICE_IO_MAP(sound_io_map)
 	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", airbustr_state,  irq0_line_hold)       // nmi are caused by sub cpu writing a sound command
 
-	MCFG_QUANTUM_TIME(attotime::from_hz(6000))  // Palette RAM is filled by sub cpu with data supplied by main cpu
+	config.m_minimum_quantum = attotime::from_hz(6000);  // Palette RAM is filled by sub cpu with data supplied by main cpu
 							// Maybe a high value is safer in order to avoid glitches
 
 	WATCHDOG_TIMER(config, m_watchdog).set_time(attotime::from_seconds(3));  /* a guess, and certainly wrong */
@@ -593,11 +593,10 @@ MACHINE_CONFIG_START(airbustr_state::airbustr)
 	MCFG_SCREEN_VISIBLE_AREA(0, 32*8-1, 2*8, 30*8-1)
 	MCFG_SCREEN_UPDATE_DRIVER(airbustr_state, screen_update)
 	MCFG_SCREEN_VBLANK_CALLBACK(WRITELINE(*this, airbustr_state, screen_vblank))
-	MCFG_SCREEN_PALETTE("palette")
+	MCFG_SCREEN_PALETTE(m_palette)
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_airbustr)
-	MCFG_PALETTE_ADD("palette", 768)
-	MCFG_PALETTE_FORMAT(xGGGGGRRRRRBBBBB)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_airbustr);
+	PALETTE(config, m_palette).set_format(palette_device::xGRB_555, 768);
 
 	KANEKO_PANDORA(config, m_pandora, 0);
 	m_pandora->set_gfx_region(1);

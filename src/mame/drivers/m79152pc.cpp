@@ -287,8 +287,8 @@ MACHINE_CONFIG_START(m79152pc_state::m79152pc)
 	m_screen->set_screen_update(FUNC(m79152pc_state::screen_update));
 	m_screen->set_palette("palette");
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_m79152pc)
-	MCFG_PALETTE_ADD_MONOCHROME("palette")
+	GFXDECODE(config, "gfxdecode", "palette", gfx_m79152pc);
+	PALETTE(config, "palette", palette_device::MONOCHROME);
 
 	pit8253_device &pit(PIT8253(config, "pit", 0)); // КР580ВИ53
 	pit.set_clk<1>(921600);

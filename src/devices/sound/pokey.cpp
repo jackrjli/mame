@@ -183,13 +183,13 @@ pokey_device::pokey_device(const machine_config &mconfig, const char *tag, devic
 		device_sound_interface(mconfig, *this),
 		device_execute_interface(mconfig, *this),
 		device_state_interface(mconfig, *this),
-		m_output_type(LEGACY_LINEAR),
 		m_icount(0),
 		m_stream(nullptr),
 		m_pot_r_cb{ {*this}, {*this}, {*this}, {*this}, {*this}, {*this}, {*this}, {*this} },
 		m_allpot_r_cb(*this),
 		m_serin_r_cb(*this),
-		m_serout_w_cb(*this)
+		m_serout_w_cb(*this),
+		m_output_type(LEGACY_LINEAR)
 {
 }
 
@@ -780,7 +780,7 @@ void pokey_device::sound_stream_update(sound_stream &stream, stream_sample_t **i
 //  read - memory interface for reading the active status
 //-------------------------------------------------
 
-READ8_MEMBER( pokey_device::read )
+uint8_t pokey_device::read(offs_t offset)
 {
 	int data, pot;
 
@@ -876,7 +876,7 @@ READ8_MEMBER( pokey_device::read )
 //  write - memory interface for write
 //-------------------------------------------------
 
-WRITE8_MEMBER( pokey_device::write )
+void pokey_device::write(offs_t offset, uint8_t data)
 {
 	synchronize(SYNC_WRITE, (offset << 8) | data);
 }

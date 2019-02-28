@@ -82,6 +82,7 @@ Memory:         54x 64KBit RAM, 18 empty sockets, 9 bit and 4 bit wire straps
 #include "cpu/i86/i286.h"
 #include "cpu/i86/i86.h"
 #include "cpu/nec/nec.h"
+#include "imagedev/floppy.h"
 #include "machine/i8251.h"
 #include "machine/i8255.h"
 #include "machine/i8279.h"
@@ -464,10 +465,8 @@ MACHINE_CONFIG_START(pg685_state::pg675)
 	// floppy
 	// m_fdc->intrq_wr_callback(FUNC(zorba_state::fdc_intrq_w));
 	// m_fdc->drq_wr_callback(FUNC(zorba_state::fdc_drq_w));
-	MCFG_FLOPPY_DRIVE_ADD("fdc:0", pg675_floppies, "525dd", floppy_image_device::default_floppy_formats)
-	MCFG_FLOPPY_DRIVE_SOUND(true)
-	MCFG_FLOPPY_DRIVE_ADD("fdc:1", pg675_floppies, "525dd", floppy_image_device::default_floppy_formats)
-	MCFG_FLOPPY_DRIVE_SOUND(true)
+	FLOPPY_CONNECTOR(config, "fdc:0", pg675_floppies, "525dd", floppy_image_device::default_floppy_formats).enable_sound(true);
+	FLOPPY_CONNECTOR(config, "fdc:1", pg675_floppies, "525dd", floppy_image_device::default_floppy_formats).enable_sound(true);
 
 MACHINE_CONFIG_END
 
@@ -515,8 +514,7 @@ MACHINE_CONFIG_START(pg685_state::pg685)
 	// floppy
 
 	// m_fdc->drq_wr_callback(FUNC(zorba_state::fdc_drq_w));
-	MCFG_FLOPPY_DRIVE_ADD("fdc:0", pg685_floppies, "525qd", floppy_image_device::default_floppy_formats)
-	MCFG_FLOPPY_DRIVE_SOUND(true)
+	FLOPPY_CONNECTOR(config, "fdc:0", pg685_floppies, "525qd", floppy_image_device::default_floppy_formats).enable_sound(true);
 
 	// harddisk
 	wd2010_device& hdc(WD2010(config, "hdc", XTAL(10'000'000) / 2)); // divider guessed
@@ -566,8 +564,7 @@ MACHINE_CONFIG_START(pg685_state::pg685oua12)
 
 	// floppy
 	// m_fdc->drq_wr_callback(FUNC(zorba_state::fdc_drq_w));
-	MCFG_FLOPPY_DRIVE_ADD("fdc:0", pg685_floppies, "525qd", floppy_image_device::default_floppy_formats)
-	MCFG_FLOPPY_DRIVE_SOUND(true)
+	FLOPPY_CONNECTOR(config, "fdc:0", pg685_floppies, "525qd", floppy_image_device::default_floppy_formats).enable_sound(true);
 
 	// harddisk
 	wd2010_device& hdc(WD2010(config, "hdc", XTAL(10'000'000) / 2)); // divider guessed

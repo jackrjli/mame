@@ -383,7 +383,6 @@ Shark   Zame
 
 #include "cpu/m68000/m68000.h"
 #include "cpu/mcs48/mcs48.h"
-#include "cpu/tms32010/tms32010.h"
 #include "cpu/z80/z80.h"
 #include "sound/3812intf.h"
 #include "speaker.h"
@@ -442,14 +441,14 @@ void twincobr_state::sound_io_map(address_map &map)
 
 /***************************** TMS32010 Memory Map **************************/
 
-void twincobr_state::DSP_program_map(address_map &map)
+void twincobr_state::dsp_program_map(address_map &map)
 {
 	map(0x000, 0x7ff).rom();
 }
 
 	/* $000 - 08F  TMS32010 Internal Data RAM in Data Address Space */
 
-void twincobr_state::DSP_io_map(address_map &map)
+void twincobr_state::dsp_io_map(address_map &map)
 {
 	map(0, 0).w(FUNC(twincobr_state::twincobr_dsp_addrsel_w));
 	map(1, 1).rw(FUNC(twincobr_state::twincobr_dsp_r), FUNC(twincobr_state::twincobr_dsp_w));
@@ -650,23 +649,23 @@ static GFXDECODE_START( gfx_twincobr )
 GFXDECODE_END
 
 
-MACHINE_CONFIG_START(twincobr_state::twincobr)
-
+void twincobr_state::twincobr(machine_config &config)
+{
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", M68000, XTAL(28'000'000)/4)       /* 7MHz - Main board Crystal is 28MHz */
-	MCFG_DEVICE_PROGRAM_MAP(main_program_map)
+	M68000(config, m_maincpu, XTAL(28'000'000) / 4);    /* 7MHz - Main board Crystal is 28MHz */
+	m_maincpu->set_addrmap(AS_PROGRAM, &twincobr_state::main_program_map);
 
-	MCFG_DEVICE_ADD("audiocpu", Z80, XTAL(28'000'000)/8)         /* 3.5MHz */
-	MCFG_DEVICE_PROGRAM_MAP(sound_program_map)
-	MCFG_DEVICE_IO_MAP(sound_io_map)
+	z80_device &audiocpu(Z80(config, "audiocpu", XTAL(28'000'000)/8));  /* 3.5MHz */
+	audiocpu.set_addrmap(AS_PROGRAM, &twincobr_state::sound_program_map);
+	audiocpu.set_addrmap(AS_IO, &twincobr_state::sound_io_map);
 
-	MCFG_DEVICE_ADD("dsp", TMS32010, XTAL(28'000'000)/2)         /* 14MHz CLKin */
-	MCFG_DEVICE_PROGRAM_MAP(DSP_program_map)
+	TMS32010(config, m_dsp, XTAL(28'000'000)/2);         /* 14MHz CLKin */
+	m_dsp->set_addrmap(AS_PROGRAM, &twincobr_state::dsp_program_map);
 	/* Data Map is internal to the CPU */
-	MCFG_DEVICE_IO_MAP(DSP_io_map)
-	MCFG_TMS32010_BIO_IN_CB(READLINE(*this, twincobr_state, twincobr_BIO_r))
+	m_dsp->set_addrmap(AS_IO, &twincobr_state::dsp_io_map);
+	m_dsp->bio().set(FUNC(twincobr_state::twincobr_bio_r));
 
-	MCFG_QUANTUM_TIME(attotime::from_hz(6000))
+	config.m_minimum_quantum = attotime::from_hz(6000);
 
 	MCFG_MACHINE_RESET_OVERRIDE(twincobr_state,twincobr)
 
@@ -694,7 +693,7 @@ MACHINE_CONFIG_START(twincobr_state::twincobr)
 	m_spritegen->set_palette(m_palette);
 	m_spritegen->set_xoffsets(31, 15);
 
-	MCFG_DEVICE_ADD("spriteram16", BUFFERED_SPRITERAM16)
+	BUFFERED_SPRITERAM16(config, m_spriteram16);
 
 	SCREEN(config, m_screen, SCREEN_TYPE_RASTER);
 	m_screen->set_video_attributes(VIDEO_UPDATE_BEFORE_VBLANK);
@@ -704,25 +703,22 @@ MACHINE_CONFIG_START(twincobr_state::twincobr)
 	m_screen->screen_vblank().append(FUNC(twincobr_state::twincobr_vblank_irq));
 	m_screen->set_palette(m_palette);
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_twincobr)
-	MCFG_PALETTE_ADD("palette", 1792)
-	MCFG_PALETTE_FORMAT(xBBBBBGGGGGRRRRR)
-
-	MCFG_VIDEO_START_OVERRIDE(twincobr_state,toaplan0)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_twincobr);
+	PALETTE(config, m_palette).set_format(palette_device::xBGR_555, 1792);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 
-	MCFG_DEVICE_ADD("ymsnd", YM3812, XTAL(28'000'000)/8)
-	MCFG_YM3812_IRQ_HANDLER(INPUTLINE("audiocpu", 0))
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.0)
-MACHINE_CONFIG_END
+	ym3812_device &ymsnd(YM3812(config, "ymsnd", XTAL(28'000'000) / 8));
+	ymsnd.irq_handler().set_inputline("audiocpu", 0);
+	ymsnd.add_route(ALL_OUTPUTS, "mono", 1.0);
+}
 
-MACHINE_CONFIG_START(twincobr_state::twincobrw)
+void twincobr_state::twincobrw(machine_config &config)
+{
 	twincobr(config);
-	MCFG_DEVICE_MODIFY("maincpu")
-	MCFG_DEVICE_CLOCK(XTAL(10'000'000)) /* The export versions have a dedicated OSC for the M68000 on the top right of the board */
-MACHINE_CONFIG_END
+	m_maincpu->set_clock(XTAL(10'000'000)); /* The export versions have a dedicated OSC for the M68000 on the top right of the board */
+}
 
 void twincobr_state::fshark(machine_config &config)
 {
@@ -733,7 +729,6 @@ void twincobr_state::fshark(machine_config &config)
 	m_spritegen->set_xoffsets(32, 14);
 }
 
-
 void twincobr_state::fsharkbt(machine_config &config)
 {
 	fshark(config);
@@ -741,8 +736,6 @@ void twincobr_state::fsharkbt(machine_config &config)
 	I8741(config, "mcu", XTAL(28'000'000)/16).set_disable();  /* Internal program code is not dumped */
 	/* Program Map is internal to the CPU */
 }
-
-
 
 
 /***************************************************************************

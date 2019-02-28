@@ -96,8 +96,8 @@
 class nyny_state : public driver_device
 {
 public:
-	nyny_state(const machine_config &mconfig, device_type type, const char *tag)
-		: driver_device(mconfig, type, tag),
+	nyny_state(const machine_config &mconfig, device_type type, const char *tag) :
+		driver_device(mconfig, type, tag),
 		m_videoram1(*this, "videoram1"),
 		m_colorram1(*this, "colorram1"),
 		m_videoram2(*this, "videoram2"),
@@ -112,7 +112,8 @@ public:
 		m_pia2(*this, "pia2"),
 		m_soundlatch(*this, "soundlatch"),
 		m_soundlatch2(*this, "soundlatch2"),
-		m_soundlatch3(*this, "soundlatch3") { }
+		m_soundlatch3(*this, "soundlatch3")
+	{ }
 
 	void nyny(machine_config &config);
 
@@ -414,8 +415,8 @@ READ8_MEMBER(nyny_state::nyny_pia_1_2_r)
 	uint8_t ret = 0;
 
 	/* the address bits are directly connected to the chip selects */
-	if (BIT(offset, 2))  ret = m_pia1->read(space, offset & 0x03);
-	if (BIT(offset, 3))  ret = m_pia2->read_alt(space, offset & 0x03);
+	if (BIT(offset, 2))  ret = m_pia1->read(offset & 0x03);
+	if (BIT(offset, 3))  ret = m_pia2->read_alt(offset & 0x03);
 
 	return ret;
 }
@@ -424,8 +425,8 @@ READ8_MEMBER(nyny_state::nyny_pia_1_2_r)
 WRITE8_MEMBER(nyny_state::nyny_pia_1_2_w)
 {
 	/* the address bits are directly connected to the chip selects */
-	if (BIT(offset, 2))  m_pia1->write(space, offset & 0x03, data);
-	if (BIT(offset, 3))  m_pia2->write_alt(space, offset & 0x03, data);
+	if (BIT(offset, 2))  m_pia1->write(offset & 0x03, data);
+	if (BIT(offset, 3))  m_pia2->write_alt(offset & 0x03, data);
 }
 
 
@@ -615,7 +616,7 @@ MACHINE_CONFIG_START(nyny_state::nyny)
 	MCFG_SCREEN_RAW_PARAMS(PIXEL_CLOCK, 256, 0, 256, 256, 0, 256)   /* temporary, CRTC will configure screen */
 	MCFG_SCREEN_UPDATE_DEVICE("crtc", mc6845_device, screen_update)
 
-	MCFG_PALETTE_ADD_3BIT_RGB("palette")
+	PALETTE(config, m_palette, palette_device::RGB_3BIT);
 
 	H46505(config, m_mc6845, CRTC_CLOCK);
 	m_mc6845->set_screen("screen");
@@ -667,9 +668,10 @@ MACHINE_CONFIG_START(nyny_state::nyny)
 
 	AY8910(config, "ay3", AUDIO_CPU_2_CLOCK).add_route(ALL_OUTPUTS, "speaker", 0.03);
 
-	MCFG_DEVICE_ADD("dac", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.25) // unknown DAC
-	MCFG_DEVICE_ADD("vref", VOLTAGE_REGULATOR, 0) MCFG_VOLTAGE_REGULATOR_OUTPUT(5.0)
-	MCFG_SOUND_ROUTE(0, "dac", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE(0, "dac", -1.0, DAC_VREF_NEG_INPUT)
+	DAC_8BIT_R2R(config, "dac", 0).add_route(ALL_OUTPUTS, "speaker", 0.25); // unknown DAC
+	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref"));
+	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
+	vref.add_route(0, "dac", -1.0, DAC_VREF_NEG_INPUT);
 MACHINE_CONFIG_END
 
 

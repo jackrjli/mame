@@ -400,15 +400,15 @@ MACHINE_CONFIG_START(bcs3_state::bcs3)
 	MCFG_SCREEN_VISIBLE_AREA(0,28*8-1,0,12*10-1)
 	MCFG_SCREEN_UPDATE_DRIVER(bcs3_state, screen_update_bcs3)
 	MCFG_SCREEN_PALETTE("palette")
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_bcs3)
-	MCFG_PALETTE_ADD_MONOCHROME("palette")
+	GFXDECODE(config, "gfxdecode", "palette", gfx_bcs3);
+	PALETTE(config, "palette", palette_device::MONOCHROME);
 
 	Z80CTC(config, m_ctc, XTAL(5'000'000) / 2);
 	m_ctc->intr_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ0);
 	m_ctc->zc_callback<0>().set(FUNC(bcs3_state::ctc_z0_w));
 	m_ctc->zc_callback<1>().set(FUNC(bcs3_state::ctc_z1_w));
 
-	MCFG_CASSETTE_ADD( "cassette" )
+	CASSETTE(config, m_cass);
 MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(bcs3_state::bcs3a)
@@ -427,15 +427,15 @@ MACHINE_CONFIG_START(bcs3_state::bcs3a)
 	MCFG_SCREEN_VISIBLE_AREA(0,29*8-1,0,12*10-1)
 	MCFG_SCREEN_UPDATE_DRIVER(bcs3_state, screen_update_bcs3a)
 	MCFG_SCREEN_PALETTE("palette")
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_bcs3)
-	MCFG_PALETTE_ADD_MONOCHROME("palette")
+	GFXDECODE(config, "gfxdecode", "palette", gfx_bcs3);
+	PALETTE(config, "palette", palette_device::MONOCHROME);
 
 	Z80CTC(config, m_ctc, XTAL(7'000'000) / 2);
 	m_ctc->intr_callback().set_inputline(m_maincpu, INPUT_LINE_IRQ0);
 	m_ctc->zc_callback<0>().set(FUNC(bcs3_state::ctc_z0_w));
 	m_ctc->zc_callback<1>().set(FUNC(bcs3_state::ctc_z1_w));
 
-	MCFG_CASSETTE_ADD( "cassette" )
+	CASSETTE(config, m_cass);
 MACHINE_CONFIG_END
 
 MACHINE_CONFIG_START(bcs3_state::bcs3b)

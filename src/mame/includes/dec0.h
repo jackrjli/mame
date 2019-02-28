@@ -7,13 +7,16 @@
 
 #include "machine/74157.h"
 #include "cpu/h6280/h6280.h"
+#include "cpu/mcs51/mcs51.h"
+#include "machine/74157.h"
 #include "machine/bankdev.h"
 #include "machine/gen_latch.h"
+#include "sound/msm5205.h"
 #include "video/bufsprite.h"
 #include "video/decbac06.h"
 #include "video/decmxc06.h"
-#include "sound/msm5205.h"
 #include "emupal.h"
+#include "screen.h"
 
 class dec0_state : public driver_device
 {
@@ -23,6 +26,8 @@ public:
 		m_maincpu(*this, "maincpu"),
 		m_audiocpu(*this, "audiocpu"),
 		m_soundlatch(*this, "soundlatch"),
+		m_screen(*this, "screen"),
+		m_gfxdecode(*this, "gfxdecode"),
 		m_tilegen(*this, "tilegen%u", 1U),
 		m_spritegen(*this, "spritegen"),
 		m_spriteram(*this, "spriteram"),
@@ -34,7 +39,8 @@ public:
 		m_sndprotect(*this, "sndprotect"),
 		m_ram(*this, "ram"),
 		m_robocop_shared_ram(*this, "robocop_shared"),
-		m_hippodrm_shared_ram(*this, "hippodrm_shared")
+		m_hippodrm_shared_ram(*this, "hippodrm_shared"),
+		m_in_trackball(*this, "track_%u", 0)
 	{ }
 
 	void dec0_base(machine_config &config);
@@ -46,6 +52,7 @@ public:
 	void midresbj(machine_config &config);
 	void slyspy(machine_config &config);
 	void hbarrel(machine_config &config);
+	void bandit(machine_config &config);
 	void midresb(machine_config &config);
 	void ffantasybl(machine_config &config);
 	void drgninjab(machine_config &config);
@@ -67,6 +74,8 @@ protected:
 	required_device<cpu_device> m_maincpu;
 	required_device<cpu_device> m_audiocpu;
 	required_device<generic_latch_8_device> m_soundlatch;
+	required_device<screen_device> m_screen;
+	required_device<gfxdecode_device> m_gfxdecode;
 	optional_device_array<deco_bac06_device, 3> m_tilegen;
 	optional_device<deco_mxc06_device> m_spritegen;
 	required_device<buffered_spriteram16_device> m_spriteram;
@@ -79,6 +88,8 @@ protected:
 	DECLARE_READ16_MEMBER(dec0_controls_r);
 	DECLARE_READ16_MEMBER(slyspy_controls_r);
 	DECLARE_WRITE16_MEMBER(priority_w);
+
+	void set_screen_raw_params_data_east(machine_config &config);
 
 private:
 	enum class mcu_type {
@@ -94,6 +105,7 @@ private:
 	required_shared_ptr<uint16_t> m_ram;
 	optional_shared_ptr<uint8_t> m_robocop_shared_ram;
 	optional_shared_ptr<uint8_t> m_hippodrm_shared_ram;
+	optional_ioport_array<4> m_in_trackball;
 
 	mcu_type m_game;
 	uint16_t m_i8751_return;
@@ -104,6 +116,7 @@ private:
 	int m_hippodrm_lsb;
 	uint8_t m_i8751_ports[4];
 
+	DECLARE_READ8_MEMBER(trackball_r);
 	DECLARE_WRITE16_MEMBER(dec0_control_w);
 	DECLARE_WRITE16_MEMBER(midres_sound_w);
 	DECLARE_READ16_MEMBER(slyspy_protection_r);
@@ -132,6 +145,7 @@ private:
 	DECLARE_VIDEO_START(dec0);
 
 	uint32_t screen_update_hbarrel(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
+	uint32_t screen_update_bandit(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	uint32_t screen_update_baddudes(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	uint32_t screen_update_birdtry(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	uint32_t screen_update_robocop(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);

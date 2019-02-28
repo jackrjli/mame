@@ -21,24 +21,24 @@
 
 void m52_state::init_palette()
 {
-	const int resistances_3[3] = { 1000, 470, 220 };
-	const int resistances_2[2] = { 470, 220 };
+	constexpr int resistances_3[3] = { 1000, 470, 220 };
+	constexpr int resistances_2[2] = { 470, 220 };
 	double weights_r[3], weights_g[3], weights_b[3], scale;
 
 	/* compute palette information for characters/backgrounds */
 	scale = compute_resistor_weights(0, 255, -1.0,
-		3, resistances_3, weights_r, 0, 0,
-		3, resistances_3, weights_g, 0, 0,
-		2, resistances_2, weights_b, 0, 0);
+			3, resistances_3, weights_r, 0, 0,
+			3, resistances_3, weights_g, 0, 0,
+			2, resistances_2, weights_b, 0, 0);
 
 	/* character palette */
 	const uint8_t *char_pal = memregion("tx_pal")->base();
 	for (int i = 0; i < 512; i++)
 	{
-		uint8_t promval = char_pal[i];
-		int r = combine_3_weights(weights_r, BIT(promval, 0), BIT(promval, 1), BIT(promval, 2));
-		int g = combine_3_weights(weights_g, BIT(promval, 3), BIT(promval, 4), BIT(promval, 5));
-		int b = combine_2_weights(weights_b, BIT(promval, 6), BIT(promval, 7));
+		uint8_t const promval = char_pal[i];
+		int const r = combine_weights(weights_r, BIT(promval, 0), BIT(promval, 1), BIT(promval, 2));
+		int const g = combine_weights(weights_g, BIT(promval, 3), BIT(promval, 4), BIT(promval, 5));
+		int const b = combine_weights(weights_b, BIT(promval, 6), BIT(promval, 7));
 
 		m_tx_palette->set_pen_color(i, rgb_t(r, g, b));
 	}
@@ -48,9 +48,9 @@ void m52_state::init_palette()
 	for (int i = 0; i < 32; i++)
 	{
 		uint8_t promval = back_pal[i];
-		int r = combine_3_weights(weights_r, BIT(promval, 0), BIT(promval, 1), BIT(promval, 2));
-		int g = combine_3_weights(weights_g, BIT(promval, 3), BIT(promval, 4), BIT(promval, 5));
-		int b = combine_2_weights(weights_b, BIT(promval, 6), BIT(promval, 7));
+		int r = combine_weights(weights_r, BIT(promval, 0), BIT(promval, 1), BIT(promval, 2));
+		int g = combine_weights(weights_g, BIT(promval, 3), BIT(promval, 4), BIT(promval, 5));
+		int b = combine_weights(weights_b, BIT(promval, 6), BIT(promval, 7));
 
 		m_bg_palette->set_indirect_color(i, rgb_t(r, g, b));
 	}
@@ -81,24 +81,25 @@ void m52_state::init_palette()
 	init_sprite_palette(resistances_3, resistances_2, weights_r, weights_g, weights_b, scale);
 }
 
-void m52_state::init_sprite_palette(const int *resistances_3, const int *resistances_2, double *weights_r, double *weights_g, double *weights_b, double scale)
+template <size_t N, size_t O, size_t P>
+void m52_state::init_sprite_palette(const int *resistances_3, const int *resistances_2, double (&weights_r)[N], double (&weights_g)[O], double (&weights_b)[P], double scale)
 {
 	const uint8_t *sprite_pal = memregion("spr_pal")->base();
 	const uint8_t *sprite_table = memregion("spr_clut")->base();
 
 	/* compute palette information for sprites */
 	compute_resistor_weights(0, 255, scale,
-		2, resistances_2, weights_r, 470, 0,
-		3, resistances_3, weights_g, 470, 0,
-		3, resistances_3, weights_b, 470, 0);
+			2, resistances_2, weights_r, 470, 0,
+			3, resistances_3, weights_g, 470, 0,
+			3, resistances_3, weights_b, 470, 0);
 
 	/* sprite palette */
 	for (int i = 0; i < 32; i++)
 	{
-		uint8_t promval = sprite_pal[i];
-		int r = combine_2_weights(weights_r, BIT(promval, 6), BIT(promval, 7));
-		int g = combine_3_weights(weights_g, BIT(promval, 3), BIT(promval, 4), BIT(promval, 5));
-		int b = combine_3_weights(weights_b, BIT(promval, 0), BIT(promval, 1), BIT(promval, 2));
+		uint8_t const promval = sprite_pal[i];
+		int const r = combine_weights(weights_r, BIT(promval, 6), BIT(promval, 7));
+		int const g = combine_weights(weights_g, BIT(promval, 3), BIT(promval, 4), BIT(promval, 5));
+		int const b = combine_weights(weights_b, BIT(promval, 0), BIT(promval, 1), BIT(promval, 2));
 
 		m_sp_palette->set_indirect_color(i, rgb_t(r, g, b));
 	}

@@ -15,6 +15,7 @@
 #include "bus/rs232/rs232.h"
 #include "bus/scsi/omti5100.h"
 #include "cpu/i86/i186.h"
+#include "imagedev/floppy.h"
 #include "machine/mc146818.h"
 #include "machine/mc2661.h"
 #include "machine/nvram.h"
@@ -49,7 +50,6 @@ public:
 		, m_scsi_data_out(*this, "scsi_data_out")
 		, m_scsi_data_in(*this, "scsi_data_in")
 		, m_ram(*this, "ram")
-		, m_req_hack(nullptr)
 	{ }
 
 	void pcx(machine_config &config);
@@ -92,7 +92,6 @@ private:
 	// driver_device overrides
 	virtual void machine_start() override;
 	virtual void machine_reset() override;
-	virtual void device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr) override;
 
 	required_device<i80186_cpu_device> m_maincpu;
 	required_device<pic8259_device> m_pic1;
@@ -107,7 +106,6 @@ private:
 	required_device<ram_device> m_ram;
 	uint8_t m_stat, m_led;
 	int m_msg, m_bsy, m_io, m_cd, m_req, m_rst;
-	emu_timer *m_req_hack;
 	uint16_t m_dskctl;
 	struct {
 		uint16_t ctl;
@@ -124,16 +122,8 @@ private:
 //  MACHINE EMULATION
 //**************************************************************************
 
-void pcd_state::device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr)
-{
-	// TODO: remove this hack
-	if(m_req)
-		m_maincpu->drq0_w(1);
-}
-
 void pcd_state::machine_start()
 {
-	m_req_hack = timer_alloc();
 	save_item(NAME(m_mmu.ctl));
 	save_item(NAME(m_mmu.regs));
 }
@@ -376,7 +366,6 @@ WRITE_LINE_MEMBER(pcd_state::write_scsi_req)
 		if(!m_cd)
 		{
 			m_maincpu->drq0_w(1);
-			m_req_hack->adjust(attotime::from_msec(10)); // poke the dmac
 		}
 		else if(m_msg)
 		{
@@ -386,8 +375,6 @@ WRITE_LINE_MEMBER(pcd_state::write_scsi_req)
 	}
 	else
 	{
-		if(m_req_hack) // this might be called before machine_start
-			m_req_hack->adjust(attotime::never);
 		m_scsi->write_ack(0);
 	}
 	check_scsi_irq();
@@ -499,14 +486,15 @@ static INPUT_PORTS_START(pcx)
 	PORT_CONFSETTING(0x02, "SINIX 1.2")
 INPUT_PORTS_END
 
-MACHINE_CONFIG_START(pcd_state::pcd)
-	MCFG_DEVICE_ADD("maincpu", I80186, 16_MHz_XTAL)
-	MCFG_DEVICE_PROGRAM_MAP(pcd_map)
-	MCFG_DEVICE_IO_MAP(pcd_io)
-	MCFG_80186_TMROUT1_HANDLER(WRITELINE(*this, pcd_state, i186_timer1_w))
-	MCFG_80186_IRQ_SLAVE_ACK(READ8(*this, pcd_state, irq_callback))
+void pcd_state::pcd(machine_config &config)
+{
+	I80186(config, m_maincpu, 16_MHz_XTAL);
+	m_maincpu->set_addrmap(AS_PROGRAM, &pcd_state::pcd_map);
+	m_maincpu->set_addrmap(AS_IO, &pcd_state::pcd_io);
+	m_maincpu->tmrout1_handler().set(FUNC(pcd_state::i186_timer1_w));
+	m_maincpu->read_slave_ack_callback().set(FUNC(pcd_state::irq_callback));
 
-	MCFG_TIMER_DRIVER_ADD_PERIODIC("timer0_tick", pcd_state, timer0_tick, attotime::from_hz(16_MHz_XTAL / 24)) // adjusted to pass post
+	TIMER(config, "timer0_tick").configure_periodic(FUNC(pcd_state::timer0_tick), attotime::from_hz(16_MHz_XTAL / 24)); // adjusted to pass post
 
 	PIC8259(config, m_pic1, 0);
 	m_pic1->out_int_callback().set(m_maincpu, FUNC(i80186_cpu_device::int0_w));
@@ -528,8 +516,8 @@ MACHINE_CONFIG_START(pcd_state::pcd)
 	m_fdc->enmf_rd_callback().set_constant(0);
 
 	// floppy drives
-	MCFG_FLOPPY_DRIVE_ADD("fdc:0", pcd_floppies, "55f", pcd_state::floppy_formats)
-	MCFG_FLOPPY_DRIVE_ADD("fdc:1", pcd_floppies, "55f", pcd_state::floppy_formats)
+	FLOPPY_CONNECTOR(config, "fdc:0", pcd_floppies, "55f", pcd_state::floppy_formats);
+	FLOPPY_CONNECTOR(config, "fdc:1", pcd_floppies, "55f", pcd_state::floppy_formats);
 
 	// usart
 	MC2661(config, m_usart[0], 4.9152_MHz_XTAL);
@@ -554,8 +542,7 @@ MACHINE_CONFIG_START(pcd_state::pcd)
 
 	// sound hardware
 	SPEAKER(config, "mono").front_center();
-	MCFG_DEVICE_ADD("speaker", SPEAKER_SOUND)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
+	SPEAKER_SOUND(config, m_speaker).add_route(ALL_OUTPUTS, "mono", 0.50);
 
 	// rtc
 	MC146818(config, m_rtc, 32.768_kHz_XTAL);
@@ -565,35 +552,38 @@ MACHINE_CONFIG_START(pcd_state::pcd)
 	m_rtc->set_epoch(1900);
 	m_rtc->set_24hrs(true);
 
-	MCFG_DEVICE_ADD("keyboard", PCD_KEYBOARD, 0)
-	MCFG_PCD_KEYBOARD_OUT_TX_HANDLER(WRITELINE(m_usart[1], mc2661_device, rx_w))
+	pcd_keyboard_device &keyboard(PCD_KEYBOARD(config, "keyboard", 0));
+	keyboard.out_tx_handler().set(m_usart[1], FUNC(mc2661_device::rx_w));
 
-	MCFG_DEVICE_ADD("scsi", SCSI_PORT, 0)
-	MCFG_SCSI_DATA_INPUT_BUFFER("scsi_data_in")
-	MCFG_SCSI_MSG_HANDLER(WRITELINE(*this, pcd_state, write_scsi_msg))
-	MCFG_SCSI_BSY_HANDLER(WRITELINE(*this, pcd_state, write_scsi_bsy))
-	MCFG_SCSI_IO_HANDLER(WRITELINE(*this, pcd_state, write_scsi_io))
-	MCFG_SCSI_CD_HANDLER(WRITELINE(*this, pcd_state, write_scsi_cd))
-	MCFG_SCSI_REQ_HANDLER(WRITELINE(*this, pcd_state, write_scsi_req))
+	SCSI_PORT(config, m_scsi, 0);
+	m_scsi->set_data_input_buffer("scsi_data_in");
+	m_scsi->msg_handler().set(FUNC(pcd_state::write_scsi_msg));
+	m_scsi->bsy_handler().set(FUNC(pcd_state::write_scsi_bsy));
+	m_scsi->io_handler().set(FUNC(pcd_state::write_scsi_io));
+	m_scsi->cd_handler().set(FUNC(pcd_state::write_scsi_cd));
+	m_scsi->req_handler().set(FUNC(pcd_state::write_scsi_req));
 
-	MCFG_SCSI_OUTPUT_LATCH_ADD("scsi_data_out", "scsi")
-	MCFG_DEVICE_ADD("scsi_data_in", INPUT_BUFFER, 0)
-	MCFG_SCSIDEV_ADD("scsi:1", "harddisk", OMTI5100, SCSI_ID_0)
-MACHINE_CONFIG_END
+	output_latch_device &scsi_out(OUTPUT_LATCH(config, "scsi_data_out", 0));
+	m_scsi->set_output_latch(scsi_out);
 
-MACHINE_CONFIG_START(pcd_state::pcx)
+	INPUT_BUFFER(config, "scsi_data_in", 0);
+	m_scsi->set_slot_device(1, "harddisk", OMTI5100, DEVICE_INPUT_DEFAULTS_NAME(SCSI_ID_0));
+}
+
+void pcd_state::pcx(machine_config &config)
+{
 	pcd(config);
-	MCFG_DEVICE_MODIFY("maincpu")
-	MCFG_DEVICE_IO_MAP(pcx_io)
+	m_maincpu->set_addrmap(AS_IO, &pcd_state::pcx_io);
 
 	pcx_video_device &video(PCX_VIDEO(config.replace(), "video", 0));
 	video.txd_handler().set("keyboard", FUNC(pcd_keyboard_device::t0_w));
 
-	MCFG_DEVICE_MODIFY("keyboard")
-	MCFG_PCD_KEYBOARD_OUT_TX_HANDLER(WRITELINE("video", pcx_video_device, rx_w))
+	subdevice<pcd_keyboard_device>("keyboard")->out_tx_handler().set("video", FUNC(pcx_video_device::rx_w));
 
 	m_usart[1]->txd_handler().set_nop();
-MACHINE_CONFIG_END
+
+	SOFTWARE_LIST(config, "flop_ls").set_original("pcx_flop");
+}
 
 //**************************************************************************
 //  ROM DEFINITIONS

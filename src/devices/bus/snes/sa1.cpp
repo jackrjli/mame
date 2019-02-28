@@ -170,11 +170,11 @@ void sns_sa1_device::recalc_irqs()
 {
 	if (m_scpu_flags & m_scpu_sie & (SCPU_IRQ_SA1|SCPU_IRQ_CHARCONV))
 	{
-		machine().device("maincpu")->execute().set_input_line(G65816_LINE_IRQ, ASSERT_LINE);
+		write_irq(ASSERT_LINE);
 	}
 	else
 	{
-		machine().device("maincpu")->execute().set_input_line(G65816_LINE_IRQ, CLEAR_LINE);
+		write_irq(CLEAR_LINE);
 	}
 
 	if (m_sa1_flags & m_sa1_sie & (SA1_IRQ_SCPU|SA1_IRQ_TIMER|SA1_IRQ_DMA))
@@ -1143,7 +1143,8 @@ void sns_sa1_device::sa1_map(address_map &map)
 }
 
 
-MACHINE_CONFIG_START(sns_sa1_device::device_add_mconfig)
-	MCFG_DEVICE_ADD("sa1cpu", G65816, 10000000)
-	MCFG_DEVICE_PROGRAM_MAP(sa1_map)
-MACHINE_CONFIG_END
+void sns_sa1_device::device_add_mconfig(machine_config &config)
+{
+	G65816(config, m_sa1, 10000000);
+	m_sa1->set_addrmap(AS_PROGRAM, &sns_sa1_device::sa1_map);
+}

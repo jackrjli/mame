@@ -57,7 +57,7 @@ private:
 	uint32_t screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 
 	INTERRUPT_GEN_MEMBER(dlair2_timer_irq);
-	DECLARE_PALETTE_INIT(dlair2);
+	void dlair2_palette(palette_device &palette) const;
 
 	void dlair2_io(address_map &map);
 	void dlair2_map(address_map &map);
@@ -174,7 +174,7 @@ void dlair2_state::machine_reset()
 {
 }
 
-PALETTE_INIT_MEMBER(dlair2_state, dlair2)
+void dlair2_state::dlair2_palette(palette_device &palette) const
 {
 }
 
@@ -200,10 +200,9 @@ MACHINE_CONFIG_START(dlair2_state::dlair2)
 	MCFG_SCREEN_VISIBLE_AREA(0*8, 32*8-1, 0*8, 32*8-1)
 	MCFG_SCREEN_PALETTE("palette")
 
-//  MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_dlair2)
+//  GFXDECODE(config, "gfxdecode", "palette", gfx_dlair2);
 
-	MCFG_PALETTE_ADD("palette", 256)
-	MCFG_PALETTE_INIT_OWNER(dlair2_state, dlair2)
+	PALETTE(config, "palette", FUNC(dlair2_state::dlair2_palette), 256);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

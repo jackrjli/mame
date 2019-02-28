@@ -39,14 +39,15 @@ class silvmil_state : public driver_device
 {
 public:
 	silvmil_state(const machine_config &mconfig, device_type type, const char *tag)
-		: driver_device(mconfig, type, tag),
-			m_maincpu(*this, "maincpu"),
-			m_gfxdecode(*this, "gfxdecode"),
-			m_sprgen(*this, "spritegen"),
-			m_soundlatch(*this, "soundlatch"),
-			m_bg_videoram(*this, "bg_videoram"),
-			m_fg_videoram(*this, "fg_videoram"),
-			m_spriteram(*this, "spriteram") { }
+		: driver_device(mconfig, type, tag)
+		, m_maincpu(*this, "maincpu")
+		, m_gfxdecode(*this, "gfxdecode")
+		, m_sprgen(*this, "spritegen")
+		, m_soundlatch(*this, "soundlatch")
+		, m_bg_videoram(*this, "bg_videoram")
+		, m_fg_videoram(*this, "fg_videoram")
+		, m_spriteram(*this, "spriteram")
+	{ }
 
 	void puzzlovek(machine_config &config);
 	void puzzlove(machine_config &config);
@@ -406,36 +407,34 @@ void silvmil_state::silvmil_sound_map(address_map &map)
 }
 
 
-MACHINE_CONFIG_START(silvmil_state::silvmil)
-
+void silvmil_state::silvmil(machine_config &config)
+{
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", M68000, XTAL(12'000'000)) /* Verified */
-	MCFG_DEVICE_PROGRAM_MAP(silvmil_map)
-	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", silvmil_state,  irq6_line_hold)
+	M68000(config, m_maincpu, XTAL(12'000'000)); /* Verified */
+	m_maincpu->set_addrmap(AS_PROGRAM, &silvmil_state::silvmil_map);
+	m_maincpu->set_vblank_int("screen", FUNC(silvmil_state::irq6_line_hold));
 
-	MCFG_DEVICE_ADD("audiocpu", Z80, XTAL(4'096'000)) /* Verified */
-	MCFG_DEVICE_PROGRAM_MAP(silvmil_sound_map)
+	z80_device &audiocpu(Z80(config, "audiocpu", XTAL(4'096'000))); /* Verified */
+	audiocpu.set_addrmap(AS_PROGRAM, &silvmil_state::silvmil_sound_map);
 
 
 	/* video hardware */
-	MCFG_SCREEN_ADD("screen", RASTER)
-	MCFG_SCREEN_REFRESH_RATE(60)
-	MCFG_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
-	MCFG_SCREEN_SIZE(64*8, 64*8)
-	MCFG_SCREEN_VISIBLE_AREA(0, 40*8-1, 0, 30*8-1)
-	MCFG_SCREEN_UPDATE_DRIVER(silvmil_state, screen_update_silvmil)
-	MCFG_SCREEN_PALETTE("palette")
+	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
+	screen.set_refresh_hz(60);
+	screen.set_vblank_time(ATTOSECONDS_IN_USEC(0));
+	screen.set_size(64*8, 64*8);
+	screen.set_visarea(0, 40*8-1, 0, 30*8-1);
+	screen.set_screen_update(FUNC(silvmil_state::screen_update_silvmil));
+	screen.set_palette("palette");
 
-	MCFG_PALETTE_ADD("palette", 0x300)
-	MCFG_PALETTE_FORMAT(xRRRRRGGGGGBBBBB)
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_silvmil)
+	PALETTE(config, "palette").set_format(palette_device::xRGB_555, 0x300);
+	GFXDECODE(config, m_gfxdecode, "palette", gfx_silvmil);
 
-
-	MCFG_DEVICE_ADD("spritegen", DECO_SPRITE, 0)
-	MCFG_DECO_SPRITE_GFX_REGION(0)
-	MCFG_DECO_SPRITE_ISBOOTLEG(true)
-	MCFG_DECO_SPRITE_OFFSETS(5, 7)
-	MCFG_DECO_SPRITE_GFXDECODE("gfxdecode")
+	DECO_SPRITE(config, m_sprgen, 0);
+	m_sprgen->set_gfx_region(0);
+	m_sprgen->set_is_bootleg(true);
+	m_sprgen->set_offsets(5, 7);
+	m_sprgen->set_gfxdecode_tag(m_gfxdecode);
 
 	SPEAKER(config, "mono").front_center();
 
@@ -445,23 +444,18 @@ MACHINE_CONFIG_START(silvmil_state::silvmil)
 	ymsnd.irq_handler().set_inputline("audiocpu", 0);
 	ymsnd.add_route(ALL_OUTPUTS, "mono", 0.25);
 
-	MCFG_DEVICE_ADD("oki", OKIM6295, XTAL(4'096'000)/4, okim6295_device::PIN7_HIGH) /* Verified */
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.25)
-MACHINE_CONFIG_END
+	OKIM6295(config, "oki", XTAL(4'096'000)/4, okim6295_device::PIN7_HIGH).add_route(ALL_OUTPUTS, "mono", 0.25); /* Verified */
+}
 
-MACHINE_CONFIG_START(silvmil_state::puzzlove)
+void silvmil_state::puzzlove(machine_config &config)
+{
 	silvmil(config);
-	MCFG_DEVICE_REMOVE("audiocpu")
-	MCFG_DEVICE_ADD("audiocpu", Z80, XTAL(4'000'000)) /* Verified */
-	MCFG_DEVICE_PROGRAM_MAP(silvmil_sound_map)
+	subdevice<z80_device>("audiocpu")->set_clock(XTAL(4'000'000)); /* Verified */
 
-	MCFG_DEVICE_MODIFY("spritegen")
-	MCFG_DECO_SPRITE_BOOTLEG_TYPE(1)
+	m_sprgen->set_bootleg_type(1);
 
-	MCFG_DEVICE_REMOVE("oki")
-	MCFG_DEVICE_ADD("oki", OKIM6295, XTAL(4'000'000)/4, okim6295_device::PIN7_HIGH) /* Verified */
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.25)
-MACHINE_CONFIG_END
+	subdevice<okim6295_device>("oki")->set_clock(XTAL(4'000'000)/4); /* Verified */
+}
 
 void silvmil_state::puzzlovek(machine_config &config)
 {

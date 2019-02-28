@@ -954,22 +954,23 @@ void witch_state::machine_reset()
 	m_motor_active = (ioport("YM_PortB")->read() & 0x08) ? 0 : 1;
 }
 
-MACHINE_CONFIG_START(witch_state::witch)
+void witch_state::witch(machine_config &config)
+{
 	/* basic machine hardware */
-	MCFG_DEVICE_ADD("maincpu", Z80, CPU_CLOCK)    /* 3 MHz */
-	MCFG_DEVICE_PROGRAM_MAP(witch_main_map)
-	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", witch_state,  irq0_line_assert)
+	Z80(config, m_maincpu, CPU_CLOCK);    /* 3 MHz */
+	m_maincpu->set_addrmap(AS_PROGRAM, &witch_state::witch_main_map);
+	m_maincpu->set_vblank_int("screen", FUNC(witch_state::irq0_line_assert));
 
 	/* 2nd z80 */
-	MCFG_DEVICE_ADD("sub", Z80, CPU_CLOCK)    /* 3 MHz */
-	MCFG_DEVICE_PROGRAM_MAP(witch_sub_map)
-	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", witch_state,  irq0_line_assert)
+	Z80(config, m_subcpu, CPU_CLOCK);    /* 3 MHz */
+	m_subcpu->set_addrmap(AS_PROGRAM, &witch_state::witch_sub_map);
+	m_subcpu->set_vblank_int("screen", FUNC(witch_state::irq0_line_assert));
 
-	MCFG_QUANTUM_TIME(attotime::from_hz(6000))
+	config.m_minimum_quantum = attotime::from_hz(6000);
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 
-	MCFG_TICKET_DISPENSER_ADD("hopper", attotime::from_msec(HOPPER_PULSE), TICKET_MOTOR_ACTIVE_HIGH, TICKET_STATUS_ACTIVE_HIGH)
+	TICKET_DISPENSER(config, m_hopper, attotime::from_msec(HOPPER_PULSE), TICKET_MOTOR_ACTIVE_HIGH, TICKET_STATUS_ACTIVE_HIGH);
 
 	// 82C255 (actual chip on PCB) is equivalent to two 8255s
 	I8255(config, m_ppi[0]);
@@ -983,29 +984,28 @@ MACHINE_CONFIG_START(witch_state::witch)
 	m_ppi[1]->out_pc_callback().set(FUNC(witch_state::write_a006));
 
 	/* video hardware */
-	MCFG_SCREEN_ADD("screen", RASTER)
-	MCFG_SCREEN_REFRESH_RATE(60)
-	MCFG_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
-	MCFG_SCREEN_SIZE(256, 256)
-	MCFG_SCREEN_VISIBLE_AREA(8, 256-1-8, 8*4, 256-8*4-1)
-	MCFG_SCREEN_UPDATE_DRIVER(witch_state, screen_update_witch)
-	MCFG_SCREEN_PALETTE("palette")
+	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
+	screen.set_refresh_hz(60);
+	screen.set_vblank_time(ATTOSECONDS_IN_USEC(0));
+	screen.set_size(256, 256);
+	screen.set_visarea(8, 256-1-8, 8*4, 256-8*4-1);
+	screen.set_screen_update(FUNC(witch_state::screen_update_witch));
+	screen.set_palette(m_palette);
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_witch)
-	MCFG_PALETTE_ADD("palette", 0x800)
-	MCFG_PALETTE_FORMAT(xBBBBBGGGGGRRRRR)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_witch);
+	PALETTE(config, m_palette).set_format(palette_device::xBGR_555, 0x800);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 
-	MCFG_ES8712_ADD("essnd", 0)
-	MCFG_ES8712_MSM_WRITE_CALLBACK(WRITE8("msm", msm5205_device, data_w))
-	MCFG_ES8712_MSM_TAG("msm")
+	es8712_device &essnd(ES8712(config, "essnd", 0));
+	essnd.msm_write_handler().set("msm", FUNC(msm5205_device::data_w));
+	essnd.set_msm_tag("msm");
 
-	MCFG_DEVICE_ADD("msm", MSM5205, MSM5202_CLOCK)   /* actually MSM5202 */
-	MCFG_MSM6585_VCK_CALLBACK(WRITELINE("essnd", es8712_device, msm_int))
-	MCFG_MSM6585_PRESCALER_SELECTOR(S48_4B)         /* 8 kHz */
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.0)
+	msm5205_device &msm(MSM5205(config, "msm", MSM5202_CLOCK));   /* actually MSM5202 */
+	msm.vck_legacy_callback().set("essnd", FUNC(es8712_device::msm_int));
+	msm.set_prescaler_selector(msm5205_device::S48_4B); /* 8 kHz */
+	msm.add_route(ALL_OUTPUTS, "mono", 1.0);
 
 	ym2203_device &ym1(YM2203(config, "ym1", YM2203_CLOCK));     /* 3 MHz */
 	ym1.port_a_read_callback().set_ioport("YM_PortA");
@@ -1016,20 +1016,18 @@ MACHINE_CONFIG_START(witch_state::witch)
 	ym2.port_a_write_callback().set(FUNC(witch_state::xscroll_w));
 	ym2.port_b_write_callback().set(FUNC(witch_state::yscroll_w));
 	ym2.add_route(ALL_OUTPUTS, "mono", 0.5);
-MACHINE_CONFIG_END
+}
 
-MACHINE_CONFIG_START(keirinou_state::keirinou)
+void keirinou_state::keirinou(machine_config &config)
+{
 	witch(config);
 
-	MCFG_DEVICE_MODIFY("maincpu")
-	MCFG_DEVICE_PROGRAM_MAP(keirinou_main_map)
+	m_maincpu->set_addrmap(AS_PROGRAM, &keirinou_state::keirinou_main_map);
 
-	MCFG_DEVICE_MODIFY("sub")
-	MCFG_DEVICE_PROGRAM_MAP(keirinou_sub_map)
+	m_subcpu->set_addrmap(AS_PROGRAM, &keirinou_state::keirinou_sub_map);
 
-	MCFG_DEVICE_REMOVE("palette")
-	MCFG_PALETTE_ADD("palette", 0x200+0x80)
-	MCFG_GFXDECODE_MODIFY("gfxdecode", gfx_keirinou)
+	PALETTE(config.replace(), m_palette).set_entries(0x200+0x80);
+	m_gfxdecode->set_info(gfx_keirinou);
 
 //  MCFG_PALETTE_FORMAT(IIBBGGRR)
 
@@ -1046,11 +1044,11 @@ MACHINE_CONFIG_START(keirinou_state::keirinou)
 	ay2.port_b_write_callback().set(FUNC(witch_state::yscroll_w));
 	ay2.add_route(ALL_OUTPUTS, "mono", 0.5);
 
-	MCFG_DEVICE_REMOVE("essnd")
-	MCFG_DEVICE_REMOVE("msm")
-	MCFG_DEVICE_REMOVE("ym1")
-	MCFG_DEVICE_REMOVE("ym2")
-MACHINE_CONFIG_END
+	config.device_remove("essnd");
+	config.device_remove("msm");
+	config.device_remove("ym1");
+	config.device_remove("ym2");
+}
 
 ROM_START( witch )
 	ROM_REGION( 0x30000, "maincpu", 0 )

@@ -1166,10 +1166,10 @@ MACHINE_CONFIG_START(radica_eu3a05_state::radicasi)
 
 	MCFG_PALETTE_ADD("palette", 256)
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_radicasi_fake)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_radicasi_fake);
 
-	MCFG_DEVICE_ADD("gpio", RADICA6502_GPIO, 0)
-	MCFG_RADICA6502_GPIO_READ_PORT0_CB(IOPORT("IN0"))
+	radica6502_gpio_device &gpio(RADICA6502_GPIO(config, "gpio", 0));
+	gpio.read_0_callback().set_ioport("IN0");
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

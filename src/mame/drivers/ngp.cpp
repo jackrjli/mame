@@ -177,7 +177,7 @@ private:
 		uint8_t   command[2];
 	} m_flash_chip[2];
 
-	required_device<cpu_device> m_maincpu;
+	required_device<tmp95c061_device> m_maincpu;
 	required_device<cpu_device> m_z80;
 	required_device<t6w28_device> m_t6w28;
 	required_device<dac_byte_interface> m_ldac;
@@ -826,41 +826,43 @@ void ngp_state::nvram_write(emu_file &file)
 }
 
 
-MACHINE_CONFIG_START(ngp_state::ngp_common)
+void ngp_state::ngp_common(machine_config &config)
+{
+	TMP95C061(config, m_maincpu, 6.144_MHz_XTAL);
+	m_maincpu->set_am8_16(1);
+	m_maincpu->set_addrmap(AS_PROGRAM, &ngp_state::ngp_mem);
+	m_maincpu->porta_write().set(FUNC(ngp_state::ngp_tlcs900_porta));
 
-	MCFG_DEVICE_ADD( "maincpu", TMP95C061, 6.144_MHz_XTAL )
-	MCFG_TLCS900H_AM8_16(1)
-	MCFG_DEVICE_PROGRAM_MAP( ngp_mem)
-	MCFG_TMP95C061_PORTA_WRITE(WRITE8(*this, ngp_state,ngp_tlcs900_porta))
+	z80_device &soundcpu(Z80(config, "soundcpu", 6.144_MHz_XTAL/2));
+	soundcpu.set_addrmap(AS_PROGRAM, &ngp_state::z80_mem);
+	soundcpu.set_addrmap(AS_IO, &ngp_state::z80_io);
 
-	MCFG_DEVICE_ADD( "soundcpu", Z80, 6.144_MHz_XTAL/2 )
-	MCFG_DEVICE_PROGRAM_MAP( z80_mem)
-	MCFG_DEVICE_IO_MAP( z80_io)
-
-	MCFG_SCREEN_ADD( "screen", LCD )
-	MCFG_SCREEN_RAW_PARAMS( 6.144_MHz_XTAL, 515, 0, 160 /*480*/, 199, 0, 152 )
-	MCFG_SCREEN_UPDATE_DRIVER(ngp_state, screen_update_ngp)
+	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_LCD));
+	screen.set_raw(6.144_MHz_XTAL, 515, 0, 160 /*480*/, 199, 0, 152);
+	screen.set_screen_update(FUNC(ngp_state::screen_update_ngp));
 
 	/* sound hardware */
 	SPEAKER(config, "lspeaker").front_left();
 	SPEAKER(config, "rspeaker").front_right();
 
-	MCFG_DEVICE_ADD( "t6w28", T6W28, 6.144_MHz_XTAL/2 )
-	MCFG_SOUND_ROUTE( 0, "lspeaker", 0.50 )
-	MCFG_SOUND_ROUTE( 1, "rspeaker", 0.50 )
+	T6W28(config, m_t6w28, 6.144_MHz_XTAL/2);
+	m_t6w28->add_route(0, "lspeaker", 0.50);
+	m_t6w28->add_route(1, "rspeaker", 0.50);
 
-	MCFG_DEVICE_ADD("ldac", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "lspeaker", 0.25) // unknown DAC
-	MCFG_DEVICE_ADD("rdac", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "rspeaker", 0.25) // unknown DAC
-	MCFG_DEVICE_ADD("vref", VOLTAGE_REGULATOR, 0) MCFG_VOLTAGE_REGULATOR_OUTPUT(5.0)
-	MCFG_SOUND_ROUTE(0, "ldac", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE(0, "ldac", -1.0, DAC_VREF_NEG_INPUT)
-	MCFG_SOUND_ROUTE(0, "rdac", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE(0, "rdac", -1.0, DAC_VREF_NEG_INPUT)
-MACHINE_CONFIG_END
+	DAC_8BIT_R2R(config, m_ldac, 0).add_route(ALL_OUTPUTS, "lspeaker", 0.25); // unknown DAC
+	DAC_8BIT_R2R(config, m_rdac, 0).add_route(ALL_OUTPUTS, "rspeaker", 0.25); // unknown DAC
+	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref"));
+	vref.add_route(0, "ldac", 1.0, DAC_VREF_POS_INPUT); vref.add_route(0, "ldac", -1.0, DAC_VREF_NEG_INPUT);
+	vref.add_route(0, "rdac", 1.0, DAC_VREF_POS_INPUT); vref.add_route(0, "rdac", -1.0, DAC_VREF_NEG_INPUT);
+}
 
 
 MACHINE_CONFIG_START(ngp_state::ngp)
 	ngp_common(config);
 
-	MCFG_K1GE_ADD( "k1ge", 6.144_MHz_XTAL, "screen", WRITELINE( *this, ngp_state, ngp_vblank_pin_w ), WRITELINE( *this, ngp_state, ngp_hblank_pin_w ) )
+	K1GE(config , m_k1ge, 6.144_MHz_XTAL, "screen");
+	m_k1ge->vblank_callback().set(FUNC(ngp_state::ngp_vblank_pin_w));
+	m_k1ge->hblank_callback().set(FUNC(ngp_state::ngp_hblank_pin_w));
 
 	MCFG_SCREEN_MODIFY("screen")
 	MCFG_SCREEN_PALETTE("k1ge:palette")
@@ -871,14 +873,16 @@ MACHINE_CONFIG_START(ngp_state::ngp)
 	MCFG_GENERIC_UNLOAD(ngp_state, ngp_cart)
 
 	/* software lists */
-	MCFG_SOFTWARE_LIST_ADD("cart_list","ngp")
-	MCFG_SOFTWARE_LIST_COMPATIBLE_ADD("ngpc_list","ngpc")
+	SOFTWARE_LIST(config, "cart_list").set_original("ngp");
+	SOFTWARE_LIST(config, "ngpc_list").set_compatible("ngpc");
 MACHINE_CONFIG_END
 
 
 MACHINE_CONFIG_START(ngp_state::ngpc)
 	ngp_common(config);
-	MCFG_K2GE_ADD( "k1ge", 6.144_MHz_XTAL, "screen", WRITELINE( *this, ngp_state, ngp_vblank_pin_w ), WRITELINE( *this, ngp_state, ngp_hblank_pin_w ) )
+	K2GE(config , m_k1ge, 6.144_MHz_XTAL, "screen");
+	m_k1ge->vblank_callback().set(FUNC(ngp_state::ngp_vblank_pin_w));
+	m_k1ge->hblank_callback().set(FUNC(ngp_state::ngp_hblank_pin_w));
 
 	MCFG_SCREEN_MODIFY("screen")
 	MCFG_SCREEN_PALETTE("k1ge:palette")
@@ -889,8 +893,8 @@ MACHINE_CONFIG_START(ngp_state::ngpc)
 	MCFG_GENERIC_UNLOAD(ngp_state, ngp_cart)
 
 	/* software lists */
-	MCFG_SOFTWARE_LIST_ADD("cart_list","ngpc")
-	MCFG_SOFTWARE_LIST_COMPATIBLE_ADD("ngp_list","ngp")
+	SOFTWARE_LIST(config, "cart_list").set_original("ngpc");
+	SOFTWARE_LIST(config, "ngp_list").set_compatible("ngp");
 MACHINE_CONFIG_END
 
 

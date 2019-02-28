@@ -141,7 +141,7 @@ private:
 	DECLARE_WRITE_LINE_MEMBER( eint_w );
 	DECLARE_WRITE_LINE_MEMBER( wake_w );
 
-	DECLARE_PALETTE_INIT(portfolio);
+	void portfolio_palette(palette_device &palette) const;
 	TIMER_DEVICE_CALLBACK_MEMBER(keyboard_tick);
 	TIMER_DEVICE_CALLBACK_MEMBER(system_tick);
 	TIMER_DEVICE_CALLBACK_MEMBER(counter_tick);
@@ -926,7 +926,7 @@ WRITE8_MEMBER( portfolio_state::contrast_w )
 //  PALETTE_INIT( portfolio )
 //-------------------------------------------------
 
-PALETTE_INIT_MEMBER(portfolio_state, portfolio)
+void portfolio_state::portfolio_palette(palette_device &palette) const
 {
 	palette.set_pen_color(0, rgb_t(142, 193, 172));
 	palette.set_pen_color(1, rgb_t(67, 71, 151));
@@ -1029,15 +1029,14 @@ MACHINE_CONFIG_START(portfolio_state::portfolio)
 	MCFG_SCREEN_VISIBLE_AREA(0, 240-1, 0, 64-1)
 	MCFG_SCREEN_PALETTE("palette")
 
-	MCFG_PALETTE_ADD("palette", 2)
-	MCFG_PALETTE_INIT_OWNER(portfolio_state, portfolio)
+	PALETTE(config, "palette", FUNC(portfolio_state::portfolio_palette), 2);
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_portfolio)
+	GFXDECODE(config, "gfxdecode", "palette", gfx_portfolio);
 
-	MCFG_DEVICE_ADD(HD61830_TAG, HD61830, XTAL(4'915'200)/2/2)
-	MCFG_DEVICE_ADDRESS_MAP(0, portfolio_lcdc)
-	MCFG_HD61830_RD_CALLBACK(READ8(*this, portfolio_state, hd61830_rd_r))
-	MCFG_VIDEO_SET_SCREEN(SCREEN_TAG)
+	HD61830(config, m_lcdc, XTAL(4'915'200)/2/2);
+	m_lcdc->set_addrmap(0, &portfolio_state::portfolio_lcdc);
+	m_lcdc->rd_rd_callback().set(FUNC(portfolio_state::hd61830_rd_r));
+	m_lcdc->set_screen(SCREEN_TAG);
 
 	// sound hardware
 	SPEAKER(config, "mono").front_center();
@@ -1045,21 +1044,21 @@ MACHINE_CONFIG_START(portfolio_state::portfolio)
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.25)
 
 	// devices
-	MCFG_PORTFOLIO_MEMORY_CARD_SLOT_ADD(PORTFOLIO_MEMORY_CARD_SLOT_A_TAG, portfolio_memory_cards, nullptr)
+	PORTFOLIO_MEMORY_CARD_SLOT(config, m_ccm, portfolio_memory_cards, nullptr);
 
-	MCFG_PORTFOLIO_EXPANSION_SLOT_ADD(PORTFOLIO_EXPANSION_SLOT_TAG, XTAL(4'915'200), portfolio_expansion_cards, nullptr)
-	MCFG_PORTFOLIO_EXPANSION_SLOT_EINT_CALLBACK(WRITELINE(*this, portfolio_state, eint_w))
-	MCFG_PORTFOLIO_EXPANSION_SLOT_NMIO_CALLBACK(INPUTLINE(M80C88A_TAG, INPUT_LINE_NMI))
-	MCFG_PORTFOLIO_EXPANSION_SLOT_WAKE_CALLBACK(WRITELINE(*this, portfolio_state, wake_w))
+	PORTFOLIO_EXPANSION_SLOT(config, m_exp, XTAL(4'915'200), portfolio_expansion_cards, nullptr);
+	m_exp->eint_wr_callback().set(FUNC(portfolio_state::eint_w));
+	m_exp->nmio_wr_callback().set_inputline(m_maincpu, INPUT_LINE_NMI);
+	m_exp->wake_wr_callback().set(FUNC(portfolio_state::wake_w));
 
-	MCFG_TIMER_DRIVER_ADD_PERIODIC("counter", portfolio_state, counter_tick, attotime::from_hz(XTAL(32'768)/16384))
-	MCFG_TIMER_DRIVER_ADD_PERIODIC(TIMER_TICK_TAG, portfolio_state, system_tick, attotime::from_hz(XTAL(32'768)/32768))
+	TIMER(config, "counter").configure_periodic(FUNC(portfolio_state::counter_tick), attotime::from_hz(XTAL(32'768)/16384));
+	TIMER(config, TIMER_TICK_TAG).configure_periodic(FUNC(portfolio_state::system_tick), attotime::from_hz(XTAL(32'768)/32768));
 
 	// fake keyboard
-	MCFG_TIMER_DRIVER_ADD_PERIODIC("keyboard", portfolio_state, keyboard_tick, attotime::from_usec(2500))
+	TIMER(config, "keyboard").configure_periodic(FUNC(portfolio_state::keyboard_tick), attotime::from_usec(2500));
 
 	// software list
-	MCFG_SOFTWARE_LIST_ADD("cart_list", "pofo")
+	SOFTWARE_LIST(config, "cart_list").set_original("pofo");
 
 	// internal ram
 	RAM(config, RAM_TAG).set_default_size("128K");

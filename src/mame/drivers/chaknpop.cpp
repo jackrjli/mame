@@ -370,7 +370,7 @@ MACHINE_CONFIG_START(chaknpop_state::chaknpop)
 	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", chaknpop_state,  irq0_line_hold)
 
 	MCFG_DEVICE_ADD("bmcu", TAITO68705_MCU, XTAL(18'000'000) / 6)    // Verified on PCB
-	MCFG_QUANTUM_TIME(attotime::from_hz(6000))  // 100 CPU slices per frame - a high value to ensure proper synchronization of the CPUs
+	config.m_minimum_quantum = attotime::from_hz(6000);  // 100 CPU slices per frame - a high value to ensure proper synchronization of the CPUs
 
 	/* video hardware */
 	MCFG_SCREEN_ADD("screen", RASTER)
@@ -379,11 +379,10 @@ MACHINE_CONFIG_START(chaknpop_state::chaknpop)
 	MCFG_SCREEN_SIZE(32*8, 32*8)
 	MCFG_SCREEN_VISIBLE_AREA(0*8, 32*8-1, 2*8, 30*8-1)
 	MCFG_SCREEN_UPDATE_DRIVER(chaknpop_state, screen_update)
-	MCFG_SCREEN_PALETTE("palette")
+	MCFG_SCREEN_PALETTE(m_palette)
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_chaknpop)
-	MCFG_PALETTE_ADD("palette", 1024)
-	MCFG_PALETTE_INIT_OWNER(chaknpop_state, chaknpop)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_chaknpop);
+	PALETTE(config, m_palette, FUNC(chaknpop_state::chaknpop_palette), 1024);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

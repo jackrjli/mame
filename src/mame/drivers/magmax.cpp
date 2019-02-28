@@ -336,7 +336,7 @@ MACHINE_CONFIG_START(magmax_state::magmax)
 	MCFG_DEVICE_PROGRAM_MAP(sound_map)
 	MCFG_DEVICE_IO_MAP(sound_io_map)
 
-	MCFG_QUANTUM_TIME(attotime::from_hz(600))
+	config.m_minimum_quantum = attotime::from_hz(600);
 
 
 	/* video hardware */
@@ -347,10 +347,8 @@ MACHINE_CONFIG_START(magmax_state::magmax)
 	MCFG_SCREEN_UPDATE_DRIVER(magmax_state, screen_update)
 	MCFG_SCREEN_PALETTE(m_palette)
 
-	MCFG_DEVICE_ADD(m_gfxdecode, GFXDECODE, m_palette, gfx_magmax)
-	MCFG_PALETTE_ADD(m_palette, 1*16 + 16*16 + 256)
-	MCFG_PALETTE_INDIRECT_ENTRIES(256)
-	MCFG_PALETTE_INIT_OWNER(magmax_state, magmax)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_magmax);
+	PALETTE(config, m_palette, FUNC(magmax_state::magmax_palette), 1*16 + 16*16 + 256, 256);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

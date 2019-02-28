@@ -244,9 +244,7 @@ MACHINE_CONFIG_START(hyhoo_state::hyhoo)
 	MCFG_SCREEN_VISIBLE_AREA(0, 512-1, 16, 240-1)
 	MCFG_SCREEN_UPDATE_DRIVER(hyhoo_state, screen_update_hyhoo)
 
-	MCFG_NB1413M3_ADD("nb1413m3")
-	MCFG_NB1413M3_TYPE( NB1413M3_HYHOO )
-
+	NB1413M3(config, m_nb1413m3, 0, NB1413M3_HYHOO);
 
 	/* sound hardware */
 	SPEAKER(config, "speaker").front_center();
@@ -256,17 +254,18 @@ MACHINE_CONFIG_START(hyhoo_state::hyhoo)
 	aysnd.port_b_read_callback().set_ioport("DSWB");
 	aysnd.add_route(ALL_OUTPUTS, "speaker", 0.35);
 
-	MCFG_DEVICE_ADD("dac", DAC_8BIT_R2R, 0) MCFG_SOUND_ROUTE(ALL_OUTPUTS, "speaker", 0.25) // unknown DAC
-	MCFG_DEVICE_ADD("vref", VOLTAGE_REGULATOR, 0) MCFG_VOLTAGE_REGULATOR_OUTPUT(5.0)
-	MCFG_SOUND_ROUTE(0, "dac", 1.0, DAC_VREF_POS_INPUT) MCFG_SOUND_ROUTE(0, "dac", -1.0, DAC_VREF_NEG_INPUT)
+	DAC_8BIT_R2R(config, "dac", 0).add_route(ALL_OUTPUTS, "speaker", 0.25); // unknown DAC
+	voltage_regulator_device &vref(VOLTAGE_REGULATOR(config, "vref"));
+	vref.add_route(0, "dac", 1.0, DAC_VREF_POS_INPUT);
+	vref.add_route(0, "dac", -1.0, DAC_VREF_NEG_INPUT);
 MACHINE_CONFIG_END
 
 
-MACHINE_CONFIG_START(hyhoo_state::hyhoo2)
+void hyhoo_state::hyhoo2(machine_config &config)
+{
 	hyhoo(config);
-	MCFG_DEVICE_MODIFY("nb1413m3")
-	MCFG_NB1413M3_TYPE( NB1413M3_HYHOO2 )
-MACHINE_CONFIG_END
+	m_nb1413m3->set_type(NB1413M3_HYHOO2);
+}
 
 
 ROM_START( hyhoo )

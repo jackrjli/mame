@@ -359,7 +359,7 @@ MACHINE_CONFIG_START(blueprnt_state::blueprnt)
 	MCFG_DEVICE_PERIODIC_INT_DRIVER(blueprnt_state, irq0_line_hold,  4*60) // IRQs connected to 32V
 									// NMIs are caused by the main CPU
 
-	MCFG_QUANTUM_PERFECT_CPU("maincpu")
+	config.m_perfect_cpu_quantum = subtag("maincpu");
 
 	WATCHDOG_TIMER(config, "watchdog");
 
@@ -371,11 +371,10 @@ MACHINE_CONFIG_START(blueprnt_state::blueprnt)
 	MCFG_SCREEN_VISIBLE_AREA(0*8, 32*8-1, 2*8, 30*8-1)
 	MCFG_VIDEO_START_OVERRIDE(blueprnt_state, blueprnt)
 	MCFG_SCREEN_UPDATE_DRIVER(blueprnt_state, screen_update_blueprnt)
-	MCFG_SCREEN_PALETTE("palette")
+	MCFG_SCREEN_PALETTE(m_palette)
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_blueprnt)
-	MCFG_PALETTE_ADD("palette", 128*4+8)
-	MCFG_PALETTE_INIT_OWNER(blueprnt_state, blueprnt)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_blueprnt);
+	PALETTE(config, m_palette, FUNC(blueprnt_state::blueprnt_palette), 128*4+8);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

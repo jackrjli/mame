@@ -75,13 +75,13 @@ WRITE8_MEMBER(munchmo_state::sound_nmi_ack_w)
 
 READ8_MEMBER(munchmo_state::ay1reset_r)
 {
-	m_ay8910[0]->reset_w(space, 0, 0);
+	m_ay8910[0]->reset_w();
 	return 0;
 }
 
 READ8_MEMBER(munchmo_state::ay2reset_r)
 {
-	m_ay8910[1]->reset_w(space, 0, 0);
+	m_ay8910[1]->reset_w();
 	return 0;
 }
 
@@ -345,9 +345,8 @@ MACHINE_CONFIG_START(munchmo_state::mnchmobl)
 	MCFG_SCREEN_VBLANK_CALLBACK(WRITELINE(*this, munchmo_state, vblank_irq))
 	MCFG_SCREEN_PALETTE(m_palette)
 
-	MCFG_DEVICE_ADD(m_gfxdecode, GFXDECODE, m_palette, gfx_mnchmobl)
-	MCFG_PALETTE_ADD(m_palette, 256)
-	MCFG_PALETTE_INIT_OWNER(munchmo_state, munchmo)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_mnchmobl);
+	PALETTE(config, m_palette, FUNC(munchmo_state::munchmo_palette), 256);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

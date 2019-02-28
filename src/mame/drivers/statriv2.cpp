@@ -94,7 +94,6 @@ public:
 		, m_palette(*this, "palette")
 	{ }
 
-
 	void statriv2(machine_config &config);
 	void funcsino(machine_config &config);
 	void statriv2v(machine_config &config);
@@ -121,6 +120,7 @@ private:
 	uint8_t m_question_offset_high;
 	uint8_t m_latched_coin;
 	uint8_t m_last_coin;
+
 	DECLARE_WRITE8_MEMBER(statriv2_videoram_w);
 	DECLARE_READ8_MEMBER(question_data_r);
 	DECLARE_WRITE8_MEMBER(ppi_portc_hi_w);
@@ -128,7 +128,7 @@ private:
 	TILE_GET_INFO_MEMBER(horizontal_tile_info);
 	TILE_GET_INFO_MEMBER(vertical_tile_info);
 	virtual void video_start() override;
-	DECLARE_PALETTE_INIT(statriv2);
+	void statriv2_palette(palette_device &palette) const;
 	DECLARE_VIDEO_START(vertical);
 	uint32_t screen_update_statriv2(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 	INTERRUPT_GEN_MEMBER(statriv2_interrupt);
@@ -171,12 +171,12 @@ TILE_GET_INFO_MEMBER(statriv2_state::vertical_tile_info)
  *
  *************************************/
 
-PALETTE_INIT_MEMBER(statriv2_state, statriv2)
+void statriv2_state::statriv2_palette(palette_device &palette) const
 {
 	for (int i = 0; i < 64; i++)
 	{
-		palette.set_pen_color(2*i+0, pal1bit(i >> 2), pal1bit(i >> 0), pal1bit(i >> 1));
-		palette.set_pen_color(2*i+1, pal1bit(i >> 5), pal1bit(i >> 3), pal1bit(i >> 4));
+		palette.set_pen_color(2*i + 0, pal1bit(i >> 2), pal1bit(i >> 0), pal1bit(i >> 1));
+		palette.set_pen_color(2*i + 1, pal1bit(i >> 5), pal1bit(i >> 3), pal1bit(i >> 4));
 	}
 }
 
@@ -605,13 +605,14 @@ GFXDECODE_END
  *
  *************************************/
 
-MACHINE_CONFIG_START(statriv2_state::statriv2)
+void statriv2_state::statriv2(machine_config &config)
+{
 	/* basic machine hardware */
 	/* FIXME: The 8085A had a max clock of 6MHz, internally divided by 2! */
-	MCFG_DEVICE_ADD("maincpu", I8085A, MASTER_CLOCK)
-	MCFG_DEVICE_PROGRAM_MAP(statriv2_map)
-	MCFG_DEVICE_IO_MAP(statriv2_io_map)
-	MCFG_DEVICE_VBLANK_INT_DRIVER("screen", statriv2_state, statriv2_interrupt)
+	I8085A(config, m_maincpu, MASTER_CLOCK);
+	m_maincpu->set_addrmap(AS_PROGRAM, &statriv2_state::statriv2_map);
+	m_maincpu->set_addrmap(AS_IO, &statriv2_state::statriv2_io_map);
+	m_maincpu->set_vblank_int("screen", FUNC(statriv2_state::statriv2_interrupt));
 
 	NVRAM(config, "nvram", nvram_device::DEFAULT_ALL_0);
 
@@ -625,43 +626,42 @@ MACHINE_CONFIG_START(statriv2_state::statriv2)
 	ppi.out_pc_callback().set(FUNC(statriv2_state::ppi_portc_hi_w));
 
 	/* video hardware */
-	MCFG_SCREEN_ADD("screen", RASTER)
-	MCFG_SCREEN_RAW_PARAMS(MASTER_CLOCK/2, 384, 0, 320, 270, 0, 240)
-	MCFG_SCREEN_UPDATE_DRIVER(statriv2_state, screen_update_statriv2)
-	MCFG_SCREEN_PALETTE("palette")
+	screen_device &screen(SCREEN(config, "screen", SCREEN_TYPE_RASTER));
+	screen.set_raw(MASTER_CLOCK/2, 384, 0, 320, 270, 0, 240);
+	screen.set_screen_update(FUNC(statriv2_state::screen_update_statriv2));
+	screen.set_palette(m_palette);
 
 	TMS9927(config, m_tms, MASTER_CLOCK/2/8).set_char_width(8);
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_horizontal)
-	MCFG_PALETTE_ADD("palette", 2*64)
-	MCFG_PALETTE_INIT_OWNER(statriv2_state, statriv2)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_horizontal);
+	PALETTE(config, m_palette, FUNC(statriv2_state::statriv2_palette), 2*64);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
 
 	AY8910(config, "aysnd", MASTER_CLOCK/8).add_route(ALL_OUTPUTS, "mono", 1.0);
-MACHINE_CONFIG_END
+}
 
-MACHINE_CONFIG_START(statriv2_state::statriv2v)
+void statriv2_state::statriv2v(machine_config &config)
+{
 	statriv2(config);
 
 	/* basic machine hardware */
 
-	MCFG_SCREEN_MODIFY("screen")
-	MCFG_SCREEN_RAW_PARAMS(MASTER_CLOCK/2, 392, 0, 256, 262, 0, 256)
+	subdevice<screen_device>("screen")->set_raw(MASTER_CLOCK/2, 392, 0, 256, 262, 0, 256);
 
 	MCFG_VIDEO_START_OVERRIDE(statriv2_state, vertical)
-	MCFG_GFXDECODE_MODIFY("gfxdecode", gfx_vertical)
-MACHINE_CONFIG_END
+	m_gfxdecode->set_info(gfx_vertical);
+}
 
-MACHINE_CONFIG_START(statriv2_state::funcsino)
+void statriv2_state::funcsino(machine_config &config)
+{
 	statriv2(config);
 
 	/* basic machine hardware */
 
-	MCFG_DEVICE_MODIFY("maincpu")
-	MCFG_DEVICE_CLOCK(MASTER_CLOCK/2)  /* 3 MHz?? seems accurate */
-MACHINE_CONFIG_END
+	m_maincpu->set_clock(MASTER_CLOCK/2);  /* 3 MHz?? seems accurate */
+}
 
 
 

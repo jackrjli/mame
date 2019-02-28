@@ -57,8 +57,8 @@ void kncljoe_state::main_map(address_map &map)
 	map(0xd804, 0xd804).portr("DSWB");
 	map(0xd800, 0xd800).w(FUNC(kncljoe_state::sound_cmd_w));
 	map(0xd801, 0xd801).w(FUNC(kncljoe_state::kncljoe_control_w));
-	map(0xd802, 0xd802).w("sn1", FUNC(sn76489_device::command_w));
-	map(0xd803, 0xd803).w("sn2", FUNC(sn76489_device::command_w));
+	map(0xd802, 0xd802).w("sn1", FUNC(sn76489_device::write));
+	map(0xd803, 0xd803).w("sn2", FUNC(sn76489_device::write));
 	map(0xd807, 0xd807).nopr();     /* unknown read */
 	map(0xd817, 0xd817).nopr();     /* unknown read */
 	map(0xe800, 0xefff).ram().share("spriteram");
@@ -77,7 +77,7 @@ WRITE8_MEMBER(kncljoe_state::m6803_port2_w)
 	{
 		/* control or data port? */
 		if (m_port2 & 0x08)
-			m_ay8910->data_address_w(space, m_port2 >> 2, m_port1);
+			m_ay8910->data_address_w(m_port2 >> 2, m_port1);
 	}
 	m_port2 = data;
 }
@@ -85,7 +85,7 @@ WRITE8_MEMBER(kncljoe_state::m6803_port2_w)
 READ8_MEMBER(kncljoe_state::m6803_port1_r)
 {
 	if (m_port2 & 0x08)
-		return m_ay8910->data_r(space, 0);
+		return m_ay8910->data_r();
 	return 0xff;
 }
 
@@ -272,12 +272,10 @@ MACHINE_CONFIG_START(kncljoe_state::kncljoe)
 	MCFG_SCREEN_SIZE(32*8, 32*8)
 	MCFG_SCREEN_VISIBLE_AREA(1*8, 31*8-1, 0*8, 32*8-1)
 	MCFG_SCREEN_UPDATE_DRIVER(kncljoe_state, screen_update_kncljoe)
-	MCFG_SCREEN_PALETTE("palette")
+	MCFG_SCREEN_PALETTE(m_palette)
 
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_kncljoe)
-	MCFG_PALETTE_ADD("palette", 16*8+16*8)
-	MCFG_PALETTE_INDIRECT_ENTRIES(128+16)
-	MCFG_PALETTE_INIT_OWNER(kncljoe_state, kncljoe)
+	GFXDECODE(config, m_gfxdecode, m_palette, gfx_kncljoe);
+	PALETTE(config, m_palette, FUNC(kncljoe_state::kncljoe_palette), 16*8+16*8, 128+16);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();

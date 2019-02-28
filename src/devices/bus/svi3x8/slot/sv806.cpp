@@ -46,7 +46,7 @@ void sv806_device::device_add_mconfig(machine_config &config)
 	screen.set_raw((XTAL(12'000'000) / 6) * 8, 864, 0, 640, 317, 0, 192);
 	screen.set_screen_update("crtc", FUNC(hd6845_device::screen_update));
 
-	PALETTE(config, m_palette, 2).set_init("palette", FUNC(palette_device::palette_init_monochrome));
+	PALETTE(config, m_palette, palette_device::MONOCHROME);
 
 	HD6845(config, m_crtc, XTAL(12'000'000) / 6);
 	m_crtc->set_screen("80col");
@@ -137,7 +137,7 @@ WRITE8_MEMBER( sv806_device::mreq_w )
 READ8_MEMBER( sv806_device::iorq_r )
 {
 	if (offset == 0x51)
-		return m_crtc->register_r(space, 0);
+		return m_crtc->register_r();
 
 	return 0xff;
 }
@@ -146,8 +146,8 @@ WRITE8_MEMBER( sv806_device::iorq_w )
 {
 	switch (offset)
 	{
-	case 0x50: m_crtc->address_w(space, 0, data); break;
-	case 0x51: m_crtc->register_w(space, 0, data); break;
+	case 0x50: m_crtc->address_w(data); break;
+	case 0x51: m_crtc->register_w(data); break;
 	case 0x58: m_ram_enabled = data; break;
 	}
 }

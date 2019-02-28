@@ -6,6 +6,7 @@
 #include "cpu/i86/i86.h"
 #include "bus/pc_joy/pc_joy.h"
 #include "bus/pc_kbd/keyboards.h"
+#include "imagedev/floppy.h"
 #include "machine/pc_fdc.h"
 
 #include "formats/asst128_dsk.h"
@@ -111,21 +112,20 @@ MACHINE_CONFIG_START(asst128_state::asst128)
 	downcast<asst128_mb_device &>(*device).set_cputag("maincpu");
 	MCFG_DEVICE_INPUT_DEFAULTS(asst128)
 
-	MCFG_DEVICE_MODIFY("mb:cassette")
-	MCFG_CASSETTE_DEFAULT_STATE(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED)
+	subdevice<cassette_image_device>("mb:cassette")->set_default_state(CASSETTE_STOPPED | CASSETTE_MOTOR_ENABLED | CASSETTE_SPEAKER_ENABLED);
 
 	// FIXME: determine ISA bus clock
 	MCFG_DEVICE_ADD("board0", ISA8_SLOT, 0, "mb:isa", pc_isa8_cards, "cga_mc1502", true)
 	MCFG_DEVICE_ADD("board1", ISA8_SLOT, 0, "mb:isa", pc_isa8_cards, "lpt", true)
 
-	MCFG_PC_KBDC_SLOT_ADD("mb:pc_kbdc", "kbd", pc_xt_keyboards, STR_KBD_IBM_PC_XT_83)
+	PC_KBDC_SLOT(config, "kbd", pc_xt_keyboards, STR_KBD_IBM_PC_XT_83).set_pc_kbdc_slot(subdevice("mb:pc_kbdc"));
 
 	PC_FDC_XT(config, m_fdc, 0);
 	m_fdc->intrq_wr_callback().set("mb:pic8259", FUNC(pic8259_device::ir6_w));
-	MCFG_FLOPPY_DRIVE_ADD("fdc:0", asst128_floppies, "525ssqd", asst128_state::asst128_formats)
-	MCFG_FLOPPY_DRIVE_ADD("fdc:1", asst128_floppies, "525ssqd", asst128_state::asst128_formats)
+	FLOPPY_CONNECTOR(config, "fdc:0", asst128_floppies, "525ssqd", asst128_state::asst128_formats);
+	FLOPPY_CONNECTOR(config, "fdc:1", asst128_floppies, "525ssqd", asst128_state::asst128_formats);
 
-	MCFG_PC_JOY_ADD("pc_joy")
+	PC_JOY(config, "pc_joy");
 
 	RAM(config, RAM_TAG).set_default_size("512K").set_extra_options("64K, 128K, 256K");
 MACHINE_CONFIG_END

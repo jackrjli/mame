@@ -668,8 +668,8 @@ INTERRUPT_GEN_MEMBER(spectrum_state::spec_interrupt)
 	m_irq_off_timer->adjust(m_maincpu->clocks_to_attotime(32));
 }
 
-MACHINE_CONFIG_START(spectrum_state::spectrum_common)
-
+void spectrum_state::spectrum_common(machine_config &config)
+{
 	/* basic machine hardware */
 	Z80(config, m_maincpu, X1 / 4);        /* This is verified only for the ZX Spectrum. Other clones are reported to have different clocks */
 	m_maincpu->set_addrmap(AS_PROGRAM, &spectrum_state::spectrum_mem);
@@ -687,11 +687,10 @@ MACHINE_CONFIG_START(spectrum_state::spectrum_common)
 	m_screen->screen_vblank().set(FUNC(spectrum_state::screen_vblank_spectrum));
 	m_screen->set_palette("palette");
 
-	palette_device &palette(PALETTE(config, "palette", 16));
-	palette.set_init(palette_init_delegate(FUNC(spectrum_state::palette_init_spectrum), this));
-
+	PALETTE(config, "palette", FUNC(spectrum_state::spectrum_palette), 16);
 	GFXDECODE(config, "gfxdecode", "palette", gfx_spectrum);
-	MCFG_VIDEO_START_OVERRIDE(spectrum_state, spectrum )
+
+	MCFG_VIDEO_START_OVERRIDE(spectrum_state, spectrum)
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
@@ -704,10 +703,10 @@ MACHINE_CONFIG_START(spectrum_state::spectrum_common)
 	m_exp->nmi_handler().set_inputline(m_maincpu, INPUT_LINE_NMI);
 
 	/* devices */
-	snapshot_image_device &snapshot(SNAPSHOT(config, "snapshot", 0));
-	snapshot.set_handler(snapquick_load_delegate(&SNAPSHOT_LOAD_NAME(spectrum_state, spectrum), this), "ach,frz,plusd,prg,sem,sit,sna,snp,snx,sp,z80,zx", 0);
-	quickload_image_device &quickload(QUICKLOAD(config, "quickload", 0));
-	quickload.set_handler(snapquick_load_delegate(&QUICKLOAD_LOAD_NAME(spectrum_state, spectrum), this), "raw,scr", 2); // The delay prevents the screen from being cleared by the RAM test at boot
+	snapshot_image_device &snapshot(SNAPSHOT(config, "snapshot"));
+	snapshot.set_handler(snapquick_load_delegate(&SNAPSHOT_LOAD_NAME(spectrum_state, spectrum), this), "ach,frz,plusd,prg,sem,sit,sna,snp,snx,sp,z80,zx");
+	quickload_image_device &quickload(QUICKLOAD(config, "quickload"));
+	quickload.set_handler(snapquick_load_delegate(&QUICKLOAD_LOAD_NAME(spectrum_state, spectrum), this), "raw,scr", attotime::from_seconds(2)); // The delay prevents the screen from being cleared by the RAM test at boot
 
 	CASSETTE(config, m_cassette);
 	m_cassette->set_formats(tzx_cassette_formats);
@@ -715,7 +714,7 @@ MACHINE_CONFIG_START(spectrum_state::spectrum_common)
 	m_cassette->set_interface("spectrum_cass");
 
 	SOFTWARE_LIST(config, "cass_list").set_original("spectrum_cass");
-MACHINE_CONFIG_END
+}
 
 void spectrum_state::spectrum(machine_config &config)
 {

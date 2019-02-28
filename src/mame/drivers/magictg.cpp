@@ -159,7 +159,7 @@ public:
 	void magictg(machine_config &config);
 
 private:
-	required_device<cpu_device>         m_mips;
+	required_device<mips3_device>       m_mips;
 	required_device<adsp2181_device>    m_adsp;
 	required_device<pci_bus_legacy_device>      m_pci;
 
@@ -911,24 +911,21 @@ INPUT_PORTS_END
  *************************************/
 
 MACHINE_CONFIG_START(magictg_state::magictg)
-	MCFG_DEVICE_ADD("mips", R5000BE, 150000000) /* TODO: CPU type and clock are unknown */
-	//MCFG_MIPS3_ICACHE_SIZE(16384) /* TODO: Unknown */
-	//MCFG_MIPS3_DCACHE_SIZE(16384) /* TODO: Unknown */
-	MCFG_DEVICE_PROGRAM_MAP(magictg_map)
+	R5000BE(config, m_mips, 150000000); /* TODO: CPU type and clock are unknown */
+	//m_mips->set_icache_size(16384); /* TODO: Unknown */
+	//m_mips->set_dcache_size(16384); /* TODO: Unknown */
+	m_mips->set_addrmap(AS_PROGRAM, &magictg_state::magictg_map);
 
-	MCFG_DEVICE_ADD("adsp", ADSP2181, 16000000)
-	MCFG_DEVICE_PROGRAM_MAP(adsp_program_map)
-	MCFG_DEVICE_DATA_MAP(adsp_data_map)
-	MCFG_DEVICE_IO_MAP(adsp_io_map)
+	ADSP2181(config, m_adsp, 16000000);
+	m_adsp->set_addrmap(AS_PROGRAM, &magictg_state::adsp_program_map);
+	m_adsp->set_addrmap(AS_DATA, &magictg_state::adsp_data_map);
+	m_adsp->set_addrmap(AS_IO, &magictg_state::adsp_io_map);
 
 	SPEAKER(config, "lspeaker").front_left();
 	SPEAKER(config, "rspeaker").front_right();
 
-	MCFG_DEVICE_ADD("dac1", DMADAC)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "rspeaker", 1.0)
-
-	MCFG_DEVICE_ADD("dac2", DMADAC)
-	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "lspeaker", 1.0)
+	DMADAC(config, "dac1").add_route(ALL_OUTPUTS, "rspeaker", 1.0);
+	DMADAC(config, "dac2").add_route(ALL_OUTPUTS, "lspeaker", 1.0);
 
 	MCFG_PCI_BUS_LEGACY_ADD("pcibus", 0)
 	MCFG_PCI_BUS_LEGACY_DEVICE(0, DEVICE_SELF, magictg_state, pci_dev0_r, pci_dev0_w)
@@ -939,17 +936,17 @@ MACHINE_CONFIG_START(magictg_state::magictg)
 #endif
 	MCFG_PCI_BUS_LEGACY_DEVICE(9, DEVICE_SELF, magictg_state, zr36120_pci_r, zr36120_pci_w) // TODO: ZR36120 device
 
-	MCFG_DEVICE_ADD("voodoo_0", VOODOO_1, STD_VOODOO_1_CLOCK)
-	MCFG_VOODOO_FBMEM(2)
-	MCFG_VOODOO_TMUMEM(4,0)
-	MCFG_VOODOO_SCREEN_TAG("screen")
-	MCFG_VOODOO_CPU_TAG("mips")
+	VOODOO_1(config, m_voodoo[0], STD_VOODOO_1_CLOCK);
+	m_voodoo[0]->set_fbmem(2);
+	m_voodoo[0]->set_tmumem(4,0);
+	m_voodoo[0]->set_screen_tag("screen");
+	m_voodoo[0]->set_cpu_tag(m_mips);
 
-	MCFG_DEVICE_ADD("voodoo_1", VOODOO_1, STD_VOODOO_1_CLOCK)
-	MCFG_VOODOO_FBMEM(2)
-	MCFG_VOODOO_TMUMEM(4,0)
-	MCFG_VOODOO_SCREEN_TAG("screen")
-	MCFG_VOODOO_CPU_TAG("mips")
+	VOODOO_1(config, m_voodoo[1], STD_VOODOO_1_CLOCK);
+	m_voodoo[1]->set_fbmem(2);
+	m_voodoo[1]->set_tmumem(4,0);
+	m_voodoo[1]->set_screen_tag("screen");
+	m_voodoo[1]->set_cpu_tag(m_mips);
 
 	MCFG_SCREEN_ADD("screen", RASTER)
 	MCFG_SCREEN_REFRESH_RATE(60)

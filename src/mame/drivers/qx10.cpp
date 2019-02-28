@@ -35,6 +35,7 @@
 
 #include "bus/rs232/rs232.h"
 #include "cpu/z80/z80.h"
+#include "imagedev/floppy.h"
 #include "machine/am9517a.h"
 #include "machine/i8255.h"
 #include "machine/mc146818.h"
@@ -124,7 +125,7 @@ private:
 
 	DECLARE_QUICKLOAD_LOAD_MEMBER(qx10);
 
-	DECLARE_PALETTE_INIT(qx10);
+	void qx10_palette(palette_device &palette) const;
 	DECLARE_WRITE_LINE_MEMBER(dma_hrq_changed);
 
 	UPD7220_DISPLAY_PIXELS_MEMBER( hgdc_display_pixels );
@@ -683,7 +684,7 @@ void qx10_state::video_start()
 	m_video_ram = make_unique_clear<uint16_t[]>(0x30000);
 }
 
-PALETTE_INIT_MEMBER(qx10_state, qx10)
+void qx10_state::qx10_palette(palette_device &palette) const
 {
 	// ...
 }
@@ -734,9 +735,8 @@ MACHINE_CONFIG_START(qx10_state::qx10)
 	m_screen->set_screen_update(FUNC(qx10_state::screen_update));
 	m_screen->set_size(640, 480);
 	m_screen->set_visarea(0, 640-1, 0, 480-1);
-	MCFG_DEVICE_ADD("gfxdecode", GFXDECODE, "palette", gfx_qx10)
-	MCFG_PALETTE_ADD("palette", 8)
-	MCFG_PALETTE_INIT_OWNER(qx10_state, qx10)
+	GFXDECODE(config, "gfxdecode", m_palette, gfx_qx10);
+	PALETTE(config, m_palette, FUNC(qx10_state::qx10_palette), 8);
 
 	/* Devices */
 
@@ -801,14 +801,14 @@ MACHINE_CONFIG_START(qx10_state::qx10)
 
 	UPD7220(config, m_hgdc, MAIN_CLK/6); // unk clock
 	m_hgdc->set_addrmap(0, &qx10_state::upd7220_map);
-	m_hgdc->set_display_pixels_callback(FUNC(qx10_state::hgdc_display_pixels), this);
-	m_hgdc->set_draw_text_callback(FUNC(qx10_state::hgdc_draw_text), this);
+	m_hgdc->set_display_pixels(FUNC(qx10_state::hgdc_display_pixels));
+	m_hgdc->set_draw_text(FUNC(qx10_state::hgdc_draw_text));
 	m_hgdc->set_screen("screen");
 
 	MC146818(config, m_rtc, 32.768_kHz_XTAL);
 	m_rtc->irq().set(m_pic_s, FUNC(pic8259_device::ir2_w));
 
-	UPD765A(config, m_fdc, true, true);
+	UPD765A(config, m_fdc, 8'000'000, true, true);
 	m_fdc->intrq_wr_callback().set(FUNC(qx10_state::qx10_upd765_interrupt));
 	m_fdc->drq_wr_callback().set(m_dma_1, FUNC(am9517a_device::dreq0_w)).invert();
 	FLOPPY_CONNECTOR(config, m_floppy[0], qx10_floppies, "525dd", floppy_image_device::default_floppy_formats);
@@ -824,9 +824,9 @@ MACHINE_CONFIG_START(qx10_state::qx10)
 	RAM(config, RAM_TAG).set_default_size("256K");
 
 	// software lists
-	MCFG_SOFTWARE_LIST_ADD("flop_list", "qx10_flop")
+	SOFTWARE_LIST(config, "flop_list").set_original("qx10_flop");
 
-	MCFG_QUICKLOAD_ADD("quickload", qx10_state, qx10, "com,cpm", 3)
+	MCFG_QUICKLOAD_ADD("quickload", qx10_state, qx10, "com,cpm", attotime::from_seconds(3))
 
 MACHINE_CONFIG_END
 

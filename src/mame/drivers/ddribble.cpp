@@ -269,7 +269,7 @@ MACHINE_CONFIG_START(ddribble_state::ddribble)
 	MCFG_DEVICE_ADD("cpu2", MC6809E, XTAL(18'432'000)/12)  /* verified on pcb */
 	MCFG_DEVICE_PROGRAM_MAP(cpu2_map)
 
-	MCFG_QUANTUM_TIME(attotime::from_hz(6000))  /* we need heavy synch */
+	config.m_minimum_quantum = attotime::from_hz(6000);  /* we need heavy synch */
 
 	WATCHDOG_TIMER(config, "watchdog");
 
@@ -285,11 +285,8 @@ MACHINE_CONFIG_START(ddribble_state::ddribble)
 	MCFG_SCREEN_PALETTE("palette")
 	MCFG_SCREEN_VBLANK_CALLBACK(WRITELINE(*this, ddribble_state, vblank_irq))
 
-	MCFG_DEVICE_ADD(m_gfxdecode, GFXDECODE, "palette", gfx_ddribble)
-	MCFG_PALETTE_ADD("palette", 64 + 256)
-	MCFG_PALETTE_INDIRECT_ENTRIES(64)
-	MCFG_PALETTE_FORMAT(xBBBBBGGGGGRRRRR)
-	MCFG_PALETTE_INIT_OWNER(ddribble_state, ddribble)
+	GFXDECODE(config, m_gfxdecode, "palette", gfx_ddribble);
+	PALETTE(config, "palette", FUNC(ddribble_state::ddribble_palette)).set_format(palette_device::xBGR_555, 64 + 256, 64);
 
 	/* sound hardware */
 	SPEAKER(config, "mono").front_center();
