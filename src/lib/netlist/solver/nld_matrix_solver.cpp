@@ -19,7 +19,7 @@ namespace devices
 		: m_railstart(0)
 		, m_last_V(0.0)
 		, m_DD_n_m_1(0.0)
-		, m_h_n_m_1(1e-9)
+		, m_h_n_m_1(1e-12)
 	{
 	}
 
@@ -37,20 +37,6 @@ namespace devices
 			}
 		m_terms.push_back(term);
 		m_connected_net_idx.push_back(net_other);
-	}
-
-	void terms_for_net_t::set_pointers()
-	{
-		m_gt.resize(count(), 0.0);
-		m_go.resize(count(), 0.0);
-		m_Idr.resize(count(), 0.0);
-		m_connected_net_V.resize(count(), nullptr);
-
-		for (std::size_t i = 0; i < count(); i++)
-		{
-			m_terms[i]->set_ptrs(&m_gt[i], &m_go[i], &m_Idr[i]);
-			m_connected_net_V[i] = m_terms[i]->otherterm()->net().Q_Analog_state_ptr();
-		}
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -141,8 +127,7 @@ namespace devices
 						}
 						break;
 					case detail::terminal_type::OUTPUT:
-						log().fatal(MF_1_UNHANDLED_ELEMENT_1_FOUND,
-								p->name());
+						log().fatal(MF_UNHANDLED_ELEMENT_1_FOUND(p->name()));
 						break;
 				}
 			}
@@ -237,11 +222,11 @@ namespace devices
 		/* rebuild */
 		for (auto &term : m_terms)
 		{
-			int *other = term->connected_net_idx();
+			int *other = term->m_connected_net_idx.data();
 			for (std::size_t i = 0; i < term->count(); i++)
 				//FIXME: this is weird
 				if (other[i] != -1)
-					other[i] = get_net_idx(&term->terms()[i]->otherterm()->net());
+					other[i] = get_net_idx(&term->terms()[i]->connected_terminal()->net());
 		}
 	}
 
@@ -253,9 +238,7 @@ namespace devices
 		{
 			m_terms[k]->m_railstart = m_terms[k]->count();
 			for (std::size_t i = 0; i < m_rails_temp[k]->count(); i++)
-				this->m_terms[k]->add(m_rails_temp[k]->terms()[i], m_rails_temp[k]->connected_net_idx()[i], false);
-
-			m_terms[k]->set_pointers();
+				this->m_terms[k]->add(m_rails_temp[k]->terms()[i], m_rails_temp[k]->m_connected_net_idx.data()[i], false);
 		}
 
 		// free all - no longer needed
@@ -263,12 +246,14 @@ namespace devices
 
 		sort_terms(m_sort);
 
+		this->set_pointers();
+
 		/* create a list of non zero elements. */
 		for (unsigned k = 0; k < iN; k++)
 		{
 			terms_for_net_t * t = m_terms[k].get();
 			/* pretty brutal */
-			int *other = t->connected_net_idx();
+			int *other = t->m_connected_net_idx.data();
 
 			t->m_nz.clear();
 
@@ -290,7 +275,7 @@ namespace devices
 		{
 			terms_for_net_t * t = m_terms[k].get();
 			/* pretty brutal */
-			int *other = t->connected_net_idx();
+			int *other = t->m_connected_net_idx.data();
 
 			if (k==0)
 				t->m_nzrd.clear();
@@ -371,9 +356,9 @@ namespace devices
 			state().save(*this, m_terms[k]->m_h_n_m_1, this->name(), "m_h_n_m_1." + num);
 
 			// FIXME: This shouldn't be necessary, recalculate on each entry ...
-			state().save(*this, m_terms[k]->go(),"GO" + num, this->name(), m_terms[k]->count());
-			state().save(*this, m_terms[k]->gt(),"GT" + num, this->name(), m_terms[k]->count());
-			state().save(*this, m_terms[k]->Idr(),"IDR" + num, this->name(), m_terms[k]->count());
+			state().save(*this, m_gonn[k],"GO" + num, this->name(), m_terms[k]->count());
+			state().save(*this, m_gtn[k],"GT" + num, this->name(), m_terms[k]->count());
+			state().save(*this, m_Idrn[k],"IDR" + num, this->name(), m_terms[k]->count());
 		}
 	}
 
@@ -452,7 +437,7 @@ namespace devices
 			// reschedule ....
 			if (this_resched > 1 && !m_Q_sync.net().is_queued())
 			{
-				log().warning(MW_1_NEWTON_LOOPS_EXCEEDED_ON_NET_1, this->name());
+				log().warning(MW_NEWTON_LOOPS_EXCEEDED_ON_NET_1(this->name()));
 				m_Q_sync.net().toggle_and_push_to_queue(m_params.m_nr_recalc_delay);
 			}
 		}
@@ -505,7 +490,7 @@ namespace devices
 
 		for (std::size_t i = 0; i < term->count(); i++)
 		{
-			auto col = get_net_idx(&term->terms()[i]->otherterm()->net());
+			auto col = get_net_idx(&term->terms()[i]->connected_terminal()->net());
 			if (col != -1)
 			{
 				if (col==row) col = diag;
@@ -533,7 +518,7 @@ namespace devices
 			auto &term = m_terms[row];
 			for (std::size_t i = 0; i < term->count(); i++)
 			{
-				auto col = get_net_idx(&term->terms()[i]->otherterm()->net());
+				auto col = get_net_idx(&term->terms()[i]->connected_terminal()->net());
 				if (col >= 0)
 				{
 					auto colu = static_cast<std::size_t>(col);
@@ -551,16 +536,15 @@ namespace devices
 		}
 	}
 
-
 	void matrix_solver_t::add_term(std::size_t k, terminal_t *term)
 	{
-		if (term->otherterm()->net().isRailNet())
+		if (term->connected_terminal()->net().isRailNet())
 		{
 			m_rails_temp[k]->add(term, -1, false);
 		}
 		else
 		{
-			int ot = get_net_idx(&term->otherterm()->net());
+			int ot = get_net_idx(&term->connected_terminal()->net());
 			if (ot>=0)
 			{
 				m_terms[k]->add(term, ot, true);
@@ -569,7 +553,7 @@ namespace devices
 			else // if (ot<0)
 			{
 				m_rails_temp[k]->add(term, ot, true);
-				log().fatal(MF_1_FOUND_TERM_WITH_MISSING_OTHERNET, term->name());
+				log().fatal(MF_FOUND_TERM_WITH_MISSING_OTHERNET(term->name()));
 			}
 		}
 	}
@@ -585,9 +569,12 @@ namespace devices
 				analog_net_t *n = m_nets[k];
 				terms_for_net_t *t = m_terms[k].get();
 
-				const nl_double DD_n = (n->Q_Analog() - t->m_last_V);
+				//const nl_double DD_n = (n->Q_Analog() - t->m_last_V);
+				// avoid floating point exceptions
+				const nl_double DD_n = std::max(-1e100, std::min(1e100,(n->Q_Analog() - t->m_last_V)));
 				const nl_double hn = cur_ts;
 
+				//printf("%g %g %g %g\n", DD_n, hn, t->m_DD_n_m_1, t->m_h_n_m_1);
 				nl_double DD2 = (DD_n / hn - t->m_DD_n_m_1 / t->m_h_n_m_1) / (hn + t->m_h_n_m_1);
 				nl_double new_net_timestep;
 
@@ -617,8 +604,6 @@ namespace devices
 		return std::max(netlist_time::from_double(new_solver_timestep), netlist_time::quantum() * 2);
 	}
 
-
-
 	void matrix_solver_t::log_stats()
 	{
 		if (this->m_stat_calculations != 0 && this->m_stat_vsolver_calls && this->m_params.m_log_stats)
@@ -639,7 +624,6 @@ namespace devices
 					static_cast<double>(this->m_iterative_total) / static_cast<double>(this->m_stat_calculations));
 		}
 	}
-
 
 } // namespace devices
 } // namespace netlist

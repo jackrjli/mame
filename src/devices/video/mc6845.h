@@ -112,6 +112,7 @@ protected:
 	virtual void device_start() override;
 	virtual void device_reset() override;
 	virtual void device_post_load() override;
+	virtual void device_clock_changed() override;
 	virtual void device_timer(emu_timer &timer, device_timer_id id, int param, void *ptr) override;
 
 	bool m_supports_disp_start_addr_r;
@@ -211,6 +212,7 @@ protected:
 	void set_hsync(int state);
 	void set_vsync(int state);
 	void set_cur(int state);
+	bool match_line();
 	void handle_line_timer();
 	virtual void update_cursor_state();
 	virtual uint8_t draw_scanline(int y, bitmap_rgb32 &bitmap, const rectangle &cliprect);

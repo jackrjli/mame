@@ -9,6 +9,7 @@
 
 #include "pstring.h"
 #include "ptypes.h"
+#include "putil.h"
 
 #include <limits>
 
@@ -16,8 +17,8 @@ namespace plib {
 
 P_ENUM(plog_level,
 	DEBUG,
-	INFO,
 	VERBOSE,
+	INFO,
 	WARNING,
 	ERROR,
 	FATAL)
@@ -34,7 +35,6 @@ struct ptype_traits_base
 template <>
 struct ptype_traits_base<bool>
 {
-	static unsigned int cast(bool &x) { return static_cast<unsigned int>(x); }
 	static unsigned int cast(const bool &x) { return static_cast<unsigned int>(x); }
 	static const bool is_signed = std::numeric_limits<bool>::is_signed;
 	static const char *size_spec() { return ""; }
@@ -189,6 +189,18 @@ public:
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
 		return format_element(ptype_traits<T *>::size_spec(), ptype_traits<T *>::fmt_spec(), ptype_traits<T *>::cast(x));
+	}
+
+	pfmt &operator ()()
+	{
+		return *this;
+	}
+
+
+	template<typename X, typename Y, typename... Args>
+	pfmt &operator()(X&& x, Y && y, Args&&... args)
+	{
+		return ((*this)(std::forward<X>(x)))(std::forward<Y>(y), std::forward<Args>(args)...);
 	}
 
 	template<typename T>

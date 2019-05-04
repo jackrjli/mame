@@ -43,7 +43,10 @@
 
 #include "screen.h"
 
-//#define VERBOSE 1
+#define LOG_REGS    (1 << 0U)
+#define LOG_CONFIG  (1 << 1U)
+#define VERBOSE     (0)
+
 #include "logmacro.h"
 
 
@@ -115,6 +118,12 @@ mc6845_device::mc6845_device(const machine_config &mconfig, const char *tag, dev
 
 
 void mc6845_device::device_post_load()
+{
+	recompute_parameters(true);
+}
+
+
+void mc6845_device::device_clock_changed()
 {
 	recompute_parameters(true);
 }
@@ -202,7 +211,7 @@ uint8_t mc6845_device::register_r()
 
 void mc6845_device::register_w(uint8_t data)
 {
-	LOG("%s:M6845 reg 0x%02x = 0x%02x\n", machine().describe_context(), m_register_address_latch, data);
+	LOGMASKED(LOG_REGS, "%s:M6845 reg 0x%02x = 0x%02x\n", machine().describe_context(), m_register_address_latch, data);
 
 	switch (m_register_address_latch)
 	{
@@ -331,7 +340,7 @@ uint8_t mos8563_device::register_r()
 
 void mos8563_device::register_w(uint8_t data)
 {
-	LOG("%s:MOS8563 reg 0x%02x = 0x%02x\n", machine().describe_context(), m_register_address_latch, data);
+	LOGMASKED(LOG_REGS, "%s:MOS8563 reg 0x%02x = 0x%02x\n", machine().describe_context(), m_register_address_latch, data);
 
 	switch (m_register_address_latch)
 	{
@@ -418,7 +427,7 @@ uint8_t hd6345_device::register_r()
 
 void hd6345_device::register_w(uint8_t data)
 {
-	LOG("%s:HD6345 reg 0x%02x = 0x%02x\n", machine().describe_context(), m_register_address_latch, data);
+	LOGMASKED(LOG_REGS, "%s:HD6345 reg 0x%02x = 0x%02x\n", machine().describe_context(), m_register_address_latch, data);
 
 	switch (m_register_address_latch)
 	{
@@ -560,7 +569,7 @@ void mc6845_device::recompute_parameters(bool postload)
 			else
 				visarea.set(0 + m_visarea_adjust_min_x, max_visible_x + m_visarea_adjust_max_x, 0 + m_visarea_adjust_min_y, max_visible_y + m_visarea_adjust_max_y);
 
-			LOG("M6845 config screen: HTOTAL: %d  VTOTAL: %d  MAX_X: %d  MAX_Y: %d  HSYNC: %d-%d  VSYNC: %d-%d  Freq: %ffps\n",
+			LOGMASKED(LOG_CONFIG, "M6845 config screen: HTOTAL: %d  VTOTAL: %d  MAX_X: %d  MAX_Y: %d  HSYNC: %d-%d  VSYNC: %d-%d  Freq: %ffps\n",
 								horiz_pix_total, vert_pix_total, max_visible_x, max_visible_y, hsync_on_pos, hsync_off_pos - 1, vsync_on_pos, vsync_off_pos - 1, 1 / ATTOSECONDS_TO_DOUBLE(refresh));
 
 			if (has_screen())
@@ -582,7 +591,7 @@ void mc6845_device::recompute_parameters(bool postload)
 		m_hsync_off_pos = hsync_off_pos;
 		m_vsync_on_pos = vsync_on_pos;
 		m_vsync_off_pos = vsync_off_pos;
-		if (!postload) // set m_line_counter to 0 on normal operation, but not on postload
+		if ( (!m_reconfigure_cb.isnull()) && (!postload) )
 			m_line_counter = 0;
 	}
 }
@@ -659,6 +668,28 @@ void mc6845_device::update_upd_adr_timer()
 }
 
 
+bool mc6845_device::match_line()
+{
+	/* Check if we've reached the end of active display */
+	if ( m_line_counter == m_vert_disp )
+	{
+		m_line_enable_ff = false;
+		m_current_disp_addr = m_disp_start_addr;
+	}
+
+	/* Check if VSYNC should be enabled */
+	if ( m_line_counter == m_vert_sync_pos )
+	{
+		m_vsync_width_counter = 0;
+		m_vsync_ff = 1;
+
+		return true;
+	}
+
+	return false;
+}
+
+
 void mc6845_device::handle_line_timer()
 {
 	bool new_vsync = m_vsync;
@@ -698,21 +729,8 @@ void mc6845_device::handle_line_timer()
 		m_line_counter = ( m_line_counter + 1 ) & 0x7F;
 		m_line_address = ( m_line_address + m_horiz_disp ) & 0x3fff;
 
-		/* Check if we've reached the end of active display */
-		if ( m_line_counter == m_vert_disp )
-		{
-			m_line_enable_ff = false;
-			m_current_disp_addr = m_disp_start_addr;
-		}
-
-		/* Check if VSYNC should be enabled */
-		if ( m_line_counter == m_vert_sync_pos )
-		{
-			m_vsync_width_counter = 0;
-			m_vsync_ff = 1;
-
+		if (match_line())
 			new_vsync = true;
-		}
 	}
 	else
 	{
@@ -731,6 +749,13 @@ void mc6845_device::handle_line_timer()
 			m_line_counter = 0;
 			m_line_address = m_disp_start_addr;
 			m_line_enable_ff = true;
+
+			if (m_supports_vert_sync_width)
+			{
+				if (match_line())
+					new_vsync = true;
+			}
+
 			/* also update the cursor state now */
 			update_cursor_state();
 
@@ -1022,7 +1047,7 @@ uint32_t mc6845_device::screen_update(screen_device &screen, bitmap_rgb32 &bitma
 	}
 	else
 	{
-		LOG("M6845: Invalid screen parameters - display disabled!!!\n");
+		LOGMASKED(LOG_CONFIG, "M6845: Invalid screen parameters - display disabled!!!\n");
 	}
 
 	return 0;

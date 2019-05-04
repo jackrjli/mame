@@ -1590,7 +1590,7 @@ ioport_field *ioport_port::field(ioport_value mask) const
 {
 	// if we got the port, look for the field
 	for (ioport_field &field : fields())
-		if ((field.mask() & mask) != 0)
+		if ((field.mask() & mask) != 0 && field.enabled())
 			return &field;
 	return nullptr;
 }

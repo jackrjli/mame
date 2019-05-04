@@ -33,7 +33,7 @@ static constexpr uint32_t M68K_MMU_DF_WP              = 0x00000004;
 static constexpr uint32_t M68K_MMU_DF_USED            = 0x00000008;
 static constexpr uint32_t M68K_MMU_DF_MODIFIED        = 0x00000010;
 static constexpr uint32_t M68K_MMU_DF_CI              = 0x00000040;
-static constexpr uint32_t M68K_MMU_DF_SUPERVISOR      = 0000000100;
+static constexpr uint32_t M68K_MMU_DF_SUPERVISOR      = 0x00000100;
 static constexpr uint32_t M68K_MMU_DF_ADDR_MASK       = 0xfffffff0;
 static constexpr uint32_t M68K_MMU_DF_IND_ADDR_MASK   = 0xfffffffc;
 
@@ -126,7 +126,7 @@ void pmmu_atc_add(uint32_t logical, uint32_t physical, int fc, const int rw)
 {
 	// get page size (i.e. # of bits to ignore); is 10 for Apollo
 	int ps = (m_mmu_tc >> 20) & 0xf;
-	const uint32_t atc_tag = M68K_MMU_ATC_VALID | ((fc & 7) << 24) | ((logical >> ps) << (ps - 8));
+	const uint32_t atc_tag = M68K_MMU_ATC_VALID | ((fc &7) << 24)| logical >> ps;
 	uint32_t atc_data = (physical >> ps) << (ps - 8);
 
 

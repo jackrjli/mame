@@ -199,7 +199,7 @@ void segasp_state::segasp_map(address_map &map)
 	map(0x00700000, 0x00707fff).mirror(0x02000000).rw(FUNC(segasp_state::dc_aica_reg_r), FUNC(segasp_state::dc_aica_reg_w));
 	map(0x00710000, 0x0071000f).mirror(0x02000000).rw("aicartc", FUNC(aicartc_device::read), FUNC(aicartc_device::write)).umask64(0x0000ffff0000ffff);
 
-	map(0x00800000, 0x00ffffff).mirror(0x02000000).rw(FUNC(segasp_state::sh4_soundram_r), FUNC(segasp_state::sh4_soundram_w));           // sound RAM (8 MB)
+	map(0x00800000, 0x00ffffff).mirror(0x02000000).rw(FUNC(segasp_state::soundram_r), FUNC(segasp_state::soundram_w));           // sound RAM (8 MB)
 
 	/* External Device */
 	map(0x01000000, 0x0100ffff).ram(); // banked access to ROM/NET board address space, mainly backup SRAM and ATA
@@ -457,7 +457,7 @@ ROM_START( dinoking )
 	ROM_PARAMETER( ":rom_board:id", "5502" )  // actually 8x 128Mbit FlashROMs
 
 	ROM_REGION( 0x800, "pic_readout", 0 )
-	ROM_LOAD( "317-0408-com.ic15", 0, 0x800, BAD_DUMP CRC(0e94daba) SHA1(4e9722333a29afd0dbadba78b16344b77a689610) )
+	ROM_LOAD( "317-0408-com.ic15", 0, 0x800, CRC(f77c49dc) SHA1(e10173bbbd5930ed159cec9a7dba308e2a3f3c43) )
 ROM_END
 
 ROM_START( lovebery )
@@ -550,7 +550,7 @@ ROM_START( dinokior )
 	ROM_PARAMETER( ":rom_board:id", "5502" )  // actually 8x 128Mbit FlashROMs
 
 	ROM_REGION( 0x800, "pic_readout", 0 )
-	ROM_LOAD( "317-0408-com.ic15", 0, 0x800, BAD_DUMP CRC(0e94daba) SHA1(4e9722333a29afd0dbadba78b16344b77a689610) )
+	ROM_LOAD( "317-0408-com.ic15", 0, 0x800, CRC(f77c49dc) SHA1(e10173bbbd5930ed159cec9a7dba308e2a3f3c43) )
 ROM_END
 
 ROM_START( dinoki25 )
@@ -570,7 +570,7 @@ ROM_START( dinoki25 )
 	ROM_PARAMETER( ":rom_board:id", "5508" )  // 8x 512Mbit FlashROMs
 
 	ROM_REGION( 0x800, "pic_readout", 0 )
-	ROM_LOAD( "317-0408-com.ic15", 0, 0x800, BAD_DUMP CRC(0e94daba) SHA1(4e9722333a29afd0dbadba78b16344b77a689610) )
+	ROM_LOAD( "317-0408-com.ic15", 0, 0x800, CRC(f77c49dc) SHA1(e10173bbbd5930ed159cec9a7dba308e2a3f3c43) )
 
 	// DINOSAUR KING
 	// TYPE-3
