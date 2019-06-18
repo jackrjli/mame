@@ -46,6 +46,9 @@ local function serialize_settings(button_list)
 end
 
 function lib:load_settings()
+	if emu.romname() == '___empty' then
+		return {}
+	end
 	local buttons = {}
 	local json = require('json')
 	local file = io.open(get_settings_path() .. get_settings_filename(), 'r')
@@ -67,6 +70,9 @@ function lib:load_settings()
 end
 
 function lib:save_settings(buttons)
+	if emu.romname() == '___empty' then
+		return
+	end
 	local path = get_settings_path()
 	local attr = lfs.attributes(path)
 	if not attr then
