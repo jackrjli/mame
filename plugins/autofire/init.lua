@@ -19,12 +19,19 @@ function autofire.startplugin()
 	--   'off_frames' - number of frames button is released
 	--   'button' - reference to ioport_field
 	--   'counter' - position in autofire cycle
+	--   'enabled' - autofire enabled/disabled
+	--   'toggle_key' - hotkey for toggling autofire
+	--   'toggle_key_pressed' - state of the toggle hotkey
 	local buttons = {}
 
 	local current_rom = nil
 
 	local function process_button(button)
 		local pressed = manager:machine():input():code_pressed(button.key)
+		if not button.enabled then
+			button.counter = 0
+			return pressed
+		end
 		if pressed then
 			local state = button.counter < button.on_frames and 1 or 0
 			button.counter = (button.counter + 1) % (button.on_frames + button.off_frames)
@@ -40,6 +47,14 @@ function autofire.startplugin()
 	end
 
 	local function process_frame()
+		process_toggle_hotkeys()
+		process_autofire()
+	end
+
+	local function process_toggle_hotkeys()
+	end
+
+	local function process_autofire()
 		-- Resolves conflicts between multiple autofire keybindings for the same button.
 		local button_states = {}
 

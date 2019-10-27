@@ -16,8 +16,13 @@ local function initialize_button(settings)
 			key = manager:machine():input():code_from_token(settings.key),
 			on_frames = settings.on_frames,
 			off_frames = settings.off_frames,
-			counter = 0
+			counter = 0,
+			enabled = true,
+			toggle_key_pressed = false
 		}
+		if settings.toggle_key then
+			toggle_key = manager:machine():input():code_from_token(settings.toggle_key)
+		end
 		local port = manager:machine():ioport().ports[settings.port]
 		if port then
 			local field = port.fields[settings.field]
@@ -40,6 +45,9 @@ local function serialize_settings(button_list)
 			on_frames = button.on_frames,
 			off_frames = button.off_frames
 		}
+		if button.toggle_key then
+			toggle_key = manager:machine():input():code_to_token(button.toggle_key)
+		end
 		settings[#settings + 1] = setting
 	end
 	return settings
