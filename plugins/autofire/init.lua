@@ -2,7 +2,7 @@
 -- copyright-holders:Jack Li
 local exports = {
 	name = 'autofire',
-	version = '0.0.4',
+	version = '0.0.5',
 	description = 'Autofire plugin',
 	license = 'BSD-3-Clause',
 	author = { name = 'Jack Li' } }
