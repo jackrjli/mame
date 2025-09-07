@@ -23,6 +23,9 @@ function autofire.startplugin()
 	--   'off_frames' - number of frames button is released
 	--   'button' - reference to ioport_field
 	--   'counter' - position in autofire cycle
+	--   'enabled' - autofire enabled/disabled
+	--   'toggle_key' - input_seq of the toggle keybinding
+	--   'toggle_key_cfg' - configuration string for the toggle keybinding
 	local buttons = {}
 
 	local input_manager
