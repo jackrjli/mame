@@ -35,8 +35,8 @@ function autofire.startplugin()
 	local function process_frame()
 		local function process_button(button)
 			local pressed = input_manager:seq_pressed(button.key)
-			local new_toggle_pressed = button.toggle_key and input_manager:seq_pressed(button.toggle_key) and not manager.ui.menu_active
-			local toggled = new_toggle_pressed and not button.toggle_key_pressed
+			local new_toggle_pressed = button.toggle_key and input_manager:seq_pressed(button.toggle_key)
+			local toggled = new_toggle_pressed and not button.toggle_key_pressed and not manager.ui.menu_active
 			button.toggle_key_pressed = new_toggle_pressed
 			if toggled then
 				button.enabled = not button.enabled
