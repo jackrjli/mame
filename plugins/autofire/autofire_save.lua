@@ -20,7 +20,7 @@ local function initialize_button(settings)
 			on_frames = settings.on_frames,
 			off_frames = settings.off_frames,
 			counter = 0,
-			enabled = not (settings.enabled == false), -- treat nil as true
+			enabled = true,
 			toggle_key = settings.toggle_key and manager.machine.input:seq_from_tokens(settings.toggle_key),
 			toggle_key_cfg = settings.toggle_key
 		}
@@ -46,7 +46,6 @@ local function serialize_settings(button_list)
 			key = button.key_cfg,
 			on_frames = button.on_frames,
 			off_frames = button.off_frames,
-			enabled = button.enabled,
 			toggle_key = button.toggle_key_cfg
 		}
 		table.insert(settings, setting)

@@ -98,8 +98,7 @@ local function populate_main_menu(buttons)
 			else
 				text = string.format(_p('plugin-autofire', 'n/a [%g Hz]'), rate)
 			end
-			local disabled_text = button.enabled and '' or _p('plugin-autofire', '[Disabled] ')
-			table.insert(menu, {text, disabled_text .. input:seq_name(button.key), ''})
+			table.insert(menu, {text, input:seq_name(button.key), ''})
 			if index == initial_button then
 				main_selection_save = #menu
 			end
@@ -166,8 +165,6 @@ local function populate_configure_menu(menu)
 	table.insert(menu, {_p('plugin-autofire', 'Hotkey'), key_name, hotkey_poller and 'lr' or ''})
 	table.insert(menu, {_p('plugin-autofire', 'On frames'), tostring(current_button.on_frames), current_button.on_frames > 1 and 'lr' or 'r'})
 	table.insert(menu, {_p('plugin-autofire', 'Off frames'), tostring(current_button.off_frames), current_button.off_frames > 1 and 'lr' or 'r'})
-	table.insert(menu, {'---', '', ''})
-	table.insert(menu, {_p('plugin-autofire', 'Enable autofire'), current_button.enabled and _p('plugin-autofire', 'Enabled') or _p('plugin-autofire', 'Disabled'), current_button.enabled and 'l' or 'r'})
 	table.insert(menu, {_p('plugin-autofire', 'Toggle hotkey'), toggle_key_name, toggle_hotkey_poller and 'lr' or ''})
 	table.insert(menu, {_p('plugin-autofire', 'Delete toggle hotkey'), '', ''})
 	configure_menu_active = true
@@ -245,16 +242,7 @@ local function handle_configure_menu(index, event)
 			current_button.off_frames = 1
 			return true
 		end
-	elseif index == 6 then
-		-- Enabled
-		if event == 'left' then
-			current_button.enabled = false
-			return true
-		elseif event == 'right' then
-			current_button.enabled = true
-			return true
-		end
-	elseif index == 7 then
+	elseif index == 5 then
 		-- Toggle hotkey
 		manager.machine:popmessage(string.format(_p('plugin-autofire', 'Hotkey to enable/disable autofire for this button (press %s to delete)'), manager.ui:get_general_input_setting(manager.machine.ioport:token_to_input_type('UI_CLEAR'))))
 		if event == 'select' then
@@ -268,7 +256,7 @@ local function handle_configure_menu(index, event)
 			current_button.toggle_key_cfg = nil
 			return true
 		end
-	elseif index == 8 then
+	elseif index == 6 then
 		-- Delete toggle hotkey
 		if event == 'select' then
 			current_button.toggle_key = nil
