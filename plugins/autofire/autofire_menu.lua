@@ -246,7 +246,7 @@ local function handle_configure_menu(index, event)
 		end
 	elseif index == 5 then
 		-- Toggle hotkey
-		manager.machine:popmessage(string.format(_p('plugin-autofire', 'Hotkey to enable/disable autofire for this button\nPress %s to unset'), manager.ui:get_general_input_setting(manager.machine.ioport:token_to_input_type('UI_CLEAR'))))
+		manager.machine:popmessage(_p('plugin-autofire', 'Hotkey to enable/disable autofire for this button'))
 		if event == 'select' then
 			if not commonui then
 				commonui = require('commonui')
