@@ -166,7 +166,7 @@ local function populate_configure_menu(menu)
 	table.insert(menu, {_p('plugin-autofire', 'On frames'), tostring(current_button.on_frames), current_button.on_frames > 1 and 'lr' or 'r'})
 	table.insert(menu, {_p('plugin-autofire', 'Off frames'), tostring(current_button.off_frames), current_button.off_frames > 1 and 'lr' or 'r'})
 	table.insert(menu, {_p('plugin-autofire', 'Toggle hotkey'), toggle_key_name, toggle_hotkey_poller and 'lr' or ''})
-	table.insert(menu, {_p('plugin-autofire', 'Delete toggle hotkey'), '', ''})
+	table.insert(menu, {_p('plugin-autofire', 'Unset toggle hotkey'), '', ''})
 	configure_menu_active = true
 end
 
@@ -244,7 +244,7 @@ local function handle_configure_menu(index, event)
 		end
 	elseif index == 5 then
 		-- Toggle hotkey
-		manager.machine:popmessage(string.format(_p('plugin-autofire', 'Hotkey to enable/disable autofire for this button (press %s to delete)'), manager.ui:get_general_input_setting(manager.machine.ioport:token_to_input_type('UI_CLEAR'))))
+		manager.machine:popmessage(string.format(_p('plugin-autofire', 'Hotkey to enable/disable autofire for this button\nPress %s to unset'), manager.ui:get_general_input_setting(manager.machine.ioport:token_to_input_type('UI_CLEAR'))))
 		if event == 'select' then
 			if not commonui then
 				commonui = require('commonui')
@@ -257,7 +257,7 @@ local function handle_configure_menu(index, event)
 			return true
 		end
 	elseif index == 6 then
-		-- Delete toggle hotkey
+		-- Unset toggle hotkey
 		if event == 'select' then
 			current_button.toggle_key = nil
 			current_button.toggle_key_cfg = nil
