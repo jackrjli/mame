@@ -34,10 +34,19 @@ function autofire.startplugin()
 	local function process_frame()
 		local function process_button(button)
 			local pressed = input_manager:seq_pressed(button.key)
+			local toggled = button.toggle_key and input_manager:code_pressed_once(button.toggle_key)
+			if toggled then
+				button.enabled = not button.enabled
+				button.counter = 0
+			end
 			if pressed then
-				local state = button.counter < button.on_frames and 1 or 0
-				button.counter = (button.counter + 1) % (button.on_frames + button.off_frames)
-				return state
+				if button.enabled then
+					local state = button.counter < button.on_frames and 1 or 0
+					button.counter = (button.counter + 1) % (button.on_frames + button.off_frames)
+					return state
+				else -- Behave like a normal button when autofire is disabled
+					return 1
+				end
 			else
 				button.counter = 0
 				return 0
