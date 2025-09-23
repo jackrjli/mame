@@ -1,7 +1,7 @@
 local lib = {}
 
 local function get_settings_path()
-	return manager.machine.options.entries.homepath:value():match('([^;]+)') .. '/autofire'
+	return manager.machine.options.entries.homepath:value():match('([^;]+)') .. '/toggle'
 end
 
 local function get_settings_filename()
@@ -9,7 +9,7 @@ local function get_settings_filename()
 end
 
 local function initialize_button(settings)
-	if settings.port and settings.mask and settings.type and settings.key and settings.on_frames and settings.off_frames then
+	if settings.port and settings.mask and settings.type and settings.key then
 		local ioport = manager.machine.ioport
 		local new_button = {
 			port = settings.port,
@@ -17,9 +17,7 @@ local function initialize_button(settings)
 			type = ioport:token_to_input_type(settings.type),
 			key = manager.machine.input:seq_from_tokens(settings.key),
 			key_cfg = settings.key,
-			on_frames = settings.on_frames,
-			off_frames = settings.off_frames,
-			counter = 0
+			on = false
 		}
 		local port = ioport.ports[settings.port]
 		if port then
@@ -40,9 +38,7 @@ local function serialize_settings(button_list)
 			port = button.port,
 			mask = button.mask,
 			type = manager.machine.ioport:input_type_to_token(button.type),
-			key = button.key_cfg,
-			on_frames = button.on_frames,
-			off_frames = button.off_frames
+			key = button.key_cfg
 		}
 		table.insert(settings, setting)
 	end
@@ -60,7 +56,7 @@ function lib:load_settings()
 	local loaded_settings = json.parse(file:read('a'))
 	file:close()
 	if not loaded_settings then
-		emu.print_error(string.format('Error loading autofire settings: error parsing file "%s" as JSON', filename))
+		emu.print_error(string.format('Error loading toggle button settings: error parsing file "%s" as JSON', filename))
 		return buttons
 	end
 	for index, button_settings in ipairs(loaded_settings) do
@@ -76,7 +72,7 @@ function lib:save_settings(buttons)
 	local path = get_settings_path()
 	local attr = lfs.attributes(path)
 	if attr and (attr.mode ~= 'directory') then
-		emu.print_error(string.format('Error saving autofire settings: "%s" is not a directory', path))
+		emu.print_error(string.format('Error saving toggle button settings: "%s" is not a directory', path))
 		return
 	end
 	local filename = path .. '/' .. get_settings_filename()
@@ -91,7 +87,7 @@ function lib:save_settings(buttons)
 	local data = json.stringify(settings, {indent = true})
 	local file = io.open(filename, 'w')
 	if not file then
-		emu.print_error(string.format('Error saving autofire settings: error opening file "%s" for writing', filename))
+		emu.print_error(string.format('Error saving toggle button settings: error opening file "%s" for writing', filename))
 		return
 	end
 	file:write(data)

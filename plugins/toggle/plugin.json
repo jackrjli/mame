@@ -1,8 +1,8 @@
 {
 	"plugin": {
-		"name": "autofire",
-		"description": "Autofire plugin",
-		"version": "0.0.4",
+		"name": "toggle",
+		"description": "Toggle button plugin",
+		"version": "0.0.1",
 		"author": "Jack Li",
 		"type": "plugin",
 		"start": "false"

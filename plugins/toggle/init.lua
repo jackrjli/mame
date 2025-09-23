@@ -1,28 +1,27 @@
 -- license:BSD-3-Clause
 -- copyright-holders:Jack Li
 local exports = {
-	name = 'autofire',
-	version = '0.0.4',
-	description = 'Autofire plugin',
+	name = 'toggle',
+	version = '0.0.1',
+	description = 'Toggle button plugin',
 	license = 'BSD-3-Clause',
 	author = { name = 'Jack Li' } }
 
-local autofire = exports
+local toggle = exports
 
 local frame_subscription, stop_subscription
 
-function autofire.startplugin()
+function toggle.startplugin()
 
-	-- List of autofire buttons, each being a table with keys:
-	--   'port' - port name of the button being autofired
-	--   'mask' - mask of the button field being autofired
-	--   'type' - input type of the button being autofired
+	-- List of toggle buttons, each being a table with keys:
+	--   'port' - port name of the button being toggled
+	--   'mask' - mask of the button field being toggled
+	--   'type' - input type of the button being toggled
 	--   'key' - input_seq of the keybinding
 	--   'key_cfg' - configuration string for the keybinding
-	--   'on_frames' - number of frames button is pressed
-	--   'off_frames' - number of frames button is released
+	--   'key_pressed' - whether the toggle key is currently being pressed
 	--   'button' - reference to ioport_field
-	--   'counter' - position in autofire cycle
+	--   'on' - whether the button is toggled on
 	local buttons = {}
 
 	local input_manager
@@ -30,18 +29,16 @@ function autofire.startplugin()
 
 	local function process_frame()
 		local function process_button(button)
-			local pressed = input_manager:seq_pressed(button.key)
-			if pressed then
-				local state = button.counter < button.on_frames and 1 or 0
-				button.counter = (button.counter + 1) % (button.on_frames + button.off_frames)
-				return state
-			else
-				button.counter = 0
-				return 0
+			local new_key_pressed = input_manager:seq_pressed(button.key)
+			local toggled = new_key_pressed and not button.key_pressed and not manager.ui.menu_active
+			button.key_pressed = new_key_pressed
+			if toggled then
+				button.on = not button.on
 			end
+			return button.on and 1 or 0
 		end
 
-		-- Resolves conflicts between multiple autofire keybindings for the same button.
+		-- Resolves conflicts between multiple toggle keybindings for the same button.
 		local button_states = {}
 
 		for i, button in ipairs(buttons) do
@@ -62,7 +59,7 @@ function autofire.startplugin()
 	end
 
 	local function load_settings()
-		local loader = require('autofire/autofire_save')
+		local loader = require('toggle/toggle_save')
 		if loader then
 			buttons = loader:load_settings()
 		end
@@ -71,7 +68,7 @@ function autofire.startplugin()
 	end
 
 	local function save_settings()
-		local saver = require('autofire/autofire_save')
+		local saver = require('toggle/toggle_save')
 		if saver then
 			saver:save_settings(buttons)
 		end
@@ -91,9 +88,9 @@ function autofire.startplugin()
 
 	local function menu_populate()
 		if not menu_handler then
-			local status, msg = pcall(function () menu_handler = require('autofire/autofire_menu') end)
+			local status, msg = pcall(function () menu_handler = require('toggle/toggle_menu') end)
 			if not status then
-				emu.print_error(string.format('Error loading autofire menu: %s', msg))
+				emu.print_error(string.format('Error loading toggle buttons menu: %s', msg))
 			end
 			if menu_handler then
 				menu_handler:init_menu(buttons)
@@ -102,14 +99,14 @@ function autofire.startplugin()
 		if menu_handler then
 			return menu_handler:populate_menu(buttons)
 		else
-			return {{_p('plugin-autofire', 'Failed to load autofire menu'), '', 'off'}}
+			return {{_p('plugin-toggle', 'Failed to load toggle buttons menu'), '', 'off'}}
 		end
 	end
 
 	frame_subscription = emu.add_machine_frame_notifier(process_frame)
 	emu.register_prestart(load_settings)
 	stop_subscription = emu.add_machine_stop_notifier(save_settings)
-	emu.register_menu(menu_callback, menu_populate, _p('plugin-autofire', 'Autofire'))
+	emu.register_menu(menu_callback, menu_populate, _p('plugin-toggle', 'Toggle buttons'))
 end
 
 return exports

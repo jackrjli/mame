@@ -55,14 +55,12 @@ end
 
 local function create_new_button()
 	return {
-		on_frames = 1,
-		off_frames = 1,
-		counter = 0
+		on = false
 	}
 end
 
 local function is_button_complete(button)
-	return button.port and button.mask and button.type and button.key and button.on_frames and button.off_frames and button.button and button.counter
+	return button.port and button.mask and button.type and button.key and button.button
 end
 
 -- Main menu
@@ -71,28 +69,18 @@ local function populate_main_menu(buttons)
 	local ioport = manager.machine.ioport
 	local input = manager.machine.input
 	local menu = {}
-	table.insert(menu, {_p('plugin-autofire', 'Autofire buttons'), '', 'off'})
-	table.insert(menu, {string.format(_p('plugin-autofire', 'Press %s to delete'), manager.ui:get_general_input_setting(ioport:token_to_input_type('UI_CLEAR'))), '', 'off'})
+	table.insert(menu, {_p('plugin-toggle', 'Toggle buttons'), '', 'off'})
+	table.insert(menu, {string.format(_p('plugin-toggle', 'Press %s to delete'), manager.ui:get_general_input_setting(ioport:token_to_input_type('UI_CLEAR'))), '', 'off'})
 	table.insert(menu, {'---', '', ''})
 	header_height = #menu
 
-	-- Use frame rate of first screen or 60Hz if no screens
-	local freq = 60
-	local screen = manager.machine.screens:at(1)
-	if screen then
-		freq = 1 / screen.frame_period
-	end
-
 	if #buttons > 0 then
 		for index, button in ipairs(buttons) do
-			-- Round rate to two decimal places
-			local rate = freq / (button.on_frames + button.off_frames)
-			rate = math.floor(rate * 100) / 100
 			local text
 			if button.button then
-				text = string.format(_p('plugin-autofire', '%s [%g Hz]'), button.button.name, rate)
+				text = button.button.name
 			else
-				text = string.format(_p('plugin-autofire', 'n/a [%g Hz]'), rate)
+				text = _p('plugin-toggle', 'n/a')
 			end
 			table.insert(menu, {text, input:seq_name(button.key), ''})
 			if index == initial_button then
@@ -100,13 +88,13 @@ local function populate_main_menu(buttons)
 			end
 		end
 	else
-		table.insert(menu, {_p('plugin-autofire', '[no autofire buttons]'), '', 'off'})
+		table.insert(menu, {_p('plugin-toggle', '[no toggle buttons]'), '', 'off'})
 	end
 	initial_button = nil
 	content_height = #menu
 
 	table.insert(menu, {'---', '', ''})
-	table.insert(menu, {_p('plugin-autofire', 'Add autofire button'), '', ''})
+	table.insert(menu, {_p('plugin-toggle', 'Add toggle button'), '', ''})
 
 	local selection = main_selection_save
 	main_selection_save = nil
@@ -148,18 +136,16 @@ local function populate_configure_menu(menu)
 	if current_button.button then
 		button_name = current_button.button.name
 	elseif current_button.port then
-		button_name = _p('plugin-autofire', 'n/a')
+		button_name = _p('plugin-toggle', 'n/a')
 	else
-		button_name = _p('plugin-autofire', '[not set]')
+		button_name = _p('plugin-toggle', '[not set]')
 	end
-	local key_name = current_button.key and manager.machine.input:seq_name(current_button.key) or _p('plugin-autofire', '[not set]')
-	table.insert(menu, {_p('plugin-autofire', 'Input'), button_name, ''})
+	local key_name = current_button.key and manager.machine.input:seq_name(current_button.key) or _p('plugin-toggle', '[not set]')
+	table.insert(menu, {_p('plugin-toggle', 'Input'), button_name, ''})
 	if not (configure_menu_active or configure_selection_save) then
 		configure_selection_save = #menu
 	end
-	table.insert(menu, {_p('plugin-autofire', 'Hotkey'), key_name, hotkey_poller and 'lr' or ''})
-	table.insert(menu, {_p('plugin-autofire', 'On frames'), tostring(current_button.on_frames), current_button.on_frames > 1 and 'lr' or 'r'})
-	table.insert(menu, {_p('plugin-autofire', 'Off frames'), tostring(current_button.off_frames), current_button.off_frames > 1 and 'lr' or 'r'})
+	table.insert(menu, {_p('plugin-toggle', 'Hotkey'), key_name, hotkey_poller and 'lr' or ''})
 	configure_menu_active = true
 end
 
@@ -196,39 +182,13 @@ local function handle_configure_menu(index, event)
 			hotkey_poller = commonui.switch_polling_helper()
 			return true
 		end
-	elseif index == 3 then
-		-- On frames
-		manager.machine:popmessage(_p('plugin-autofire', 'Number of frames button will be pressed'))
-		if event == 'left' then
-			current_button.on_frames = current_button.on_frames - 1
-			return true
-		elseif event == 'right' then
-			current_button.on_frames = current_button.on_frames + 1
-			return true
-		elseif event == 'clear' then
-			current_button.on_frames = 1
-			return true
-		end
-	elseif index == 4 then
-		-- Off frames
-		manager.machine:popmessage(_p('plugin-autofire', 'Number of frames button will be released'))
-		if event == 'left' then
-			current_button.off_frames = current_button.off_frames - 1
-			return true
-		elseif event == 'right' then
-			current_button.off_frames = current_button.off_frames + 1
-			return true
-		elseif event == 'clear' then
-			current_button.off_frames = 1
-			return true
-		end
 	end
 	return false
 end
 
 local function populate_edit_menu()
 	local menu = {}
-	table.insert(menu, {_p('plugin-autofire', 'Edit autofire button'), '', 'off'})
+	table.insert(menu, {_p('plugin-toggle', 'Edit toggle button'), '', 'off'})
 	table.insert(menu, {'---', '', ''})
 	header_height = #menu
 
@@ -236,10 +196,10 @@ local function populate_edit_menu()
 	content_height = #menu
 
 	table.insert(menu, {'---', '', ''})
-	table.insert(menu, {_p('plugin-autofire', 'Delete'), '', ''})
+	table.insert(menu, {_p('plugin-toggle', 'Delete'), '', ''})
 
 	table.insert(menu, {'---', '', ''})
-	table.insert(menu, {_p('plugin-autofire', 'Done'), '', ''})
+	table.insert(menu, {_p('plugin-toggle', 'Done'), '', ''})
 
 	local selection = configure_selection_save
 	configure_selection_save = nil
@@ -274,7 +234,7 @@ end
 
 local function populate_add_menu()
 	local menu = {}
-	table.insert(menu, {_p('plugin-autofire', 'Add autofire button'), '', 'off'})
+	table.insert(menu, {_p('plugin-toggle', 'Add toggle button'), '', 'off'})
 	table.insert(menu, {'---', '', ''})
 	header_height = #menu
 
@@ -283,9 +243,9 @@ local function populate_add_menu()
 
 	table.insert(menu, {'---', '', ''})
 	if is_button_complete(current_button) then
-		table.insert(menu, {_p('plugin-autofire', 'Create'), '', ''})
+		table.insert(menu, {_p('plugin-toggle', 'Create'), '', ''})
 	else
-		table.insert(menu, {_p('plugin-autofire', 'Cancel'), '', ''})
+		table.insert(menu, {_p('plugin-toggle', 'Cancel'), '', ''})
 	end
 
 	local selection = configure_selection_save
@@ -341,7 +301,7 @@ local function populate_button_menu()
 	if not commonui then
 		commonui = require('commonui')
 	end
-	input_menu = commonui.input_selection_menu(action, _p('plugin-autofire', 'Select an input for autofire'), is_supported_input)
+	input_menu = commonui.input_selection_menu(action, _p('plugin-toggle', 'Select an input for toggle'), is_supported_input)
 	return input_menu:populate(initial_input)
 end
 
